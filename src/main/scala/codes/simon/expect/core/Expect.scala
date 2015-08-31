@@ -6,11 +6,13 @@ import scala.concurrent._
 import scala.concurrent.duration.FiniteDuration
 
 class Expect[R](command: String, expects: Seq[ExpectBlock]) extends LazyLogging {
-  def run(timeout: FiniteDuration = Constants.TIMEOUT, charset: Charset = Constants.CHARSET, bufferSize: Int = Constants.BUFFER_SIZE)(implicit ex: ExecutionContext): Future[Option[R]] = {
+  def run(timeout: FiniteDuration = Constants.TIMEOUT, charset: Charset = Constants.CHARSET,
+          bufferSize: Int = Constants.BUFFER_SIZE, redirectStdErrToStdOut: Boolean = Constants.REDIRECT_STDERR_TO_STDOUT)
+         (implicit ex: ExecutionContext): Future[Option[R]] = {
     require(expects.nonEmpty, "There must exist at least one expect block")
 
     val processBuilder = new ProcessBuilder(command.split("""\s+"""):_*)
-    processBuilder.redirectErrorStream(true)
+    processBuilder.redirectErrorStream(redirectStdErrToStdOut)
     val richProcess = RichProcess(processBuilder.start(), timeout, charset, bufferSize)
 
     //The first Option is the last read output
