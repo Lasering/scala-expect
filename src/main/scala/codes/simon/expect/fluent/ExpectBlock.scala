@@ -1,10 +1,12 @@
 package codes.simon.expect.fluent
 
-import codes.simon.expect.core.{ExpectBlock => CExpectBlock}
+import codes.simon.expect.core
+import codes.simon.expect.core.{Timeout, EndOfFile}
 
+import scala.reflect.ClassTag
 import scala.util.matching.Regex
 
-class ExpectBlock[R](val parent: Expect[R]) extends Runnable[R] with Expectable[R] with Whenable[R] {
+class ExpectBlock[R: ClassTag](val parent: Expect[R]) extends Runnable[R] with Expectable[R] with Whenable[R] {
   val runnableParent: Runnable[R] = parent
 
   val expectableParent: Expectable[R] = parent
@@ -22,5 +24,11 @@ class ExpectBlock[R](val parent: Expect[R]) extends Runnable[R] with Expectable[
   override def when(pattern: EndOfFile.type): EndOfFileWhen[R] = newWhen(new EndOfFileWhen[R](this))
   override def when(pattern: Timeout.type): TimeoutWhen[R] = newWhen(new TimeoutWhen[R](this))
 
-  protected[fluent] def toCoreExpectBlock = new CExpectBlock(whens.map(_.toCoreWhen))
+  protected[fluent] def toCoreExpectBlock = new core.ExpectBlock[R](whens.map(_.toCoreWhen))
+
+  override def toString: String = {
+    s"""expect {
+        |\t\t${whens.mkString("\n\t\t")}
+        |\t}""".stripMargin
+  }
 }

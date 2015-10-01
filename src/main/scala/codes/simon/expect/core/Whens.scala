@@ -3,7 +3,10 @@ package codes.simon.expect.core
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
-trait When {
+object EndOfFile
+object Timeout
+
+trait When[R] {
   def actions: Seq[Action[this.type]]
 
   /**
@@ -20,43 +23,39 @@ trait When {
 
   /**
    * Executes all the actions of this When.
-   * @param process the underlying process of Expect.
-   * @param output the output where this When matched.
-   * @tparam R
-   * @return A tuple (A, B) where:
-   * A. is the `output` trimmed with `trimToMatchedText`.
-   * B. is
-   *  - None - if this When did not contain any `ReturningAction`
-   *  - Some(r) - where r is the value returned by the `ReturningAction`.
    */
-  def execute[R](process: RichProcess, output: Option[String]): (Option[String], Option[R]) = {
-    val trimmedOutput = output.map(trimToMatchedText)
-    var result = Option.empty[R]
+  def execute(process: RichProcess, lastResult: (String, R, ExecutionAction)): (String, R, ExecutionAction) = {
+    val (output, lastValue, _) = lastResult
+    val trimmedOutput = trimToMatchedText(output)
+    var result = lastValue
     actions foreach {
-      case SendAction(text) =>
+      case Send(text) =>
         process.print(text)
-      case ReturningAction(r) =>
-        result = Some(r.asInstanceOf[R])
-      case ExitAction =>
-        process.destroy()
-        //Preemptive exit to guarantee anything after the Exit does not get executed
-        return (trimmedOutput, result)
+      case Returning(r) =>
+        result = r()
+      case ReturningExpect(r) =>
+        //Preemptive exit to guarantee anything after this action does not get executed
+        return (trimmedOutput, result, ChangeToNewExpect(r()))
+      case Exit =>
+        //Preemptive exit to guarantee anything after this action does not get executed
+        return (trimmedOutput, result, Terminate)
     }
-    (trimmedOutput, result)
+    (trimmedOutput, result, Continue)
   }
+
+  override def toString: String =
+    s"""when {
+       |\t${actions.mkString("\n")}
+       |}""".stripMargin
 }
-case class StringWhen(pattern: String, actions: Seq[Action[StringWhen]]) extends When {
-  /** @inheritdoc */
+case class StringWhen[R](pattern: String, actions: Seq[Action[StringWhen[R]]]) extends When[R] {
   def matches(output: String): Boolean = output.contains(pattern)
-  /** @inheritdoc */
   def trimToMatchedText(output: String): String = {
     output.substring(output.indexOf(pattern) + pattern.length)
   }
 }
-case class RegexWhen(pattern: Regex, actions: Seq[Action[RegexWhen]]) extends When {
-  /** @inheritdoc */
+case class RegexWhen[R](pattern: Regex, actions: Seq[Action[RegexWhen[R]]]) extends When[R] {
   def matches(output: String): Boolean = pattern.findFirstIn(output).isDefined
-  /** @inheritdoc */
   def trimToMatchedText(output: String): String = output.substring(getMatch(output).end(0))
 
   private def getMatch(output: String): Match = {
@@ -65,40 +64,40 @@ case class RegexWhen(pattern: Regex, actions: Seq[Action[RegexWhen]]) extends Wh
     pattern.findFirstMatchIn(output).get
   }
 
-  //TODO: would be nice not to duplicate most of this code here.
-  /** @inheritdoc */
-  override def execute[R](process: RichProcess, output: Option[String]): (Option[String], Option[R]) = {
-    val trimmedOutput = output.map(trimToMatchedText)
-    var result = Option.empty[R]
-    //We have the guarantee that we can invoke get here because execute is only invoke when `matches` returned true.
-    val `match` = getMatch(output.get)
+  override def execute(process: RichProcess, lastResult: (String, R, ExecutionAction)): (String, R, ExecutionAction) = {
+    //Would be nice not to duplicate most of this code here.
+    val (output, lastValue, _) = lastResult
+    val trimmedOutput = trimToMatchedText(output)
+    val `match` = getMatch(output)
+    var result = lastValue
     actions foreach {
-      case SendAction(text) =>
+      case Send(text) =>
         process.print(text)
-      case SendWithRegexAction(text) =>
+      case SendWithRegex(text) =>
         process.print(text(`match`))
-      case ReturningAction(r) =>
-        result = Some(r.asInstanceOf[R])
-      case ReturningWithRegexAction(text) =>
-        val m = getMatch(output.get)
-        result = Some(text.asInstanceOf[Match => R](`match`))
-      case ExitAction =>
-        process.destroy()
-        //Preemptive exit to guarantee anything after the Exit does not get executed
-        return (trimmedOutput, result)
+      case Returning(r) =>
+        result = r()
+      case ReturningWithRegex(r) =>
+        result = r(`match`)
+      case ReturningExpect(r) =>
+        //Preemptive exit to guarantee anything after this action does not get executed
+        return (trimmedOutput, result, ChangeToNewExpect(r()))
+      case ReturningExpectWithRegex(r) =>
+        val expect = r(`match`)
+        //Preemptive exit to guarantee anything after this action does not get executed
+        return (trimmedOutput, result, ChangeToNewExpect(expect))
+      case Exit =>
+        //Preemptive exit to guarantee anything after this action does not get executed
+        return (trimmedOutput, result, Terminate)
     }
-    (trimmedOutput, result)
+    (trimmedOutput, result, Continue)
   }
 }
-case class EndOfFileWhen(actions: Seq[Action[EndOfFileWhen]]) extends When {
-  /** @inheritdoc */
+case class EndOfFileWhen[R](actions: Seq[Action[EndOfFileWhen[R]]]) extends When[R] {
   def matches(output: String): Boolean = false
-  /** @inheritdoc */
   def trimToMatchedText(output: String): String = output
 }
-case class TimeoutWhen(actions: Seq[Action[TimeoutWhen]]) extends When {
-  /** @inheritdoc */
+case class TimeoutWhen[R](actions: Seq[Action[TimeoutWhen[R]]]) extends When[R] {
   def matches(output: String): Boolean = false
-  /** @inheritdoc */
   def trimToMatchedText(output: String): String = output
 }

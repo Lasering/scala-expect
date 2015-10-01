@@ -1,5 +1,7 @@
 package codes.simon.expect.fluent
 
+import codes.simon.expect.core.{EndOfFile, Timeout}
+
 import scala.util.matching.Regex
 
 trait Expectable[R] {

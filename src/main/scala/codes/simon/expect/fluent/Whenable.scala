@@ -1,5 +1,7 @@
 package codes.simon.expect.fluent
 
+import codes.simon.expect.core.{Timeout, EndOfFile}
+
 import scala.util.matching.Regex
 
 trait Whenable[R] {

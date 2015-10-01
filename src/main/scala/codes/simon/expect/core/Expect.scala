@@ -5,34 +5,47 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.concurrent._
 import scala.concurrent.duration.FiniteDuration
 
-class Expect[R](command: String, expects: Seq[ExpectBlock]) extends LazyLogging {
+
+class Expect[R](command: String, defaultValue: R, expects: Seq[ExpectBlock[R]]) extends LazyLogging {
+  require(command.isEmpty == false, "Expect must have a command to run.")
+
   def run(timeout: FiniteDuration = Constants.TIMEOUT, charset: Charset = Constants.CHARSET,
           bufferSize: Int = Constants.BUFFER_SIZE, redirectStdErrToStdOut: Boolean = Constants.REDIRECT_STDERR_TO_STDOUT)
-         (implicit ex: ExecutionContext): Future[Option[R]] = {
-    require(expects.nonEmpty, "There must exist at least one expect block")
+         (implicit ex: ExecutionContext): Future[R] = {
+    val richProcess = RichProcess(command, timeout, charset, bufferSize)
+    //_1 = last read output
+    //_2 = last value
+    //_3 = last execution action
+    val lastResult = ("", defaultValue, Continue)
+    innerRun(richProcess, lastResult, expects.toList)
+  }
 
-    val processBuilder = new ProcessBuilder(command.split("""\s+"""):_*)
-    processBuilder.redirectErrorStream(redirectStdErrToStdOut)
-    val richProcess = RichProcess(processBuilder.start(), timeout, charset, bufferSize)
-
-    //The first Option is the last read output
-    //The second option is the last value (that might have been "returned" by a ReturningAction)
-    var result: Future[(Option[String], Option[R])] = Future.successful((None, None))
-    for (expect ← expects) {
-      //This `if` is a cheat. But I can't find any other way to do it. Suggestions are welcome.
-      result = result.flatMap{ case (lastOutput, lastValue) if richProcess.isAlive =>
-        logger.info(s"LastValue: $lastValue. About to start another future")
-        val newResult = expect.run(richProcess, lastOutput)
-        //Keep lastValue if newValue is empty
-        newResult.map{ case (newOutput, newValue) =>
-          (newOutput, if (newValue.isEmpty) lastValue else newValue)
+  private def innerRun(richProcess: RichProcess, lastResult: (String, R, ExecutionAction), expectsStack: List[ExpectBlock[R]])
+                      (implicit ec: ExecutionContext): Future[R] = expectsStack match {
+    case List() =>
+      //We have no more expect blocks. So we can finish the execution.
+      //Make sure to destroy the process and close the streams.
+      richProcess.destroy()
+      //Return just the result to the user.
+      Future.successful(lastResult._2)
+    case headExpectBlock :: remainingExpectBlocks =>
+      headExpectBlock.run(richProcess, lastResult).flatMap { case result @ (_, _, action) =>
+        action match {
+          case Continue =>
+            innerRun(richProcess, result, remainingExpectBlocks)
+          case Terminate =>
+            innerRun(richProcess, result, List.empty[ExpectBlock[R]])
+          case ChangeToNewExpect(newExpect) =>
+            richProcess.destroy()
+            newExpect.asInstanceOf[Expect[R]].run(richProcess.timeout, richProcess.charset, richProcess.bufferSize)
         }
       }
-    }
-    //"Trim" the last read output before returning the result to the user.
-    val endResult = result.map{ case (lastOutput, value) => value }
-    //Make sure to destroy the process and close the streams.
-    endResult onComplete (_ => richProcess.destroy())
-    endResult
   }
+
+  override def toString =
+    s"""Expect:
+       |\tCommand: $command
+       |\tDefaultValue: $defaultValue
+       |\t${expects.mkString("\n\t")}
+     """.stripMargin
 }

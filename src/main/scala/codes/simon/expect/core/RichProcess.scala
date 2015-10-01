@@ -13,7 +13,11 @@ import scala.concurrent.duration.FiniteDuration
  * @param charset the charset used for encoding and decoding the Strings.
  * @param bufferSize how many bytes to read.
  */
-case class RichProcess(process: Process, timeout: FiniteDuration, charset: Charset, bufferSize: Int) {
+case class RichProcess(command: String, timeout: FiniteDuration, charset: Charset, bufferSize: Int) {
+  val processBuilder = new ProcessBuilder(command.split("""\s+"""):_*)
+  processBuilder.redirectErrorStream(true)
+  val process = processBuilder.start()
+
   val stdout = process.getInputStream
   val stdin = process.getOutputStream
   private var deadline = timeout.fromNow
