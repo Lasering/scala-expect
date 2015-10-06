@@ -21,8 +21,6 @@ initialize := {
   assert(current == required, s"Unsupported JDK: java.specification.version $current != $required")
 }
 
-useGpg := true
-
 publishTo := {
   val nexus = "https://oss.sonatype.org/"
   if (isSnapshot.value)

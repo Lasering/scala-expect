@@ -31,8 +31,8 @@ class EmptySpec extends FlatSpec with Matchers with ScalaFutures {
       new ExpectBlock()
     )
     val defaultPatience = PatienceConfig(
-      timeout = Span(Configs.Timeout.toSeconds + 2, Seconds),
-      interval = Span(Configs.Timeout.toSeconds, Seconds)
+      timeout = Span(Configs.timeout.toSeconds + 2, Seconds),
+      interval = Span(Configs.timeout.toSeconds, Seconds)
     )
     e.run().failed.futureValue(defaultPatience) shouldBe a [EOFException]
   }

@@ -55,8 +55,8 @@ class Expect[R: ClassTag](command: String, defaultValue: R) extends DSL[R] {
   def returning(result: Match => R) = addAction(_.returning(result))
   def exit() = addAction(_.exit())
 
-  def run(timeout: FiniteDuration = Configs.Timeout, charset: Charset = Configs.Charset,
-          bufferSize: Int = Configs.BufferSize, redirectStdErrToStdOut: Boolean = Configs.RedirectStdErrToStdOut)
+  def run(timeout: FiniteDuration = Configs.timeout, charset: Charset = Configs.charset,
+          bufferSize: Int = Configs.bufferSize, redirectStdErrToStdOut: Boolean = Configs.redirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
     fluentExpect.run(timeout, charset, bufferSize)(ex)
   }

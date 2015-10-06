@@ -9,8 +9,8 @@ import scala.util.matching.Regex.Match
 
 class ScalaSpec extends FlatSpec with Matchers with ScalaFutures {
   val defaultPatience = PatienceConfig(
-    timeout = Span(Configs.Timeout.toSeconds + 2, Seconds),
-    interval = Span(Configs.Timeout.toSeconds, Seconds)
+    timeout = Span(Configs.timeout.toSeconds + 2, Seconds),
+    interval = Span(Configs.timeout.toSeconds, Seconds)
   )
 
   "An Expect " should "returned the specified value" in {
