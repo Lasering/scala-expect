@@ -24,23 +24,22 @@ trait When[R] {
   /**
    * Executes all the actions of this When.
    */
-  def execute(process: RichProcess, lastResult: (String, R, ExecutionAction)): (String, R, ExecutionAction) = {
-    val (output, lastValue, _) = lastResult
-    val trimmedOutput = trimToMatchedText(output)
-    var result = lastValue
+  def execute(process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
+    val trimmedOutput = trimToMatchedText(intermediateResult.output)
+    var result = intermediateResult.copy[R](output = trimmedOutput)
     actions foreach {
       case Send(text) =>
         process.print(text)
       case Returning(r) =>
-        result = r()
+        result = result.copy(value = r())
       case ReturningExpect(r) =>
         //Preemptive exit to guarantee anything after this action does not get executed
-        return (trimmedOutput, result, ChangeToNewExpect(r()))
+        return result.copy(executionAction = ChangeToNewExpect(r()))
       case Exit =>
         //Preemptive exit to guarantee anything after this action does not get executed
-        return (trimmedOutput, result, Terminate)
+        return result.copy(executionAction = Terminate)
     }
-    (trimmedOutput, result, Continue)
+    result
   }
 
   override def toString: String =
@@ -48,13 +47,13 @@ trait When[R] {
        |\t${actions.mkString("\n")}
        |}""".stripMargin
 }
-case class StringWhen[R](pattern: String, actions: Action[StringWhen[R]]*) extends When[R] {
+case class StringWhen[R](pattern: String)(val actions: Action[StringWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = output.contains(pattern)
   def trimToMatchedText(output: String): String = {
     output.substring(output.indexOf(pattern) + pattern.length)
   }
 }
-case class RegexWhen[R](pattern: Regex, actions: Action[RegexWhen[R]]*) extends When[R] {
+case class RegexWhen[R](pattern: Regex)(val actions: Action[RegexWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = pattern.findFirstIn(output).isDefined
   def trimToMatchedText(output: String): String = output.substring(getMatch(output).end(0))
 
@@ -64,33 +63,33 @@ case class RegexWhen[R](pattern: Regex, actions: Action[RegexWhen[R]]*) extends 
     pattern.findFirstMatchIn(output).get
   }
 
-  override def execute(process: RichProcess, lastResult: (String, R, ExecutionAction)): (String, R, ExecutionAction) = {
+  override def execute(process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
     //Would be nice not to duplicate most of this code here.
-    val (output, lastValue, _) = lastResult
-    val trimmedOutput = trimToMatchedText(output)
-    val regexMatch = getMatch(output)
-    var result = lastValue
+    val trimmedOutput = trimToMatchedText(intermediateResult.output)
+    var result = intermediateResult.copy[R](output = trimmedOutput)
+    val regexMatch = getMatch(intermediateResult.output)
     actions foreach {
       case Send(text) =>
         process.print(text)
       case SendWithRegex(text) =>
         process.print(text(regexMatch))
       case Returning(r) =>
-        result = r()
+        result = result.copy(value = r())
       case ReturningWithRegex(r) =>
-        result = r(regexMatch)
+        result = result.copy(value = r(regexMatch))
       case ReturningExpect(r) =>
+        val expect = r()
         //Preemptive exit to guarantee anything after this action does not get executed
-        return (trimmedOutput, result, ChangeToNewExpect(r()))
+        return result.copy(executionAction = ChangeToNewExpect(expect))
       case ReturningExpectWithRegex(r) =>
         val expect = r(regexMatch)
         //Preemptive exit to guarantee anything after this action does not get executed
-        return (trimmedOutput, result, ChangeToNewExpect(expect))
+        return result.copy(executionAction = ChangeToNewExpect(expect))
       case Exit =>
         //Preemptive exit to guarantee anything after this action does not get executed
-        return (trimmedOutput, result, Terminate)
+        return result.copy(executionAction = Terminate)
     }
-    (trimmedOutput, result, Continue)
+    result
   }
 }
 case class EndOfFileWhen[R](actions: Action[EndOfFileWhen[R]]*) extends When[R] {

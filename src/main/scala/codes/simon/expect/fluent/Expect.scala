@@ -5,7 +5,7 @@ import java.nio.charset.Charset
 import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.duration.FiniteDuration
 import codes.simon.expect.core
-import codes.simon.expect.core.Constants
+import codes.simon.expect.core.Configs
 
 import scala.reflect.ClassTag
 
@@ -23,8 +23,8 @@ class Expect[R: ClassTag](val command: String, val defaultValue: R) extends Runn
   //The value we set here is irrelevant since we override the implementation of 'run'.
   //We decided to set to 'this' to make it obvious that this is the root of all Runnables.
   val runnableParent: Runnable[R] = this
-  override def run(timeout: FiniteDuration = Constants.Timeout, charset: Charset = Constants.Charset,
-                   bufferSize: Int = Constants.BufferSize, redirectStdErrToStdOut: Boolean = Constants.RedirectStdErrToStdOut)
+  override def run(timeout: FiniteDuration = Configs.Timeout, charset: Charset = Configs.Charset,
+                   bufferSize: Int = Configs.BufferSize, redirectStdErrToStdOut: Boolean = Configs.RedirectStdErrToStdOut)
                   (implicit ex: ExecutionContext): Future[R] = {
     new core.Expect[R](command, defaultValue)(expects.map(_.toCore):_*).run(timeout, charset, bufferSize)(ex)
   }

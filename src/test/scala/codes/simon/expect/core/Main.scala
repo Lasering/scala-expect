@@ -22,9 +22,9 @@ object Main {
         )
       )
     )*/
-    val e = new Expect("bc", Option.empty[String],
+    val e = new Expect("bc", Option.empty[String])(
       new ExpectBlock(
-        new StringWhen[Option[String]]("For details type",
+        new StringWhen[Option[String]]("For details type")(
           Returning(() => Some("True"))
         )
       )

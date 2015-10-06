@@ -63,7 +63,7 @@ abstract class When[R](parent: ExpectBlock[R]) extends Runnable[R] with Expectab
 }
 case class StringWhen[R](parent: ExpectBlock[R], pattern: String) extends When[R](parent) {
   type W = CStringWhen[R]
-  protected[fluent] def toCore: W = new CStringWhen[R](pattern, actions:_*)
+  protected[fluent] def toCore: W = new CStringWhen[R](pattern)(actions:_*)
 }
 case class RegexWhen[R: ClassTag](parent: ExpectBlock[R], pattern: Regex) extends When[R](parent) {
   type W = CRegexWhen[R]
@@ -97,7 +97,7 @@ case class RegexWhen[R: ClassTag](parent: ExpectBlock[R], pattern: Regex) extend
     }
   }
 
-  protected[fluent] def toCore: W = new CRegexWhen[R](pattern, actions:_*)
+  protected[fluent] def toCore: W = new CRegexWhen[R](pattern)(actions:_*)
 }
 case class TimeoutWhen[R](parent: ExpectBlock[R]) extends When[R](parent) {
   type W = CTimeoutWhen[R]

@@ -1,6 +1,6 @@
 package codes.simon.expect.core
 
-import java.io.EOFException
+import java.io.{IOException, EOFException}
 import java.nio.charset.Charset
 
 import scala.concurrent._
@@ -68,13 +68,11 @@ case class RichProcess(command: String, timeout: FiniteDuration, charset: Charse
    */
   def destroy(): Unit = if (process.isAlive) {
     process.destroy()
-    stdin.close()
-    stdout.close()
+    try {
+      stdin.close()
+      stdout.close()
+    } catch {
+      case io: IOException =>
+    }
   }
-
-  /**
-   * Shortcut to `isAlive` method of the underlying process.
-   * @return whether the underlying process is alive.
-   */
-  def isAlive = process.isAlive
 }

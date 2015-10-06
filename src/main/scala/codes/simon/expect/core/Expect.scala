@@ -9,29 +9,24 @@ import scala.concurrent.duration.FiniteDuration
 class Expect[R](command: String, defaultValue: R)(expects: ExpectBlock[R]*) extends LazyLogging {
   require(command.nonEmpty, "Expect must have a command to run.")
 
-  def run(timeout: FiniteDuration = Constants.Timeout, charset: Charset = Constants.Charset,
-          bufferSize: Int = Constants.BufferSize, redirectStdErrToStdOut: Boolean = Constants.RedirectStdErrToStdOut)
+  def run(timeout: FiniteDuration = Configs.Timeout, charset: Charset = Configs.Charset,
+          bufferSize: Int = Configs.BufferSize, redirectStdErrToStdOut: Boolean = Configs.RedirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
     val richProcess = RichProcess(command, timeout, charset, bufferSize, redirectStdErrToStdOut)
-    //_1 = last read output
-    //_2 = last value
-    //_3 = last execution action
-    val lastResult = ("", defaultValue, Continue)
-    innerRun(richProcess, lastResult, expects.toList)
+    innerRun(richProcess, IntermediateResult("", defaultValue, Continue), expects.toList)
   }
 
-  private def innerRun(richProcess: RichProcess, lastResult: (String, R, ExecutionAction), expectsStack: List[ExpectBlock[R]])
+  private def innerRun(richProcess: RichProcess, intermediateResult: IntermediateResult[R], expectsStack: List[ExpectBlock[R]])
                       (implicit ec: ExecutionContext): Future[R] = expectsStack match {
     case List() =>
       //We have no more expect blocks. So we can finish the execution.
       //Make sure to destroy the process and close the streams.
       richProcess.destroy()
       //Return just the value to the user.
-      val value = lastResult._2
-      Future.successful(value)
+      Future.successful(intermediateResult.value)
     case headExpectBlock :: remainingExpectBlocks =>
       logger.info("Starting a new ExpectBlock.run")
-      headExpectBlock.run(richProcess, lastResult).flatMap { case result @ (_, _, action) =>
+      headExpectBlock.run(richProcess, intermediateResult).flatMap { case result @ IntermediateResult(_, _, action) =>
         action match {
           case Continue =>
             innerRun(richProcess, result, remainingExpectBlocks)

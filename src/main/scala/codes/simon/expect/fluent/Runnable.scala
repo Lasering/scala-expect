@@ -2,7 +2,7 @@ package codes.simon.expect.fluent
 
 import java.nio.charset.Charset
 
-import codes.simon.expect.core.Constants
+import codes.simon.expect.core.Configs
 
 import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.duration.FiniteDuration
@@ -21,8 +21,8 @@ trait Runnable[R] {
    *         `defaultValue` will be returned. If an exception occurred during the execution of the future
    *         then that exception will be returned in the Failure of the Future.
    */
-  def run(timeout: FiniteDuration = Constants.Timeout, charset: Charset = Constants.Charset,
-          bufferSize: Int = Constants.BufferSize, redirectStdErrToStdOut: Boolean = Constants.RedirectStdErrToStdOut)
+  def run(timeout: FiniteDuration = Configs.Timeout, charset: Charset = Configs.Charset,
+          bufferSize: Int = Configs.BufferSize, redirectStdErrToStdOut: Boolean = Configs.RedirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
     runnableParent.run(timeout, charset, bufferSize)(ex)
   }

@@ -2,7 +2,7 @@ package codes.simon.expect.dsl
 
 import java.nio.charset.Charset
 
-import codes.simon.expect.core.{Constants, Timeout, EndOfFile}
+import codes.simon.expect.core.{Configs, Timeout, EndOfFile}
 import codes.simon.expect.fluent.{Expect => FExpect}
 
 import scala.collection.mutable
@@ -55,8 +55,8 @@ class Expect[R: ClassTag](command: String, defaultValue: R) extends DSL[R] {
   def returning(result: Match => R) = addAction(_.returning(result))
   def exit() = addAction(_.exit())
 
-  def run(timeout: FiniteDuration = Constants.Timeout, charset: Charset = Constants.Charset,
-          bufferSize: Int = Constants.BufferSize, redirectStdErrToStdOut: Boolean = Constants.RedirectStdErrToStdOut)
+  def run(timeout: FiniteDuration = Configs.Timeout, charset: Charset = Configs.Charset,
+          bufferSize: Int = Configs.BufferSize, redirectStdErrToStdOut: Boolean = Configs.RedirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
     fluentExpect.run(timeout, charset, bufferSize)(ex)
   }

@@ -6,7 +6,7 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.concurrent.{TimeoutException, Future, ExecutionContext}
 
 class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
-  private def runWithMoreOutput(process: RichProcess, lastResult: (String, R, ExecutionAction))(implicit ex: ExecutionContext): Future[(String, R, ExecutionAction)] = {
+  private def runWithMoreOutput(process: RichProcess, intermediateResult: IntermediateResult[R])(implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
     case class NoMatchingPatternException(output: String) extends Exception
     Future {
       val readText = process.read()
@@ -14,34 +14,34 @@ class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
           |----------------------------------------
           |$readText
           |----------------------------------------""".stripMargin)
-      val newOutput = lastResult._1 + readText
+      val newOutput = intermediateResult.output + readText
       logger.info(s"NewOutput: $newOutput")
       whens.find(_.matches(newOutput)) match {
         case None => throw new NoMatchingPatternException(newOutput)
         case Some(when) =>
           logger.info(s"Matched with $when")
-          when.execute(process, lastResult.copy(_1 = newOutput))
+          when.execute(process, intermediateResult.copy(output = newOutput))
       }
     } recoverWith {
       case NoMatchingPatternException(output) if process.deadLineHasTimeLeft() =>
         logger.info(s"Did not match. Going to read more.")
-        runWithMoreOutput(process, lastResult.copy(_1 = output))
+        runWithMoreOutput(process, intermediateResult.copy(output = output))
       case e: TimeoutException =>
         logger.info(s"Read timed out after ${process.timeout}. Going to try and execute a TimeoutWhen.")
-        tryExecuteWhen(_.isInstanceOf[TimeoutWhen[R]], process, lastResult, e)
+        tryExecuteWhen(_.isInstanceOf[TimeoutWhen[R]], process, intermediateResult, e)
       case e: EOFException =>
         logger.info(s"Read returned EndOfFile. Going to try and execute a EndOFFileWhen.")
-        tryExecuteWhen(_.isInstanceOf[EndOfFileWhen[R]], process, lastResult, e)
+        tryExecuteWhen(_.isInstanceOf[EndOfFileWhen[R]], process, intermediateResult, e)
     }
   }
-  private def tryExecuteWhen(filter: When[R] => Boolean, process: RichProcess, lastResult: (String, R, ExecutionAction), e: Exception): Future[(String, R, ExecutionAction)] = {
+  private def tryExecuteWhen(filter: When[R] => Boolean, process: RichProcess, intermediateResult: IntermediateResult[R], e: Exception): Future[IntermediateResult[R]] = {
     whens.find(filter) match {
       case None =>
         //Now we really failed. So we must destroy the running process and the streams.
         process.destroy()
         Future.failed(e)
       case Some(when) =>
-        Future.successful(when.execute(process, lastResult))
+        Future.successful(when.execute(process, intermediateResult))
     }
   }
   /**
@@ -54,17 +54,17 @@ class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
    * @return the result of executing the When that matches either `lastOutput` or the text read from `process`.
    *         Or a TimeoutException.
    */
-  def run(process: RichProcess, lastResult: (String, R, ExecutionAction))(implicit ex: ExecutionContext): Future[(String, R, ExecutionAction)] = {
-    whens.find(_.matches(lastResult._1)) match {
+  def run(process: RichProcess, intermediateResult: IntermediateResult[R])(implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
+    whens.find(_.matches(intermediateResult.output)) match {
       case Some(when) =>
         //A When matches with lastOutput so we can execute it directly.
         logger.info("Matched with lastOutput")
-        Future.successful(when.execute(process, lastResult))
+        Future.successful(when.execute(process, intermediateResult))
       case None =>
         //We need to read more lines to find a matching When. Or lastOutput was None.
         logger.info("Need more output. Going to read...")
         process.resetDeadline()
-        runWithMoreOutput(process, lastResult)
+        runWithMoreOutput(process, intermediateResult)
     }
   }
 
