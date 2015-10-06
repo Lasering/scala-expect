@@ -48,13 +48,13 @@ trait When[R] {
        |\t${actions.mkString("\n")}
        |}""".stripMargin
 }
-case class StringWhen[R](pattern: String, actions: Seq[Action[StringWhen[R]]]) extends When[R] {
+case class StringWhen[R](pattern: String, actions: Action[StringWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = output.contains(pattern)
   def trimToMatchedText(output: String): String = {
     output.substring(output.indexOf(pattern) + pattern.length)
   }
 }
-case class RegexWhen[R](pattern: Regex, actions: Seq[Action[RegexWhen[R]]]) extends When[R] {
+case class RegexWhen[R](pattern: Regex, actions: Action[RegexWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = pattern.findFirstIn(output).isDefined
   def trimToMatchedText(output: String): String = output.substring(getMatch(output).end(0))
 
@@ -68,22 +68,22 @@ case class RegexWhen[R](pattern: Regex, actions: Seq[Action[RegexWhen[R]]]) exte
     //Would be nice not to duplicate most of this code here.
     val (output, lastValue, _) = lastResult
     val trimmedOutput = trimToMatchedText(output)
-    val `match` = getMatch(output)
+    val regexMatch = getMatch(output)
     var result = lastValue
     actions foreach {
       case Send(text) =>
         process.print(text)
       case SendWithRegex(text) =>
-        process.print(text(`match`))
+        process.print(text(regexMatch))
       case Returning(r) =>
         result = r()
       case ReturningWithRegex(r) =>
-        result = r(`match`)
+        result = r(regexMatch)
       case ReturningExpect(r) =>
         //Preemptive exit to guarantee anything after this action does not get executed
         return (trimmedOutput, result, ChangeToNewExpect(r()))
       case ReturningExpectWithRegex(r) =>
-        val expect = r(`match`)
+        val expect = r(regexMatch)
         //Preemptive exit to guarantee anything after this action does not get executed
         return (trimmedOutput, result, ChangeToNewExpect(expect))
       case Exit =>
@@ -93,11 +93,11 @@ case class RegexWhen[R](pattern: Regex, actions: Seq[Action[RegexWhen[R]]]) exte
     (trimmedOutput, result, Continue)
   }
 }
-case class EndOfFileWhen[R](actions: Seq[Action[EndOfFileWhen[R]]]) extends When[R] {
+case class EndOfFileWhen[R](actions: Action[EndOfFileWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = false
   def trimToMatchedText(output: String): String = output
 }
-case class TimeoutWhen[R](actions: Seq[Action[TimeoutWhen[R]]]) extends When[R] {
+case class TimeoutWhen[R](actions: Action[TimeoutWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = false
   def trimToMatchedText(output: String): String = output
 }

@@ -8,14 +8,13 @@ import scala.concurrent.duration.FiniteDuration
 
 /**
  * Augments [[java.lang.Process]] with methods to read and print from its stdout and stdin respectively.
- * @param process the underlying [[java.lang.Process]].
  * @param timeout how much time to wait when performing a read.
  * @param charset the charset used for encoding and decoding the Strings.
  * @param bufferSize how many bytes to read.
  */
-case class RichProcess(command: String, timeout: FiniteDuration, charset: Charset, bufferSize: Int) {
+case class RichProcess(command: String, timeout: FiniteDuration, charset: Charset, bufferSize: Int, redirectStdErrToStdOut: Boolean) {
   val processBuilder = new ProcessBuilder(command.split("""\s+"""):_*)
-  processBuilder.redirectErrorStream(true)
+  processBuilder.redirectErrorStream(redirectStdErrToStdOut)
   val process = processBuilder.start()
 
   val stdout = process.getInputStream

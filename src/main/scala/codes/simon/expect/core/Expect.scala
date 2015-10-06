@@ -6,13 +6,13 @@ import scala.concurrent._
 import scala.concurrent.duration.FiniteDuration
 
 
-class Expect[R](command: String, defaultValue: R, expects: Seq[ExpectBlock[R]]) extends LazyLogging {
-  require(command.isEmpty == false, "Expect must have a command to run.")
+class Expect[R](command: String, defaultValue: R)(expects: ExpectBlock[R]*) extends LazyLogging {
+  require(command.nonEmpty, "Expect must have a command to run.")
 
-  def run(timeout: FiniteDuration = Constants.TIMEOUT, charset: Charset = Constants.CHARSET,
-          bufferSize: Int = Constants.BUFFER_SIZE, redirectStdErrToStdOut: Boolean = Constants.REDIRECT_STDERR_TO_STDOUT)
+  def run(timeout: FiniteDuration = Constants.Timeout, charset: Charset = Constants.Charset,
+          bufferSize: Int = Constants.BufferSize, redirectStdErrToStdOut: Boolean = Constants.RedirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
-    val richProcess = RichProcess(command, timeout, charset, bufferSize)
+    val richProcess = RichProcess(command, timeout, charset, bufferSize, redirectStdErrToStdOut)
     //_1 = last read output
     //_2 = last value
     //_3 = last execution action
@@ -26,9 +26,11 @@ class Expect[R](command: String, defaultValue: R, expects: Seq[ExpectBlock[R]]) 
       //We have no more expect blocks. So we can finish the execution.
       //Make sure to destroy the process and close the streams.
       richProcess.destroy()
-      //Return just the result to the user.
-      Future.successful(lastResult._2)
+      //Return just the value to the user.
+      val value = lastResult._2
+      Future.successful(value)
     case headExpectBlock :: remainingExpectBlocks =>
+      logger.info("Starting a new ExpectBlock.run")
       headExpectBlock.run(richProcess, lastResult).flatMap { case result @ (_, _, action) =>
         action match {
           case Continue =>

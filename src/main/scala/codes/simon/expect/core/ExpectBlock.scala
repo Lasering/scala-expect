@@ -5,7 +5,7 @@ import java.io.EOFException
 import com.typesafe.scalalogging.LazyLogging
 import scala.concurrent.{TimeoutException, Future, ExecutionContext}
 
-class ExpectBlock[R](whens: Seq[When[R]]) extends LazyLogging {
+class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
   private def runWithMoreOutput(process: RichProcess, lastResult: (String, R, ExecutionAction))(implicit ex: ExecutionContext): Future[(String, R, ExecutionAction)] = {
     case class NoMatchingPatternException(output: String) extends Exception
     Future {
@@ -26,8 +26,12 @@ class ExpectBlock[R](whens: Seq[When[R]]) extends LazyLogging {
       case NoMatchingPatternException(output) if process.deadLineHasTimeLeft() =>
         logger.info(s"Did not match. Going to read more.")
         runWithMoreOutput(process, lastResult.copy(_1 = output))
-      case e: TimeoutException => tryExecuteWhen(_.isInstanceOf[TimeoutWhen[R]], process, lastResult, e)
-      case e: EOFException => tryExecuteWhen(_.isInstanceOf[EndOfFileWhen[R]], process, lastResult, e)
+      case e: TimeoutException =>
+        logger.info(s"Read timed out after ${process.timeout}. Going to try and execute a TimeoutWhen.")
+        tryExecuteWhen(_.isInstanceOf[TimeoutWhen[R]], process, lastResult, e)
+      case e: EOFException =>
+        logger.info(s"Read returned EndOfFile. Going to try and execute a EndOFFileWhen.")
+        tryExecuteWhen(_.isInstanceOf[EndOfFileWhen[R]], process, lastResult, e)
     }
   }
   private def tryExecuteWhen(filter: When[R] => Boolean, process: RichProcess, lastResult: (String, R, ExecutionAction), e: Exception): Future[(String, R, ExecutionAction)] = {
@@ -58,6 +62,7 @@ class ExpectBlock[R](whens: Seq[When[R]]) extends LazyLogging {
         Future.successful(when.execute(process, lastResult))
       case None =>
         //We need to read more lines to find a matching When. Or lastOutput was None.
+        logger.info("Need more output. Going to read...")
         process.resetDeadline()
         runWithMoreOutput(process, lastResult)
     }

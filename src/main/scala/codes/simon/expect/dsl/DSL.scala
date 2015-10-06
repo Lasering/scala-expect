@@ -1,10 +1,6 @@
 package codes.simon.expect.dsl
 
-import codes.simon.expect.core.{
-  Expect => CExpect,
-  Timeout,
-  EndOfFile
-}
+import codes.simon.expect.core.{Timeout, EndOfFile}
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 

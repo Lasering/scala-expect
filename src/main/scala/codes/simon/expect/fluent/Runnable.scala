@@ -21,8 +21,8 @@ trait Runnable[R] {
    *         `defaultValue` will be returned. If an exception occurred during the execution of the future
    *         then that exception will be returned in the Failure of the Future.
    */
-  def run(timeout: FiniteDuration = Constants.TIMEOUT, charset: Charset = Constants.CHARSET,
-          bufferSize: Int = Constants.BUFFER_SIZE, redirectStdErrToStdOut: Boolean = Constants.REDIRECT_STDERR_TO_STDOUT)
+  def run(timeout: FiniteDuration = Constants.Timeout, charset: Charset = Constants.Charset,
+          bufferSize: Int = Constants.BufferSize, redirectStdErrToStdOut: Boolean = Constants.RedirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
     runnableParent.run(timeout, charset, bufferSize)(ex)
   }

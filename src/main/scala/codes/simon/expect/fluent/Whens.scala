@@ -54,7 +54,7 @@ abstract class When[R](parent: ExpectBlock[R]) extends Runnable[R] with Expectab
    */
   def exit(): When[R] = newAction(Exit)
 
-  protected[fluent] def toCoreWhen: W
+  protected[fluent] def toCore: W
 
   override def toString: String =
     s"""when {
@@ -63,7 +63,7 @@ abstract class When[R](parent: ExpectBlock[R]) extends Runnable[R] with Expectab
 }
 case class StringWhen[R](parent: ExpectBlock[R], pattern: String) extends When[R](parent) {
   type W = CStringWhen[R]
-  protected[fluent] def toCoreWhen: W = new CStringWhen[R](pattern, actions)
+  protected[fluent] def toCore: W = new CStringWhen[R](pattern, actions:_*)
 }
 case class RegexWhen[R: ClassTag](parent: ExpectBlock[R], pattern: Regex) extends When[R](parent) {
   type W = CRegexWhen[R]
@@ -97,14 +97,14 @@ case class RegexWhen[R: ClassTag](parent: ExpectBlock[R], pattern: Regex) extend
     }
   }
 
-  protected[fluent] def toCoreWhen: W = new CRegexWhen[R](pattern, actions)
+  protected[fluent] def toCore: W = new CRegexWhen[R](pattern, actions:_*)
 }
 case class TimeoutWhen[R](parent: ExpectBlock[R]) extends When[R](parent) {
   type W = CTimeoutWhen[R]
-  protected[fluent] def toCoreWhen: W = new CTimeoutWhen[R](actions)
+  protected[fluent] def toCore: W = new CTimeoutWhen[R](actions:_*)
 }
 case class EndOfFileWhen[R](parent: ExpectBlock[R]) extends When[R](parent) {
   type W = CEndOfFileWhen[R]
 
-  protected[fluent] def toCoreWhen: CEndOfFileWhen[R] = new CEndOfFileWhen[R](actions)
+  protected[fluent] def toCore: CEndOfFileWhen[R] = new CEndOfFileWhen[R](actions:_*)
 }

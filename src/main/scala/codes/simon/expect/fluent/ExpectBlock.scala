@@ -24,7 +24,7 @@ class ExpectBlock[R: ClassTag](val parent: Expect[R]) extends Runnable[R] with E
   override def when(pattern: EndOfFile.type): EndOfFileWhen[R] = newWhen(new EndOfFileWhen[R](this))
   override def when(pattern: Timeout.type): TimeoutWhen[R] = newWhen(new TimeoutWhen[R](this))
 
-  protected[fluent] def toCoreExpectBlock = new core.ExpectBlock[R](whens.map(_.toCoreWhen))
+  protected[fluent] def toCore = new core.ExpectBlock[R](whens.map(_.toCore):_*)
 
   override def toString: String = {
     s"""expect {

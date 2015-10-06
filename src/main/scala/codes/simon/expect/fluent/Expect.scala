@@ -23,10 +23,10 @@ class Expect[R: ClassTag](val command: String, val defaultValue: R) extends Runn
   //The value we set here is irrelevant since we override the implementation of 'run'.
   //We decided to set to 'this' to make it obvious that this is the root of all Runnables.
   val runnableParent: Runnable[R] = this
-  override def run(timeout: FiniteDuration = Constants.TIMEOUT, charset: Charset = Constants.CHARSET,
-                   bufferSize: Int = Constants.BUFFER_SIZE, redirectStdErrToStdOut: Boolean = Constants.REDIRECT_STDERR_TO_STDOUT)
+  override def run(timeout: FiniteDuration = Constants.Timeout, charset: Charset = Constants.Charset,
+                   bufferSize: Int = Constants.BufferSize, redirectStdErrToStdOut: Boolean = Constants.RedirectStdErrToStdOut)
                   (implicit ex: ExecutionContext): Future[R] = {
-    new core.Expect[R](command, defaultValue, expects.map(_.toCoreExpectBlock)).run(timeout, charset, bufferSize)(ex)
+    new core.Expect[R](command, defaultValue)(expects.map(_.toCore):_*).run(timeout, charset, bufferSize)(ex)
   }
 
   override def toString =
