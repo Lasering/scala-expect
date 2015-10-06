@@ -1,7 +1,12 @@
 language: scala
 
-before_install:
-  - sudo apt-get install scala
+addons:
+  apt:
+    packages:
+    - scala
+    
+cache: apt
+
 scala:
   - 2.11.7
 jdk:
