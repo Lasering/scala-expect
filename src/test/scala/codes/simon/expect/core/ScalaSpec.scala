@@ -16,12 +16,12 @@ class ScalaSpec extends FlatSpec with Matchers with ScalaFutures {
   "An Expect " should "returned the specified value" in {
     val e = new Expect("scala", "")(
       new ExpectBlock (
-        new RegexWhen("""Scala version (\d+\.\d+\.\d+)""".r) (
-          ReturningWithRegex(_.group(1))
+        new StringWhen("Scala version") (
+          Returning(() => "ReturnedValue")
         )
       )
     )
-    e.run().futureValue(defaultPatience) should be (util.Properties.versionNumberString)
+    e.run().futureValue(defaultPatience) shouldBe "ReturnedValue"
   }
 
   it should "be able to interact with the spawned program" in {
@@ -49,24 +49,24 @@ class ScalaSpec extends FlatSpec with Matchers with ScalaFutures {
         )
       )
     )
-    e.run().futureValue(defaultPatience) should be ("5")
+    e.run().futureValue(defaultPatience) shouldBe "5"
   }
 
   it should "only invoke the returning function when that returning action is executed" in {
     var test = 5
     val e = new Expect("scala", "")(
       new ExpectBlock (
-        new RegexWhen("""Scala version (\d+\.\d+\.\d+)""".r) (
-          ReturningWithRegex{ m =>
+        new StringWhen("Scala version") (
+          Returning{ () =>
             test = 7
-            m.group(1)
+            "ReturnedValue"
           }
         )
       )
     )
     test shouldBe 5
     whenReady(e.run()) { s =>
-      s should be (util.Properties.versionNumberString)
+      s shouldBe "ReturnedValue"
       test shouldBe 7
     }(defaultPatience)
   }
