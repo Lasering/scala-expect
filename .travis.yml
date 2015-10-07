@@ -5,7 +5,10 @@ addons:
     packages:
     - scala
     
-cache: apt
+cache:
+  apt
+  directories:
+    - $HOME/.ivy2
 
 scala:
   - 2.11.7
