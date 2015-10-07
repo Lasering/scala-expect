@@ -6,7 +6,7 @@ addons:
     - scala
     
 cache:
-  apt
+  apt: true
   directories:
     - $HOME/.ivy2
 
@@ -14,3 +14,4 @@ scala:
   - 2.11.7
 jdk:
   - oraclejdk8
+  
