@@ -95,7 +95,10 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
         )
       )
     )
-    e.run().futureValue(defaultPatience) shouldBe 3
+    e.run().futureValue(PatienceConfig(
+      timeout = Span(Configs.timeout.toSeconds + 2, Seconds),
+      interval = Span(Configs.timeout.toSeconds + 2, Seconds)
+    )) shouldBe 3
   }
 
 

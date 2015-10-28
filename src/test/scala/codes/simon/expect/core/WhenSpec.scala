@@ -72,8 +72,8 @@ class WhenSpec extends WordSpec with Matchers with ScalaFutures {
       "run the actions in the first matching when" in {
         val e = new Expect("scala", "")(
           new ExpectBlock (
-            new RegexWhen("""Scala version (\d+\.\d+\.\d+)""".r) (
-              ReturningWithRegex(_.group(1))
+            new RegexWhen("""Scala version""".r) (
+              ReturningWithRegex(_.group(0))
             ),
             new StringWhen("Scala version")(
               Returning(() => "Ohh no")
