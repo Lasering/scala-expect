@@ -5,8 +5,11 @@ import java.io.EOFException
 import com.typesafe.scalalogging.LazyLogging
 import scala.concurrent.{TimeoutException, Future, ExecutionContext}
 
-class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
-  private def runWithMoreOutput(process: RichProcess, intermediateResult: IntermediateResult[R])(implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
+class ExpectBlock[R](whens: When[R]*) extends LazyLogging with AddBlock {
+  require(whens.nonEmpty, "ExpectBlock must have at least a When.")
+
+  private def runWithMoreOutput(process: RichProcess, intermediateResult: IntermediateResult[R])
+                               (implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
     case class NoMatchingPatternException(output: String) extends Exception
     Future {
       val readText = process.read()
@@ -34,7 +37,8 @@ class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
         tryExecuteWhen(_.isInstanceOf[EndOfFileWhen[R]], process, intermediateResult, e)
     }
   }
-  private def tryExecuteWhen(filter: When[R] => Boolean, process: RichProcess, intermediateResult: IntermediateResult[R], e: Exception): Future[IntermediateResult[R]] = {
+  private def tryExecuteWhen(filter: When[R] => Boolean, process: RichProcess,
+                             intermediateResult: IntermediateResult[R], e: Exception): Future[IntermediateResult[R]] = {
     whens.find(filter) match {
       case None =>
         //Now we really failed. So we must destroy the running process and the streams.
@@ -54,7 +58,8 @@ class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
    * @return the result of executing the When that matches either `lastOutput` or the text read from `process`.
    *         Or a TimeoutException.
    */
-  def run(process: RichProcess, intermediateResult: IntermediateResult[R])(implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
+  def run(process: RichProcess, intermediateResult: IntermediateResult[R])
+         (implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
     whens.find(_.matches(intermediateResult.output)) match {
       case Some(when) =>
         //A When matches with lastOutput so we can execute it directly.

@@ -5,8 +5,10 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.concurrent._
 import scala.concurrent.duration.FiniteDuration
 
-
-class Expect[R](command: String, defaultValue: R)(expects: ExpectBlock[R]*) extends LazyLogging {
+class Expect[R](command: Seq[String], val defaultValue: R)(expects: ExpectBlock[R]*) extends LazyLogging with AddBlock {
+  def this(command: String, defaultValue: R = Unit)(expects: ExpectBlock[R]*) = {
+    this(command.split("""\s+""").filter(_.nonEmpty).toSeq, defaultValue)(expects:_*)
+  }
   require(command.nonEmpty, "Expect must have a command to run.")
 
   def run(timeout: FiniteDuration = Configs.timeout, charset: Charset = Configs.charset,
@@ -16,7 +18,8 @@ class Expect[R](command: String, defaultValue: R)(expects: ExpectBlock[R]*) exte
     innerRun(richProcess, IntermediateResult("", defaultValue, Continue), expects.toList)
   }
 
-  private def innerRun(richProcess: RichProcess, intermediateResult: IntermediateResult[R], expectsStack: List[ExpectBlock[R]])
+  private def innerRun(richProcess: RichProcess, intermediateResult: IntermediateResult[R],
+                       expectsStack: List[ExpectBlock[R]])
                       (implicit ec: ExecutionContext): Future[R] = expectsStack match {
     case headExpectBlock :: remainingExpectBlocks =>
       logger.info("Starting a new ExpectBlock.run")

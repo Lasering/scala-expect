@@ -1,10 +1,11 @@
 package codes.simon.expect.core
 
-import java.io.{IOException, EOFException}
+import java.io.EOFException
 import java.nio.charset.Charset
 
 import scala.concurrent._
 import scala.concurrent.duration.FiniteDuration
+import scala.util.Try
 
 /**
  * Augments [[java.lang.Process]] with methods to read and print from its stdout and stdin respectively.
@@ -12,8 +13,9 @@ import scala.concurrent.duration.FiniteDuration
  * @param charset the charset used for encoding and decoding the Strings.
  * @param bufferSize how many bytes to read.
  */
-case class RichProcess(command: String, timeout: FiniteDuration, charset: Charset, bufferSize: Int, redirectStdErrToStdOut: Boolean) {
-  val processBuilder = new ProcessBuilder(command.split("""\s+"""):_*)
+case class RichProcess(command: Seq[String], timeout: FiniteDuration, charset: Charset, bufferSize: Int,
+                       redirectStdErrToStdOut: Boolean) {
+  val processBuilder = new ProcessBuilder(command:_*)
   processBuilder.redirectErrorStream(redirectStdErrToStdOut)
   val process = processBuilder.start()
 
@@ -68,11 +70,9 @@ case class RichProcess(command: String, timeout: FiniteDuration, charset: Charse
    */
   def destroy(): Unit = if (process.isAlive) {
     process.destroy()
-    try {
+    Try {
       stdin.close()
       stdout.close()
-    } catch {
-      case io: IOException =>
     }
   }
 }

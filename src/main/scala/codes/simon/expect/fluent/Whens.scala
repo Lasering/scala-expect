@@ -13,7 +13,7 @@ import scala.reflect.ClassTag
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
-abstract class When[R](parent: ExpectBlock[R]) extends Runnable[R] with Expectable[R] with Whenable[R] {
+abstract class When[R](parent: ExpectBlock[R]) extends Runnable[R] with Expectable[R] with Whenable[R] with AddBlock {
   type W <: CWhen[R]
 
   val runnableParent: Runnable[R] = parent
@@ -37,7 +37,7 @@ abstract class When[R](parent: ExpectBlock[R]) extends Runnable[R] with Expectab
    * Send will only occur when Expect is run.
    * @return this When.
    */
-  def sendln(text: String): When[R] = newAction(Send(text + System.lineSeparator()))
+  def sendln(text: String): When[R] = newAction(Sendln(text))
   /**
    * Returns `result` when this Expect is run.
    * If this method is invoked more than once only the last `result` will be returned.
@@ -54,7 +54,7 @@ abstract class When[R](parent: ExpectBlock[R]) extends Runnable[R] with Expectab
    */
   def exit(): When[R] = newAction(Exit)
 
-  protected[fluent] def toCore: W
+  def toCore: W
 
   override def toString: String =
     s"""when {
@@ -63,7 +63,7 @@ abstract class When[R](parent: ExpectBlock[R]) extends Runnable[R] with Expectab
 }
 case class StringWhen[R](parent: ExpectBlock[R], pattern: String) extends When[R](parent) {
   type W = CStringWhen[R]
-  protected[fluent] def toCore: W = new CStringWhen[R](pattern)(actions:_*)
+  def toCore: W = new CStringWhen[R](pattern)(actions:_*)
 }
 case class RegexWhen[R: ClassTag](parent: ExpectBlock[R], pattern: Regex) extends When[R](parent) {
   type W = CRegexWhen[R]
@@ -79,7 +79,7 @@ case class RegexWhen[R: ClassTag](parent: ExpectBlock[R], pattern: Regex) extend
    * Send will only occur when Expect is run.
    * @return this When.
    */
-  def sendln(text: Match => String): When[R] = newAction(SendWithRegex(text.andThen(_ + System.lineSeparator())))
+  def sendln(text: Match => String): When[R] = newAction(SendlnWithRegex(text))
   /**
    * Returns the result of invoking `result` with the `Match` of the regex used, when this Expect is run.
    * If this method is invoked more than once only the last `result` will be returned.
@@ -97,14 +97,14 @@ case class RegexWhen[R: ClassTag](parent: ExpectBlock[R], pattern: Regex) extend
     }
   }
 
-  protected[fluent] def toCore: W = new CRegexWhen[R](pattern)(actions:_*)
+  def toCore: W = new CRegexWhen[R](pattern)(actions:_*)
 }
 case class TimeoutWhen[R](parent: ExpectBlock[R]) extends When[R](parent) {
   type W = CTimeoutWhen[R]
-  protected[fluent] def toCore: W = new CTimeoutWhen[R](actions:_*)
+  def toCore: W = new CTimeoutWhen[R](actions:_*)
 }
 case class EndOfFileWhen[R](parent: ExpectBlock[R]) extends When[R](parent) {
   type W = CEndOfFileWhen[R]
 
-  protected[fluent] def toCore: CEndOfFileWhen[R] = new CEndOfFileWhen[R](actions:_*)
+  def toCore: CEndOfFileWhen[R] = new CEndOfFileWhen[R](actions:_*)
 }

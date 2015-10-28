@@ -12,7 +12,10 @@ import scala.reflect.ClassTag
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
-class Expect[R: ClassTag](command: String, defaultValue: R) extends DSL[R] {
+class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R) extends DSL[R] {
+  def this(command: String, defaultValue: R = Unit) = {
+    this(command.split("""\s+""").filter(_.nonEmpty).toSeq, defaultValue)
+  }
   val fluentExpect = new FExpect(command, defaultValue)
 
   private val stack = new mutable.Stack[AbstractDefinition[R]]
@@ -35,30 +38,36 @@ class Expect[R: ClassTag](command: String, defaultValue: R) extends DSL[R] {
   def expect(pattern: EndOfFile.type): DSLWithBlock = expect.apply(when(pattern))
 
   private def addWhen(block: AbstractDefinition[R] => DSLWithBlock): DSLWithBlock = {
-    require(stack.size == 1 && stack.top.isInstanceOf[ExpectDefinition[R]], "When can only be added inside an expect.")
+    require(stack.size == 1 && stack.top.isInstanceOf[ExpectDefinition[R]], "When can only be added inside an Expect.")
     block(stack.top)
   }
-  def when(pattern: String) = addWhen(_.when(pattern))
-  def when(pattern: Regex) = addWhen(_.when(pattern))
-  def when(pattern: EndOfFile.type) = addWhen(_.when(pattern))
-  def when(pattern: Timeout.type) = addWhen(_.when(pattern))
+  def when(pattern: String): DSLWithBlock = addWhen(_.when(pattern))
+  def when(pattern: Regex): DSLWithBlock = addWhen(_.when(pattern))
+  def when(pattern: EndOfFile.type): DSLWithBlock = addWhen(_.when(pattern))
+  def when(pattern: Timeout.type): DSLWithBlock = addWhen(_.when(pattern))
+
+  def withBlock(block: DSL[R] => Unit): DSL[R] = {
+    block(stack.top)
+    this
+  }
 
   private def addAction(block: AbstractDefinition[R] => DSL[R]): DSL[R] = {
-    require(stack.size == 2 && stack.top.isInstanceOf[WhenDefinition[R, _]], "An action can only be added inside a when.")
+    require(stack.size == 2 && stack.top.isInstanceOf[WhenDefinition[R, _]],
+            "An Action can only be added inside a When.")
     block(stack.top)
   }
-  def send(text: String) = addAction(_.send(text))
-  def send(text: Match => String) = addAction(_.send(text))
-  def sendln(text: String) = addAction(_.sendln(text))
-  def sendln(text: Match => String) = addAction(_.sendln(text))
-  def returning(result: => R) = addAction(_.returning(result))
-  def returning(result: Match => R) = addAction(_.returning(result))
-  def exit() = addAction(_.exit())
+  def send(text: String): DSL[R] = addAction(_.send(text))
+  def send(text: Match => String): DSL[R] = addAction(_.send(text))
+  def sendln(text: String): DSL[R] = addAction(_.sendln(text))
+  def sendln(text: Match => String): DSL[R] = addAction(_.sendln(text))
+  def returning(result: => R): DSL[R] = addAction(_.returning(result))
+  def returning(result: Match => R): DSL[R] = addAction(_.returning(result))
+  def exit(): DSL[R] = addAction(_.exit())
 
   def run(timeout: FiniteDuration = Configs.timeout, charset: Charset = Configs.charset,
           bufferSize: Int = Configs.bufferSize, redirectStdErrToStdOut: Boolean = Configs.redirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
-    fluentExpect.run(timeout, charset, bufferSize)(ex)
+    fluentExpect.run(timeout, charset, bufferSize, redirectStdErrToStdOut)(ex)
   }
 
   override def toString: String = fluentExpect.toString

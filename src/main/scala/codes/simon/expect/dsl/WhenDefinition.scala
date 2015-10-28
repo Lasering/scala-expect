@@ -18,14 +18,14 @@ class WhenDefinition[R, W <: When[R]](builder: Expect[R], when: W) extends Abstr
       throw new IllegalArgumentException("$action can only be invoked for RegexWhen")
   }
 
-  override def send(text: String) = addAction(_.send(text))
-  override def send(text: Match => String) = addRegexAction(_.send(text))
+  override def send(text: String): DSL[R] = addAction(_.send(text))
+  override def send(text: Match => String): DSL[R] = addRegexAction(_.send(text))
 
-  override def sendln(text: String) = addAction(_.sendln(text))
-  override def sendln(text: Match => String) = addRegexAction(_.sendln(text))
+  override def sendln(text: String): DSL[R] = addAction(_.sendln(text))
+  override def sendln(text: Match => String): DSL[R] = addRegexAction(_.sendln(text))
 
-  override def returning(result: => R) = addAction(_.returning(result))
-  override def returning(result: Match => R) = addRegexAction(_.returning(result))
+  override def returning(result: => R): DSL[R] = addAction(_.returning(result))
+  override def returning(result: Match => R): DSL[R] = addRegexAction(_.returning(result))
 
-  override def exit() = addAction(_.exit())
+  override def exit(): DSL[R] = addAction(_.exit())
 }

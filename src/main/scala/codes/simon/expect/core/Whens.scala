@@ -6,7 +6,7 @@ import scala.util.matching.Regex.Match
 object EndOfFile
 object Timeout
 
-trait When[R] {
+trait When[R] extends AddBlock {
   def actions: Seq[Action[this.type]]
 
   /**

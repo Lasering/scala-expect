@@ -6,7 +6,7 @@ import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
 abstract class AbstractDefinition[R](builder: Expect[R]) extends DSL[R] with Block[R] {
-  def apply(block: => DSL[R]) = {
+  def apply(block: => DSL[R]): this.type = {
     builder.build(this, block)
     this
   }
@@ -22,6 +22,8 @@ abstract class AbstractDefinition[R](builder: Expect[R]) extends DSL[R] with Blo
   def when(pattern: Regex): DSL[R] with Block[R] = builder.when(pattern)
   def when(pattern: EndOfFile.type): DSL[R] with Block[R] = builder.when(pattern)
   def when(pattern: Timeout.type): DSL[R] with Block[R] = builder.when(pattern)
+
+  def withBlock(block: DSL[R] => Unit): DSL[R] = builder.withBlock(block)
 
   def send(text: String): DSL[R] = builder.send(text)
   def send(text: Match => String): DSL[R] = builder.send(text)

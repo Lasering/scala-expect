@@ -24,6 +24,6 @@ trait Runnable[R] {
   def run(timeout: FiniteDuration = Configs.timeout, charset: Charset = Configs.charset,
           bufferSize: Int = Configs.bufferSize, redirectStdErrToStdOut: Boolean = Configs.redirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
-    runnableParent.run(timeout, charset, bufferSize)(ex)
+    runnableParent.run(timeout, charset, bufferSize, redirectStdErrToStdOut)(ex)
   }
 }

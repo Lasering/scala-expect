@@ -19,6 +19,8 @@ trait DSL[R] {
   def when(pattern: EndOfFile.type): DSLWithBlock
   def when(pattern: Timeout.type): DSLWithBlock
 
+  def withBlock(block: DSL[R] => Unit): DSL[R]
+
   def send(text: String): DSL[R]
   def send(text: Match => String): DSL[R]
   def sendln(text: String): DSL[R]

@@ -4,7 +4,8 @@ import scala.util.matching.Regex.Match
 
 /**
  * @define regexWhen This action can only be added to a RegexWhen.
- * @define returningAction When this action is executed the result of evaluating `result` is returned by the current run of Expect.
+ * @define returningAction When this action is executed the result of evaluating `result` is returned by
+ *         the current run of Expect.
  * @define moreThanOne If more than one returning action is added to a When only the last `result` will be returned.
  *                     Note however that every `ReturningAction` will be executed.
  * @tparam W the type of When to which this action can be applied.
@@ -16,6 +17,10 @@ trait Action[-W <: When[_]]
  * @param text the text to send.
  */
 case class Send(text: String) extends Action[When[_]]
+object Sendln {
+  def apply(text: String) = new Send(text + System.lineSeparator())
+}
+
 /**
  * When this action is executed the result of evaluating `text` will be sent to the stdIn of the underlying process.
  * This allows to send data to the process based on the regex Match.
@@ -23,9 +28,12 @@ case class Send(text: String) extends Action[When[_]]
  * @param text the text to send.
  */
 case class SendWithRegex(text: Match => String) extends Action[RegexWhen[_]]
+object SendlnWithRegex {
+  def apply(text: Match => String) = new SendWithRegex(text.andThen(_ + System.lineSeparator()))
+}
 
 /**
- * returningAction
+ * $returningAction
  * $moreThanOne
  **/
 case class Returning[R](result: () => R) extends Action[When[R]]
