@@ -83,7 +83,7 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
   }
 
   it should "be able to interact with the spawned program" in {
-    val e = new Expect("scala", 5)(
+    val e = new Expect("scala", defaultValue = 5)(
       new ExpectBlock(
         new StringWhen("scala>")(
           Send("1 + 2\n")

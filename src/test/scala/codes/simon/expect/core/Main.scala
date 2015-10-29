@@ -5,7 +5,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 
 object Main {
-  def main(args: Array[String]) = {
+  def main(args: Array[String]): Unit = {
 
     val e = new Expect("scala", "")(
       new ExpectBlock (

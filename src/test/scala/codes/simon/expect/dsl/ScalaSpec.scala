@@ -1,7 +1,7 @@
 package codes.simon.expect.dsl
 
 object ScalaSpec extends App {
-  val e = new Expect("scala", 5) {
+  val e = new Expect("scala", defaultValue = 5) {
     expect("scala>") {
       sendln("1 + 2")
       returning(_.group(1).toInt)

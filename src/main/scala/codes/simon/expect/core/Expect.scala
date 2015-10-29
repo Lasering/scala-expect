@@ -42,7 +42,7 @@ class Expect[R](command: Seq[String], val defaultValue: R)(expects: ExpectBlock[
       Future.successful(intermediateResult.value)
   }
 
-  override def toString =
+  override def toString: String =
     s"""Expect:
        |\tCommand: $command
        |\tDefaultValue: $defaultValue

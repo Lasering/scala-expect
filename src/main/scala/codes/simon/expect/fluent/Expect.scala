@@ -25,7 +25,7 @@ class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R) extends
     block
   }
 
-  def toCore = new core.Expect[R](command, defaultValue)(expects.map(_.toCore):_*)
+  def toCore: core.Expect[R] = new core.Expect[R](command, defaultValue)(expects.map(_.toCore):_*)
 
   //The value we set here is irrelevant since we override the implementation of 'run'.
   //We decided to set runnableParent to 'this' to make it obvious that this is the root of all Runnables.

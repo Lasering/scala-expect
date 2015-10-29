@@ -18,7 +18,7 @@ trait Action[-W <: When[_]]
  */
 case class Send(text: String) extends Action[When[_]]
 object Sendln {
-  def apply(text: String) = new Send(text + System.lineSeparator())
+  def apply(text: String): Send = new Send(text + System.lineSeparator())
 }
 
 /**
@@ -29,7 +29,7 @@ object Sendln {
  */
 case class SendWithRegex(text: Match => String) extends Action[RegexWhen[_]]
 object SendlnWithRegex {
-  def apply(text: Match => String) = new SendWithRegex(text.andThen(_ + System.lineSeparator()))
+  def apply(text: Match => String): SendWithRegex = new SendWithRegex(text.andThen(_ + System.lineSeparator()))
 }
 
 /**
