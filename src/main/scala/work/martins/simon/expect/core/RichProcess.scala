@@ -8,10 +8,12 @@ import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
 
 /**
- * Augments [[java.lang.Process]] with methods to read and print from its stdout and stdin respectively.
+ * Launches a `java.lang.Process` with methods to read and print from its stdout and stdin respectively.
+ * @param command the command to launch and its arguments.
  * @param timeout how much time to wait when performing a read.
  * @param charset the charset used for encoding and decoding the Strings.
  * @param bufferSize how many bytes to read.
+ * @param redirectStdErrToStdOut whether to redirect stdErr to stdOut.
  */
 case class RichProcess(command: Seq[String], timeout: FiniteDuration, charset: Charset, bufferSize: Int,
                        redirectStdErrToStdOut: Boolean) {
