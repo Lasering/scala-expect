@@ -20,26 +20,21 @@ libraryDependencies ++= Seq(
 )
 
 scalacOptions ++= Seq(
-  "-deprecation",
+  "-deprecation", //Emit warning and location for usages of deprecated APIs.
   "-encoding", "UTF-8",
-  "-feature",
-  "-language:implicitConversions",
-  "-unchecked",
-  "-Xfatal-warnings",
-  "-Xlint",
-  "-Yinline-warnings",
-  "-Yno-adapted-args",
-  "-Ywarn-dead-code",
-  //"-Ywarn-numeric-widen",     // issue in 2.10
-  //"-Ywarn-value-discard",
-  //"-Ywarn-unused-import",     // 2.11 only
-  "-Xfuture"
+  "-feature", //Emit warning and location for usages of features that should be imported explicitly.
+  "-language:implicitConversions", //Explicitly enables the implicit conversions feature
+  "-unchecked", //Enable detailed unchecked (erasure) warnings
+  "-Xfatal-warnings", //Fail the compilation if there are any warnings.
+  "-Xlint", //Enable recommended additional warnings.
+  "-Yinline-warnings", //Emit inlining warnings.
+  "-Yno-adapted-args", //Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
+  "-Ywarn-dead-code" //Warn when dead code is identified.
 )
 
-homepage := Some(url("https://github.com/Lasering/scala-expect"))
 licenses += "MIT" -> url("http://opensource.org/licenses/MIT")
-scmInfo := Some(ScmInfo(url("https://github.com/Lasering/scala-expect"), "git@github.com:Lasering/scala-expect.git"))
-licenses := Seq("MIT License" -> url("https://opensource.org/licenses/MIT"))
+homepage := Some(url(s"https://github.com/Lasering/${name.value}"))
+scmInfo := Some(ScmInfo(homepage.value.get, s"git@github.com:Lasering/${name.value}.git"))
 
 
 publishMavenStyle := true
