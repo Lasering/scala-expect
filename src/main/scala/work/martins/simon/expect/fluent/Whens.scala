@@ -7,8 +7,10 @@ import scala.util.matching.Regex.Match
 import work.martins.simon.expect.core
 import work.martins.simon.expect.core._
 
-abstract class When[R](parent: ExpectBlock[R]) extends Runnable[R] with Expectable[R] with Whenable[R] with AddBlock {
+trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] with AddBlock {
   type W <: core.When[R]
+
+  def parent: ExpectBlock[R]
 
   protected val runnableParent: Runnable[R] = parent
   protected val expectableParent: Expectable[R] = parent
@@ -55,11 +57,11 @@ abstract class When[R](parent: ExpectBlock[R]) extends Runnable[R] with Expectab
        |\t\t\t${actions.mkString("\n\t\t\t")}
        |\t\t}""".stripMargin
 }
-case class StringWhen[R](parent: ExpectBlock[R], pattern: String) extends When[R](parent) {
+case class StringWhen[R](parent: ExpectBlock[R], pattern: String) extends When[R]{
   type W = core.StringWhen[R]
   def toCore: W = new core.StringWhen[R](pattern)(actions:_*)
 }
-case class RegexWhen[R: ClassTag](parent: ExpectBlock[R], pattern: Regex) extends When[R](parent) {
+case class RegexWhen[R: ClassTag](parent: ExpectBlock[R], pattern: Regex) extends When[R] {
   type W = core.RegexWhen[R]
   /**
    * Send the result of invoking `text` with the `Match` of the regex used, to the stdIn of the underlying process.
@@ -93,11 +95,11 @@ case class RegexWhen[R: ClassTag](parent: ExpectBlock[R], pattern: Regex) extend
 
   def toCore: W = new core.RegexWhen[R](pattern)(actions:_*)
 }
-case class TimeoutWhen[R](parent: ExpectBlock[R]) extends When[R](parent) {
+case class TimeoutWhen[R](parent: ExpectBlock[R]) extends When[R] {
   type W = core.TimeoutWhen[R]
   def toCore: W = new core.TimeoutWhen[R](actions:_*)
 }
-case class EndOfFileWhen[R](parent: ExpectBlock[R]) extends When[R](parent) {
+case class EndOfFileWhen[R](parent: ExpectBlock[R]) extends When[R] {
   type W = core.EndOfFileWhen[R]
 
   def toCore: W = new core.EndOfFileWhen[R](actions:_*)
