@@ -18,7 +18,7 @@ class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R) extends
 
   //The value we set here is irrelevant since we override the implementation of 'expect'.
   //We decided to set expectableParent to 'this' to make it obvious that this is the root of all Expectables.
-  val expectableParent: Expectable[R] = this
+  protected val expectableParent: Expectable[R] = this
   protected[fluent] var expects = Seq.empty[ExpectBlock[R]]
   override def expect: ExpectBlock[R] = {
     val block = new ExpectBlock(this)
@@ -30,7 +30,7 @@ class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R) extends
 
   //The value we set here is irrelevant since we override the implementation of 'run'.
   //We decided to set runnableParent to 'this' to make it obvious that this is the root of all Runnables.
-  val runnableParent: Runnable[R] = this
+  protected val runnableParent: Runnable[R] = this
   override def run(timeout: FiniteDuration = Configs.timeout, charset: Charset = Configs.charset,
                    bufferSize: Int = Configs.bufferSize,
                    redirectStdErrToStdOut: Boolean = Configs.redirectStdErrToStdOut)

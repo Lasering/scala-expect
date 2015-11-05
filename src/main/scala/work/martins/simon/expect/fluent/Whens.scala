@@ -10,9 +10,9 @@ import work.martins.simon.expect.core._
 abstract class When[R](parent: ExpectBlock[R]) extends Runnable[R] with Expectable[R] with Whenable[R] with AddBlock {
   type W <: core.When[R]
 
-  val runnableParent: Runnable[R] = parent
-  val expectableParent: Expectable[R] = parent
-  val whenableParent: Whenable[R] = parent
+  protected val runnableParent: Runnable[R] = parent
+  protected val expectableParent: Expectable[R] = parent
+  protected val whenableParent: Whenable[R] = parent
 
   protected var actions = Seq.empty[Action[W]]
   protected def newAction(action: Action[W]): When[R] = {

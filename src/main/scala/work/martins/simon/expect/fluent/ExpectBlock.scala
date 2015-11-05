@@ -8,12 +8,12 @@ import work.martins.simon.expect.core.{AddBlock, Timeout, EndOfFile}
 
 class ExpectBlock[R: ClassTag](val parent: Expect[R]) extends Runnable[R]
   with Expectable[R] with Whenable[R] with AddBlock {
-  val runnableParent: Runnable[R] = parent
-  val expectableParent: Expectable[R] = parent
+  protected val runnableParent: Runnable[R] = parent
+  protected val expectableParent: Expectable[R] = parent
 
   //The value we set here is irrelevant since we override the implementation of all the 'when' methods.
-  //We decided to set to 'this' to make it obvious that this is the root of all Whenables.
-  val whenableParent: Whenable[R] = this
+  //We decided to set whenableParent to 'this' to make it obvious that this is the root of all Whenables.
+  protected val whenableParent: Whenable[R] = this
   private var whens = Seq.empty[When[R]]
   private def newWhen[W <: When[R]](when: W): W = {
     whens :+= when

@@ -5,7 +5,7 @@ import scala.util.matching.Regex
 import work.martins.simon.expect.core.{Timeout, EndOfFile}
 
 trait Whenable[R] {
-  val whenableParent: Whenable[R]
+  protected val whenableParent: Whenable[R]
 
   /**
    * Adds a new `StringWhen` that matches whenever `pattern` is contained

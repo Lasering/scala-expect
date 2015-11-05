@@ -8,7 +8,7 @@ import scala.concurrent.duration.FiniteDuration
 import work.martins.simon.expect.core.Configs
 
 trait Runnable[R] {
-  val runnableParent: Runnable[R]
+  protected val runnableParent: Runnable[R]
 
   /**
    * Runs this entire Expect tree.

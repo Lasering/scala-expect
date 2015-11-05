@@ -5,7 +5,7 @@ import scala.util.matching.Regex
 import work.martins.simon.expect.core.{EndOfFile, Timeout}
 
 trait Expectable[R] {
-  val expectableParent: Expectable[R]
+  protected val expectableParent: Expectable[R]
 
   /**
    * Adds an empty new `ExpectBlock`.
