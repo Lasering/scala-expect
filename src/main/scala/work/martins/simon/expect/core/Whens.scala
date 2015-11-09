@@ -53,7 +53,7 @@ case class StringWhen[R](pattern: String)(val actions: Action[StringWhen[R]]*) e
     output.substring(output.indexOf(pattern) + pattern.length)
   }
 
-  override def toString: String = toString(pattern)
+  override def toString: String = toString(s""""$pattern"""")
 }
 case class RegexWhen[R](pattern: Regex)(val actions: Action[RegexWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = pattern.findFirstIn(output).isDefined
