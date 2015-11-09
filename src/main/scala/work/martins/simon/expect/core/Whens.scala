@@ -42,8 +42,8 @@ trait When[R] extends AddBlock {
     result
   }
 
-  override def toString: String =
-    s"""when {
+  def toString(pattern: String): String =
+    s"""when $pattern {
        |\t${actions.mkString("\n")}
        |}""".stripMargin
 }
@@ -52,6 +52,8 @@ case class StringWhen[R](pattern: String)(val actions: Action[StringWhen[R]]*) e
   def trimToMatchedText(output: String): String = {
     output.substring(output.indexOf(pattern) + pattern.length)
   }
+
+  override def toString: String = toString(pattern)
 }
 case class RegexWhen[R](pattern: Regex)(val actions: Action[RegexWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = pattern.findFirstIn(output).isDefined
@@ -91,12 +93,16 @@ case class RegexWhen[R](pattern: Regex)(val actions: Action[RegexWhen[R]]*) exte
     }
     result
   }
+
+  override def toString: String = toString(s"\"${pattern.regex}\".r")
 }
 case class EndOfFileWhen[R](actions: Action[EndOfFileWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = false
   def trimToMatchedText(output: String): String = output
+  override def toString: String = toString("EndOfFile")
 }
 case class TimeoutWhen[R](actions: Action[TimeoutWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = false
   def trimToMatchedText(output: String): String = output
+  override def toString: String = toString("Timeout")
 }

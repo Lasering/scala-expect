@@ -33,7 +33,7 @@ class ExpectBlock[R](whens: When[R]*) extends LazyLogging with AddBlock {
         logger.info(s"Read timed out after ${process.timeout}. Going to try and execute a TimeoutWhen.")
         tryExecuteWhen(_.isInstanceOf[TimeoutWhen[R]], process, intermediateResult, e)
       case e: EOFException =>
-        logger.info(s"Read returned EndOfFile. Going to try and execute a EndOFFileWhen.")
+        logger.info(s"Read returned EndOfFile. Going to try and execute a EndOfFileWhen.")
         tryExecuteWhen(_.isInstanceOf[EndOfFileWhen[R]], process, intermediateResult, e)
     }
   }
