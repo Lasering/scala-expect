@@ -94,7 +94,7 @@ case class RegexWhen[R](pattern: Regex)(val actions: Action[RegexWhen[R]]*) exte
     result
   }
 
-  override def toString: String = toString(s"\"${pattern.regex}\".r")
+  override def toString: String = toString(s""""${pattern.regex}".r""")
 }
 case class EndOfFileWhen[R](actions: Action[EndOfFileWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = false
