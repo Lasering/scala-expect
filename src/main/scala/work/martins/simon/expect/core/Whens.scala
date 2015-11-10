@@ -1,5 +1,6 @@
 package work.martins.simon.expect.core
 
+import StringUtils._
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
@@ -53,7 +54,7 @@ case class StringWhen[R](pattern: String)(val actions: Action[StringWhen[R]]*) e
     output.substring(output.indexOf(pattern) + pattern.length)
   }
 
-  override def toString: String = toString(s""""$pattern"""")
+  override def toString: String = toString(escape(pattern))
 }
 case class RegexWhen[R](pattern: Regex)(val actions: Action[RegexWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = pattern.findFirstIn(output).isDefined
@@ -94,7 +95,7 @@ case class RegexWhen[R](pattern: Regex)(val actions: Action[RegexWhen[R]]*) exte
     result
   }
 
-  override def toString: String = toString(s""""${pattern.regex}".r""")
+  override def toString: String = toString(escape(pattern.regex) + ".r")
 }
 case class EndOfFileWhen[R](actions: Action[EndOfFileWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = false
