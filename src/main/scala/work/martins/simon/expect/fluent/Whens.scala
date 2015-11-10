@@ -52,14 +52,15 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] with AddBl
 
   def toCore: W
 
-  override def toString: String =
-    s"""when {
+  def toString(pattern: String): String =
+    s"""when $pattern {
        |\t\t\t${actions.mkString("\n\t\t\t")}
        |\t\t}""".stripMargin
 }
 case class StringWhen[R](parent: ExpectBlock[R], pattern: String) extends When[R]{
   type W = core.StringWhen[R]
   def toCore: W = new core.StringWhen[R](pattern)(actions:_*)
+  override def toString: String = toString(s""""$pattern"""")
 }
 case class RegexWhen[R: ClassTag](parent: ExpectBlock[R], pattern: Regex) extends When[R] {
   type W = core.RegexWhen[R]
@@ -94,13 +95,15 @@ case class RegexWhen[R: ClassTag](parent: ExpectBlock[R], pattern: Regex) extend
   }
 
   def toCore: W = new core.RegexWhen[R](pattern)(actions:_*)
+  override def toString: String = toString(s""""${pattern.regex}".r""")
 }
 case class TimeoutWhen[R](parent: ExpectBlock[R]) extends When[R] {
   type W = core.TimeoutWhen[R]
   def toCore: W = new core.TimeoutWhen[R](actions:_*)
+  override def toString: String = toString("EndOfFile")
 }
 case class EndOfFileWhen[R](parent: ExpectBlock[R]) extends When[R] {
   type W = core.EndOfFileWhen[R]
-
   def toCore: W = new core.EndOfFileWhen[R](actions:_*)
+  override def toString: String = toString("Timeout")
 }
