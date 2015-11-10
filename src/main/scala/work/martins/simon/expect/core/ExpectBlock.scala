@@ -13,16 +13,15 @@ class ExpectBlock[R](whens: When[R]*) extends LazyLogging with AddBlock {
     case class NoMatchingPatternException(output: String) extends Exception
     Future {
       val readText = process.read()
-      logger.info(s"""Read:
-          |----------------------------------------
-          |$readText
-          |----------------------------------------""".stripMargin)
       val newOutput = intermediateResult.output + readText
-      logger.info(s"NewOutput: $newOutput")
+      logger.info(s"""New output:
+                     |----------------------------------------
+                     |$newOutput
+                     |----------------------------------------""".stripMargin)
       whens.find(_.matches(newOutput)) match {
         case None => throw new NoMatchingPatternException(newOutput)
         case Some(when) =>
-          logger.info(s"Matched with $when")
+          logger.info(s"Matched with:\n$when")
           when.execute(process, intermediateResult.copy(output = newOutput))
       }
     } recoverWith {
