@@ -45,6 +45,16 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] with AddBl
   def returning(result: Expect[R]): When[R] = newAction(ReturningExpect(() => result))
 
   /**
+    * Execute arbitrary actions upon the instance where this is mixed.
+    * @param block the block of code to execute.
+    * @return the current instance (this) of the type where this trait was mixed (this.type).
+    */
+  def addBlock(block: When[R] => Unit): this.type = {
+    block(this)
+    this
+  }
+
+  /**
    * Terminates the current run of Expect causing it to return the last returned value.
    * Any action added after this one will not be executed.
    * @return this When.
