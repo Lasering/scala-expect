@@ -3,16 +3,25 @@ package work.martins.simon.expect.core
 import java.io.EOFException
 import java.util.concurrent.TimeoutException
 
+import com.typesafe.scalalogging.LazyLogging
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Seconds, Span}
-import org.scalatest.{WordSpec, Matchers}
+import org.scalatest.time.{Millis, Seconds, Span}
+import org.scalatest._
 
-class WhenSpec extends WordSpec with Matchers with ScalaFutures {
+class WhenSpec extends WordSpec with Matchers with ScalaFutures with BeforeAndAfterEach with LazyLogging {
+  //When running the tests from the console this will print the test being ran.
+  override protected def runTest(testName: String, args: Args): Status = {
+    logger.info(s"Running test:\n$testName")
+    super.runTest(testName, args)
+  }
+
   val defaultPatience = PatienceConfig(
-    timeout = Span(1, Seconds)
+    timeout = Span(1, Seconds),
+    interval = Span(2, Seconds)
   )
 
   "An Expect " when {
@@ -71,8 +80,8 @@ class WhenSpec extends WordSpec with Matchers with ScalaFutures {
     "more than one When matches" should {
       "run the actions in the first matching when" in {
         val e = new Expect("scala", "")(
-          new ExpectBlock (
-            new RegexWhen("""Scala version""".r) (
+          new ExpectBlock(
+            new RegexWhen( """Scala version""".r)(
               ReturningWithRegex(_.group(0))
             ),
             new StringWhen("Scala version")(
