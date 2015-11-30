@@ -50,14 +50,14 @@ case class ReturningWithRegex[R](result: Match => R) extends Action[RegexWhen[R]
  *
  * 1. The current run of Expect is terminated (like with an `Exit`) but its return value is discarded.
  * 2. `result` is evaluated to obtain the expect.
- * 3. The obtained `expect` is run with the same run context (timeout, charset, etc) as the terminated expect.
+ * 3. The obtained expect is run with the same run context (timeout, charset, etc) as the terminated expect.
  * 4. The result obtained in the previous step becomes the result of the current expect (the terminated one).
  *
  * This works out as a special combination of an `Exit` with a `Returning`. Where the exit deallocates the
  * resources allocated by the current expect. And the result of the `Returning` is obtained from the result of
  * executing the received expect.
  *
- * Any action added after this one will not be executed.
+ * Any action or expect block added after this will not be executed.
  */
 case class ReturningExpect[R](result: () => Expect[R]) extends Action[When[R]]
 /**
@@ -65,7 +65,7 @@ case class ReturningExpect[R](result: () => Expect[R]) extends Action[When[R]]
  *
  * 1. The current run of Expect is terminated (like with an `Exit`) but its return value is discarded.
  * 2. `result` is evaluated to obtain the expect.
- * 3. The obtained `expect` is run with the same run context (timeout, charset, etc) as the terminated expect.
+ * 3. The obtained expect is run with the same run context (timeout, charset, etc) as the terminated expect.
  * 4. The result obtained in the previous step becomes the result of the current expect (the terminated one).
  *
  * This works out as a special combination of an `Exit` with a `Returning`. Where the exit deallocates the
@@ -74,13 +74,13 @@ case class ReturningExpect[R](result: () => Expect[R]) extends Action[When[R]]
  *
  * This allows to construct the Expect based on the regex Match.
  * $regexWhen
- * Any action added after this one will not be executed.
+ * Any action or expect block added after this will not be executed.
  */
 case class ReturningExpectWithRegex[R](result: Match => Expect[R]) extends Action[RegexWhen[R]]
 
 /**
  * When this action is executed the current run of Expect is terminated causing it to return the
  * last value, if there is a ReturningAction, or the default value otherwise.
- * Any action added after this one will not be executed.
+ * Any action or expect block added after this will not be executed.
  */
 case object Exit extends Action[When[_]]

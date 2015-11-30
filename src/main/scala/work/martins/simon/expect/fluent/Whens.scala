@@ -38,71 +38,73 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
   /**
    * Returns `result` when this Expect is run.
    * If this method is invoked more than once only the last `result` will be returned.
+   * Note however that the previous returning actions will also be executed.
    * @return this When.
    */
   def returning(result: => R): When[R] = newAction(Returning(() => result))
 
+
   def returning(result: Expect[R]): When[R] = newAction(ReturningExpect(() => result))
 
   /**
-    * Add arbitrary `Action`s to this `When`.
-    *
-    * This is helpful to refactor code. For example: imagine you want to perform the same actions whenever an error
-    * occurs. You could leverage this method to do so in the following way:
-    * {{{
-    *   def preemtiveExit: When[String] => Unit = { when =>
-    *     when
-    *       .returning("Got some error")
-    *       .exit()
-    *   }
-    *
-    *   //Then in your expects
-    *   def parseOutputA: Expect[String] = {
-    *     val e = new Expect("some command", "")
-    *     e.expect(...)
-    *     e.expect
-    *       .when(...)
-    *         .action1
-    *       .when(...)
-    *         .addActions(preemtiveExit)
-    *   }
-    *
-    *   def parseOutputB: Expect[String] = {
-    *     val e = new Expect("some command", "")
-    *     e.expect
-    *       .when(...)
-    *         .action1
-    *         .action2
-    *       .when(...)
-    *         .action1
-    *     e.expect(...)
-    *       .addActions(preemtiveExit)
-    *   }
-    * }}}
-    *
-    * @param f function that adds `Action`s.
-    * @return this `When`.
-    */
+   * Add arbitrary `Action`s to this `When`.
+   *
+   * This is helpful to refactor code. For example: imagine you want to perform the same actions whenever an error
+   * occurs. You could leverage this method to do so in the following way:
+   * {{{
+   *   def preemtiveExit: When[String] => Unit = { when =>
+   *     when
+   *       .returning("Got some error")
+   *       .exit()
+   *   }
+   *
+   *   //Then in your expects
+   *   def parseOutputA: Expect[String] = {
+   *     val e = new Expect("some command", "")
+   *     e.expect(...)
+   *     e.expect
+   *       .when(...)
+   *         .action1
+   *       .when(...)
+   *         .addActions(preemtiveExit)
+   *   }
+   *
+   *   def parseOutputB: Expect[String] = {
+   *     val e = new Expect("some command", "")
+   *     e.expect
+   *       .when(...)
+   *         .action1
+   *         .action2
+   *       .when(...)
+   *         .action1
+   *     e.expect(...)
+   *       .addActions(preemtiveExit)
+   *   }
+   * }}}
+   *
+   * @param f function that adds `Action`s.
+   * @return this `When`.
+   */
   def addActions(f: this.type => Unit): this.type = {
     f(this)
     this
   }
 
   /**
-    * Shortcut to invoke `addWhen` to the parent of this `When`.
-    */
+   * Shortcut to invoke `addWhen` to the parent of this `When`.
+   */
   def addWhen[WW <: When[R]](f: ExpectBlock[R] => WW): WW = parent.addWhen(f)
 
   /**
    * Terminates the current run of Expect causing it to return the last returned value.
-   * Any action added after this one will not be executed.
+   * Any action or expect block added after this Exit will not be executed.
    * @return this When.
    */
   def exit(): When[R] = newAction(Exit)
 
-  /***
-    * @return the core.When equivalent of this fluent.When.
-    */
+  /**
+   * @return the core.When equivalent of this fluent.When.
+   */
   def toCore: W
 
   def toString(pattern: String): String =
@@ -133,6 +135,8 @@ case class RegexWhen[R: ClassTag](parent: ExpectBlock[R], pattern: Regex) extend
   /**
    * Returns the result of invoking `result` with the `Match` of the regex used, when this Expect is run.
    * If this method is invoked more than once only the last `result` will be returned.
+   * Note however that the previous returning actions will also be executed.
+   *
    * @return this When.
    */
   def returning(result: Match => R): When[R] = newAction{
