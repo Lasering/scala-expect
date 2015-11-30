@@ -11,7 +11,7 @@ trait Runnable[R] {
   protected val runnableParent: Runnable[R]
 
   /**
-   * Runs this entire Expect tree.
+   * Runs this Expect.
    * @param timeout the maximum time to wait for each read.
    * @param charset the charset to use when decoding/encoding the read/write text.
    * @param bufferSize the size of the buffer to use when performing reads.

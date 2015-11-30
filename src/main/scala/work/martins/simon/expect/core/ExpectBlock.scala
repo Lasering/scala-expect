@@ -5,7 +5,7 @@ import java.io.EOFException
 import com.typesafe.scalalogging.LazyLogging
 import scala.concurrent.{TimeoutException, Future, ExecutionContext}
 
-class ExpectBlock[R](whens: When[R]*) extends LazyLogging with AddBlock {
+class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
   require(whens.nonEmpty, "ExpectBlock must have at least a When.")
 
   private def runWithMoreOutput(process: RichProcess, intermediateResult: IntermediateResult[R])

@@ -5,7 +5,7 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.concurrent._
 import scala.concurrent.duration.FiniteDuration
 
-class Expect[R](command: Seq[String], val defaultValue: R)(expects: ExpectBlock[R]*) extends LazyLogging with AddBlock {
+class Expect[R](command: Seq[String], val defaultValue: R)(expects: ExpectBlock[R]*) extends LazyLogging {
   def this(command: String, defaultValue: R = Unit)(expects: ExpectBlock[R]*) = {
     this(command.split("""\s+""").filter(_.nonEmpty).toSeq, defaultValue)(expects:_*)
   }

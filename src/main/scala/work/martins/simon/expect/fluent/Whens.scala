@@ -8,7 +8,7 @@ import work.martins.simon.expect.core
 import work.martins.simon.expect.core._
 import work.martins.simon.expect.core.StringUtils._
 
-trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] with AddBlock {
+trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
   type W <: core.When[R]
 
   def parent: ExpectBlock[R]
@@ -45,12 +45,46 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] with AddBl
   def returning(result: Expect[R]): When[R] = newAction(ReturningExpect(() => result))
 
   /**
-    * Execute arbitrary actions upon the instance where this is mixed.
-    * @param block the block of code to execute.
-    * @return the current instance (this) of the type where this trait was mixed (this.type).
+    * Add arbitrary `Action`s to this `When`.
+    *
+    * This is helpful to refactor code. For example: imagine you want to perform the same actions whenever an error
+    * occurs. You could leverage this method to do so in the following way:
+    * {{{
+    *   def preemtiveExit: When[String] => Unit = { when =>
+    *     when
+    *       .returning("Got some error")
+    *       .exit()
+    *   }
+    *
+    *   //Then in your expects
+    *   def parseOutputA: Expect[String] = {
+    *     val e = new Expect("some command", "")
+    *     e.expect(...)
+    *     e.expect
+    *       .when(...)
+    *         .action1
+    *       .when(...)
+    *         .addActions(preemtiveExit)
+    *   }
+    *
+    *   def parseOutputB: Expect[String] = {
+    *     val e = new Expect("some command", "")
+    *     e.expect
+    *       .when(...)
+    *         .action1
+    *         .action2
+    *       .when(...)
+    *         .action1
+    *     e.expect(...)
+    *       .addActions(preemtiveExit)
+    *   }
+    * }}}
+    *
+    * @param f function that adds `Action`s.
+    * @return this `When`.
     */
-  def addBlock(block: When[R] => Unit): this.type = {
-    block(this)
+  def addActions(f: this.type => Unit): this.type = {
+    f(this)
     this
   }
 
@@ -61,6 +95,9 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] with AddBl
    */
   def exit(): When[R] = newAction(Exit)
 
+  /***
+    * @return the core.When equivalent of this fluent.When.
+    */
   def toCore: W
 
   def toString(pattern: String): String =

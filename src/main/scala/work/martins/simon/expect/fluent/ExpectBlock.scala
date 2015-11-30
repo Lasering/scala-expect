@@ -4,10 +4,9 @@ import scala.reflect.ClassTag
 import scala.util.matching.Regex
 
 import work.martins.simon.expect.core
-import work.martins.simon.expect.core.{AddBlock, Timeout, EndOfFile}
+import work.martins.simon.expect.core.{Timeout, EndOfFile}
 
-class ExpectBlock[R: ClassTag](val parent: Expect[R]) extends Runnable[R]
-  with Expectable[R] with Whenable[R] with AddBlock {
+class ExpectBlock[R: ClassTag](val parent: Expect[R]) extends Runnable[R] with Expectable[R] with Whenable[R] {
   protected val runnableParent: Runnable[R] = parent
   protected val expectableParent: Expectable[R] = parent
 
@@ -24,6 +23,54 @@ class ExpectBlock[R: ClassTag](val parent: Expect[R]) extends Runnable[R]
   override def when(pattern: EndOfFile.type): EndOfFileWhen[R] = newWhen(new EndOfFileWhen[R](this))
   override def when(pattern: Timeout.type): TimeoutWhen[R] = newWhen(new TimeoutWhen[R](this))
 
+  /**
+    * Add arbitrary `When`s to this `ExpectBlock`.
+    *
+    * This is helpful to refactor code. For example: imagine you have an error case you want to add to
+    * multiple `ExpectBlock`s. You could leverage this method to do so in the following way:
+    * {{{
+    *   def errorCaseWhen: ExpectBlock[String] => Unit = { expectBlock =>
+    *     expectBlock
+    *       .when("Some error")
+    *         .returning("Got some error")
+    *   }
+    *
+    *   //Then in your expects
+    *   def parseOutputA: Expect[String] = {
+    *     val e = new Expect("some command", "")
+    *     e.expect(...)
+    *     e.expect
+    *       .when(...)
+    *         .action1
+    *       .when(...)
+    *       .parent.addWhen(errorCaseWhen)
+    *   }
+    *
+    *   def parseOutputB: Expect[String] = {
+    *     val e = new Expect("some command", "")
+    *     e.expect
+    *       .when(...)
+    *         .action1
+    *         .action2
+    *       .when(...)
+    *         .action1
+    *       .parent.addWhen(errorCaseWhen)
+    *     e.expect(...)
+    *       .returning(...)
+    *   }
+    * }}}
+    *
+    * @param f function that adds `When`s.
+    * @return this `ExpectBlock`.
+    */
+  def addWhen(f: ExpectBlock[R] => Unit): ExpectBlock[R] = {
+    f(this)
+    this
+  }
+
+  /***
+    * @return the core.ExpectBlock equivalent of this fluent.ExpectBlock.
+    */
   def toCore: core.ExpectBlock[R] = new core.ExpectBlock[R](whens.map(_.toCore):_*)
 
   override def toString: String = {
