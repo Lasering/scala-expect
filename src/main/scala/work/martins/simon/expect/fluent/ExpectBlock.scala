@@ -43,30 +43,28 @@ class ExpectBlock[R: ClassTag](val parent: Expect[R]) extends Runnable[R] with E
     *       .when(...)
     *         .action1
     *       .when(...)
-    *       .parent.addWhen(errorCaseWhen)
+    *     e.expect
+    *       .addWhen(errorCaseWhen)
     *   }
     *
     *   def parseOutputB: Expect[String] = {
     *     val e = new Expect("some command", "")
     *     e.expect
+    *       .addWhen(errorCaseWhen)
     *       .when(...)
     *         .action1
     *         .action2
     *       .when(...)
     *         .action1
-    *       .parent.addWhen(errorCaseWhen)
     *     e.expect(...)
     *       .returning(...)
     *   }
     * }}}
     *
     * @param f function that adds `When`s.
-    * @return this `ExpectBlock`.
+    * @return the added `When`.
     */
-  def addWhen(f: ExpectBlock[R] => Unit): ExpectBlock[R] = {
-    f(this)
-    this
-  }
+  def addWhen[W <: When[R]](f: ExpectBlock[R] => W): W = f(this)
 
   /***
     * @return the core.ExpectBlock equivalent of this fluent.ExpectBlock.

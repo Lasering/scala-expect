@@ -89,6 +89,11 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
   }
 
   /**
+    * Shortcut to invoke `addWhen` to the parent of this `When`.
+    */
+  def addWhen[WW <: When[R]](f: ExpectBlock[R] => WW): WW = parent.addWhen(f)
+
+  /**
    * Terminates the current run of Expect causing it to return the last returned value.
    * Any action added after this one will not be executed.
    * @return this When.
