@@ -23,7 +23,7 @@ class Expect[R](command: Seq[String], val defaultValue: R)(expects: ExpectBlock[
                       (implicit ec: ExecutionContext): Future[R] = expectsStack match {
     case headExpectBlock :: remainingExpectBlocks =>
       logger.info("Starting a new ExpectBlock.run")
-      headExpectBlock.run(richProcess, intermediateResult).flatMap { case result @ IntermediateResult(_, _, action) =>
+      val result = headExpectBlock.run(richProcess, intermediateResult).flatMap { case result @ IntermediateResult(_, _, action) =>
         action match {
           case Continue =>
             innerRun(richProcess, result, remainingExpectBlocks)
@@ -34,6 +34,14 @@ class Expect[R](command: Seq[String], val defaultValue: R)(expects: ExpectBlock[
             newExpect.asInstanceOf[Expect[R]].run(richProcess.timeout, richProcess.charset, richProcess.bufferSize)
         }
       }
+
+      //If in the process of running the head expect block we get an exception we want to make sure the
+      //rich process is destroyed.
+      result.onFailure {
+        case e: Throwable => richProcess.destroy()
+      }
+
+      result
     case _ =>
       //We have no more expect blocks. So we can finish the execution.
       //Make sure to destroy the process and close the streams.

@@ -58,10 +58,8 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
    *       .exit()
    *   }
    *
-   *   //Then in your expects
    *   def parseOutputA: Expect[String] = {
    *     val e = new Expect("some command", "")
-   *     e.expect(...)
    *     e.expect
    *       .when(...)
    *         .action1
@@ -71,12 +69,6 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
    *
    *   def parseOutputB: Expect[String] = {
    *     val e = new Expect("some command", "")
-   *     e.expect
-   *       .when(...)
-   *         .action1
-   *         .action2
-   *       .when(...)
-   *         .action1
    *     e.expect(...)
    *       .addActions(preemtiveExit)
    *   }
@@ -94,6 +86,10 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
    * Shortcut to invoke `addWhen` to the parent of this `When`.
    */
   def addWhen[WW <: When[R]](f: ExpectBlock[R] => WW): WW = parent.addWhen(f)
+  /**
+    * Shortcut to invoke `addWhen` to the parent of this `When`.
+    */
+  def addWhen(f: ExpectBlock[R] => Unit): ExpectBlock[R] = parent.addWhen(f)
 
   /**
    * Terminates the current run of Expect causing it to return the last returned value.

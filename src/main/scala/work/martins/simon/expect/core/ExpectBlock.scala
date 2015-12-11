@@ -37,14 +37,17 @@ class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
     }
   }
   private def tryExecuteWhen(filter: When[R] => Boolean, process: RichProcess,
-                             intermediateResult: IntermediateResult[R], e: Exception): Future[IntermediateResult[R]] = {
+                             intermediateResult: IntermediateResult[R], e: Exception)
+                            (implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
     whens.find(filter) match {
       case None =>
         //Now we really failed. So we must destroy the running process and the streams.
         process.destroy()
         Future.failed(e)
       case Some(when) =>
-        Future.successful(when.execute(process, intermediateResult))
+        Future {
+          when.execute(process, intermediateResult)
+        }
     }
   }
   /**
@@ -63,7 +66,9 @@ class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
       case Some(when) =>
         //A When matches with lastOutput so we can execute it directly.
         logger.info("Matched with lastOutput")
-        Future.successful(when.execute(process, intermediateResult))
+        Future {
+          when.execute(process, intermediateResult)
+        }
       case None =>
         //We need to read more lines to find a matching When. Or lastOutput was None.
         logger.info("Need more output. Going to read...")
