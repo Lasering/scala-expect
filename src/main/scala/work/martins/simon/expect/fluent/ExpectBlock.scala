@@ -59,22 +59,42 @@ class ExpectBlock[R: ClassTag](val parent: Expect[R]) extends Runnable[R] with E
     * `parseOutputA` method in the above code.
     *
     * It is possible to add more than one When using this method, however this is discouraged since it will make the
-    * code somewhat more illegible because an "hidden" When will also be added.
+    * code somewhat more illegible because "hidden" Whens will also be added.
+    *
+    * If you need to add more than one When you have two options:
+    *
+    *  1. {{{
+    *    e.expect
+    *      .when(...)
+    *         .sendln(..)
+    *         .returning(...)
+    *      .addWhen(errorCaseWhen)
+    *      .addWhen(anotherWhen)
+    *  }}}
+    *  1. {{{
+    *    e.expect
+    *      .when(...)
+    *         .sendln(..)
+    *         .returning(...)
+    *      .addWhens(multipleWhens)
+    *  }}}
     *
     * @param f function that adds the `When`.
     * @return the added `When`.
     */
   def addWhen[W <: When[R]](f: ExpectBlock[R] => W): W = f(this)
   /**
-    * Add an arbitrary `When` to this `ExpectBlock`.
+    * Add arbitrary `When`s to this `ExpectBlock`.
     *
-    * This method is almost the same as its overloaded counterpart, the difference is that `f` has a more relaxed type
-    * and it returns this ExpectBlock and not the added When.
+    * This method is very similar to the `addWhen` with the following differences:
+    *  1. `f` has a more relaxed type.
+    *  1. It returns this ExpectBlock. Which effectively prohibits you from invoking When methods.
+    *  1. Has a more semantic name when it comes to add multiple When's.
     *
-    * @param f function that adds the `When`.
+    * @param f function that adds `When`s.
     * @return this ExpectBlock.
     */
-  def addWhen(f: ExpectBlock[R] => Unit): ExpectBlock[R] = {
+  def addWhens(f: ExpectBlock[R] => Unit): ExpectBlock[R] = {
     f(this)
     this
   }
