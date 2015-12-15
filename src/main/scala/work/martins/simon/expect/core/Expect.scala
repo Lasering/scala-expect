@@ -1,18 +1,22 @@
 package work.martins.simon.expect.core
 
 import java.nio.charset.Charset
+import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
 import scala.concurrent._
 import scala.concurrent.duration.FiniteDuration
 
-class Expect[R](command: Seq[String], val defaultValue: R)(expects: ExpectBlock[R]*) extends LazyLogging {
+class Expect[R](command: Seq[String], val defaultValue: R, config: Config = ConfigFactory.load())
+               (expects: ExpectBlock[R]*) extends LazyLogging {
+  val settings = new Settings(config)
+
   def this(command: String, defaultValue: R = Unit)(expects: ExpectBlock[R]*) = {
     this(command.split("""\s+""").filter(_.nonEmpty).toSeq, defaultValue)(expects:_*)
   }
   require(command.nonEmpty, "Expect must have a command to run.")
 
-  def run(timeout: FiniteDuration = Configs.timeout, charset: Charset = Configs.charset,
-          bufferSize: Int = Configs.bufferSize, redirectStdErrToStdOut: Boolean = Configs.redirectStdErrToStdOut)
+  def run(timeout: FiniteDuration = settings.timeout, charset: Charset = settings.charset,
+          bufferSize: Int = settings.bufferSize, redirectStdErrToStdOut: Boolean = settings.redirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
     val richProcess = RichProcess(command, timeout, charset, bufferSize, redirectStdErrToStdOut)
     innerRun(richProcess, IntermediateResult("", defaultValue, Continue), expects.toList)

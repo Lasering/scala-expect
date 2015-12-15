@@ -9,7 +9,7 @@ import scala.reflect.ClassTag
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
-import work.martins.simon.expect.core.{Configs, EndOfFile, Timeout}
+import work.martins.simon.expect.core.{Settings, EndOfFile, Timeout}
 import work.martins.simon.expect.fluent
 
 class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R) extends DSL[R] {
@@ -64,8 +64,8 @@ class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R) extends
   def returning(result: Match => R): DSL[R] = addAction(_.returning(result))
   def exit(): DSL[R] = addAction(_.exit())
 
-  def run(timeout: FiniteDuration = Configs.timeout, charset: Charset = Configs.charset,
-          bufferSize: Int = Configs.bufferSize, redirectStdErrToStdOut: Boolean = Configs.redirectStdErrToStdOut)
+  def run(timeout: FiniteDuration = Settings.timeout, charset: Charset = Settings.charset,
+          bufferSize: Int = Settings.bufferSize, redirectStdErrToStdOut: Boolean = Settings.redirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
     fluentExpect.run(timeout, charset, bufferSize, redirectStdErrToStdOut)(ex)
   }

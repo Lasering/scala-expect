@@ -5,9 +5,11 @@ import java.nio.charset.Charset
 import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.duration.FiniteDuration
 
-import work.martins.simon.expect.core.Configs
+import work.martins.simon.expect.core.Settings
 
 trait Runnable[R] {
+  val settings: Settings
+
   protected val runnableParent: Runnable[R]
 
   /**
@@ -21,8 +23,8 @@ trait Runnable[R] {
    *         `defaultValue` will be returned. If an exception occurred during the execution of the future
    *         then that exception will be returned in the Failure of the Future.
    */
-  def run(timeout: FiniteDuration = Configs.timeout, charset: Charset = Configs.charset,
-          bufferSize: Int = Configs.bufferSize, redirectStdErrToStdOut: Boolean = Configs.redirectStdErrToStdOut)
+  def run(timeout: FiniteDuration = settings.timeout, charset: Charset = settings.charset,
+          bufferSize: Int = settings.bufferSize, redirectStdErrToStdOut: Boolean = settings.redirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
     runnableParent.run(timeout, charset, bufferSize, redirectStdErrToStdOut)(ex)
   }

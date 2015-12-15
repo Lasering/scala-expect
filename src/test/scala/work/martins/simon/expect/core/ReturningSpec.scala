@@ -8,7 +8,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
   val defaultPatience = PatienceConfig(
-    timeout = Span(Configs.timeout.toSeconds + 2, Seconds)
+    timeout = Span(Settings.timeout.toSeconds + 2, Seconds)
   )
 
   "An Expect" should "return the specified value" in {
@@ -96,8 +96,8 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
       )
     )
     e.run().futureValue(PatienceConfig(
-      timeout = Span(Configs.timeout.toSeconds + 2, Seconds),
-      interval = Span(Configs.timeout.toSeconds + 2, Seconds)
+      timeout = Span(Settings.timeout.toSeconds + 2, Seconds),
+      interval = Span(Settings.timeout.toSeconds + 2, Seconds)
     )) shouldBe 3
   }
 

@@ -2,15 +2,20 @@ package work.martins.simon.expect.fluent
 
 import java.nio.charset.Charset
 
+import com.typesafe.config.{ConfigFactory, Config}
+
 import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.duration.FiniteDuration
 
 import scala.reflect.ClassTag
 
 import work.martins.simon.expect.core
-import work.martins.simon.expect.core.Configs
+import work.martins.simon.expect.core.Settings
 
-class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R) extends Runnable[R] with Expectable[R] {
+class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R,
+                          config: Config = ConfigFactory.load()) extends Runnable[R] with Expectable[R] {
+  val settings = new Settings(config)
+
   def this(command: String, defaultValue: R = Unit) = {
     this(command.split("""\s+""").filter(_.nonEmpty).toSeq, defaultValue)
   }
@@ -79,9 +84,9 @@ class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R) extends
   //The value we set here is irrelevant since we override the implementation of 'run'.
   //We decided to set runnableParent to 'this' to make it obvious that this is the root of all Runnables.
   protected val runnableParent: Runnable[R] = this
-  override def run(timeout: FiniteDuration = Configs.timeout, charset: Charset = Configs.charset,
-                   bufferSize: Int = Configs.bufferSize,
-                   redirectStdErrToStdOut: Boolean = Configs.redirectStdErrToStdOut)
+  override def run(timeout: FiniteDuration = settings.timeout, charset: Charset = settings.charset,
+                   bufferSize: Int = settings.bufferSize,
+                   redirectStdErrToStdOut: Boolean = settings.redirectStdErrToStdOut)
                   (implicit ex: ExecutionContext): Future[R] = {
     toCore.run(timeout, charset, bufferSize, redirectStdErrToStdOut)(ex)
   }

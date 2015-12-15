@@ -13,6 +13,8 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
 
   def parent: ExpectBlock[R]
 
+  val settings = parent.settings
+
   protected val runnableParent: Runnable[R] = parent
   protected val expectableParent: Expectable[R] = parent
   protected val whenableParent: Whenable[R] = parent
