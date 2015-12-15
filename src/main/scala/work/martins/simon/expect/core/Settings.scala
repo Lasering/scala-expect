@@ -7,7 +7,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 
 import scala.concurrent.duration.{FiniteDuration, DurationLong}
 
-class Settings(config: Config) {
+class Settings(val config: Config) {
   config.checkValid(ConfigFactory.defaultReference(), "scala-expect")
 
   val defaultConfig: Config = config.getConfig("scala-expect")

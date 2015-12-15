@@ -2,6 +2,8 @@ package work.martins.simon.expect.dsl
 
 import java.nio.charset.Charset
 
+import com.typesafe.config.{Config, ConfigFactory}
+
 import scala.collection.mutable
 import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.duration.FiniteDuration
@@ -12,11 +14,13 @@ import scala.util.matching.Regex.Match
 import work.martins.simon.expect.core.{Settings, EndOfFile, Timeout}
 import work.martins.simon.expect.fluent
 
-class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R) extends DSL[R] {
+class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R, config: Config) extends DSL[R] {
   def this(command: String, defaultValue: R = Unit) = {
-    this(command.split("""\s+""").filter(_.nonEmpty).toSeq, defaultValue)
+    this(command.split("""\s+""").filter(_.nonEmpty).toSeq, defaultValue, ConfigFactory.load())
   }
-  val fluentExpect = new fluent.Expect(command, defaultValue)
+  val settings = new Settings(config)
+
+  protected val fluentExpect = new fluent.Expect(command, defaultValue, config)
 
   private val stack = new mutable.Stack[AbstractDefinition[R]]
 
@@ -64,8 +68,8 @@ class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R) extends
   def returning(result: Match => R): DSL[R] = addAction(_.returning(result))
   def exit(): DSL[R] = addAction(_.exit())
 
-  def run(timeout: FiniteDuration = Settings.timeout, charset: Charset = Settings.charset,
-          bufferSize: Int = Settings.bufferSize, redirectStdErrToStdOut: Boolean = Settings.redirectStdErrToStdOut)
+  def run(timeout: FiniteDuration = settings.timeout, charset: Charset = settings.charset,
+          bufferSize: Int = settings.bufferSize, redirectStdErrToStdOut: Boolean = settings.redirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
     fluentExpect.run(timeout, charset, bufferSize, redirectStdErrToStdOut)(ex)
   }

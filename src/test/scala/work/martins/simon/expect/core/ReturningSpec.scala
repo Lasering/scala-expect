@@ -7,8 +7,8 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
-  val defaultPatience = PatienceConfig(
-    timeout = Span(Settings.timeout.toSeconds + 2, Seconds)
+  def defaultPatience(e: Expect[_]) = PatienceConfig(
+    timeout = Span(e.settings.timeout.toSeconds + 2, Seconds)
   )
 
   "An Expect" should "return the specified value" in {
@@ -19,7 +19,7 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
         )
       )
     )
-    e.run().futureValue(defaultPatience) shouldBe "ReturnedValue"
+    e.run().futureValue(defaultPatience(e)) shouldBe "ReturnedValue"
   }
 
   it should "only return the last returning action but still execute the other actions" in {
@@ -39,7 +39,7 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
     whenReady(e.run()) { s =>
       s shouldBe "5"
       test shouldBe 6
-    }(defaultPatience)
+    }(defaultPatience(e))
   }
 
   it should "only invoke the returning function when that returning action is executed" in {
@@ -58,7 +58,7 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
     whenReady(e.run()) { s =>
       s shouldBe "ReturnedValue"
       test shouldBe 7
-    }(defaultPatience)
+    }(defaultPatience(e))
   }
 
   it should "not execute any action after a exit action" in {
@@ -79,7 +79,7 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
     whenReady(e.run()) { s =>
       s should not be "ThisValue"
       test shouldBe 5
-    }(defaultPatience)
+    }(defaultPatience(e))
   }
 
   it should "be able to interact with the spawned program" in {
@@ -96,8 +96,8 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
       )
     )
     e.run().futureValue(PatienceConfig(
-      timeout = Span(Settings.timeout.toSeconds + 2, Seconds),
-      interval = Span(Settings.timeout.toSeconds + 2, Seconds)
+      timeout = Span(e.settings.timeout.toSeconds * 10, Seconds),
+      interval = Span(e.settings.timeout.toSeconds * 10, Seconds)
     )) shouldBe 3
   }
 

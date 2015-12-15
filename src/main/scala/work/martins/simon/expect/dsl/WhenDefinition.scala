@@ -15,7 +15,7 @@ class WhenDefinition[R, W <: When[R]](builder: Expect[R], when: W) extends Abstr
       block(regexWhen)
       this
     case _ =>
-      throw new IllegalArgumentException("$action can only be invoked for RegexWhen")
+      throw new IllegalArgumentException("This action can only be invoked for RegexWhen")
   }
 
   override def send(text: String): DSL[R] = addAction(_.send(text))

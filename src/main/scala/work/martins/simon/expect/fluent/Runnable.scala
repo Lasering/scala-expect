@@ -8,7 +8,7 @@ import scala.concurrent.duration.FiniteDuration
 import work.martins.simon.expect.core.Settings
 
 trait Runnable[R] {
-  val settings: Settings
+  protected val settings: Settings
 
   protected val runnableParent: Runnable[R]
 

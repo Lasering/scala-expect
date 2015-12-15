@@ -12,12 +12,11 @@ import scala.reflect.ClassTag
 import work.martins.simon.expect.core
 import work.martins.simon.expect.core.Settings
 
-class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R,
-                          config: Config = ConfigFactory.load()) extends Runnable[R] with Expectable[R] {
+class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R, config: Config) extends Runnable[R] with Expectable[R] {
   val settings = new Settings(config)
 
   def this(command: String, defaultValue: R = Unit) = {
-    this(command.split("""\s+""").filter(_.nonEmpty).toSeq, defaultValue)
+    this(command.split("""\s+""").filter(_.nonEmpty).toSeq, defaultValue, ConfigFactory.load())
   }
 
   //The value we set here is irrelevant since we override the implementation of 'expect'.
@@ -79,7 +78,7 @@ class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R,
   /**
     * @return the core.Expect equivalent of this fluent.Expect.
     */
-  def toCore: core.Expect[R] = new core.Expect[R](command, defaultValue)(expects.map(_.toCore):_*)
+  def toCore: core.Expect[R] = fluentExpectToCoreExpect(this)
 
   //The value we set here is irrelevant since we override the implementation of 'run'.
   //We decided to set runnableParent to 'this' to make it obvious that this is the root of all Runnables.

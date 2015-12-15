@@ -6,12 +6,12 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.concurrent._
 import scala.concurrent.duration.FiniteDuration
 
-class Expect[R](command: Seq[String], val defaultValue: R, config: Config = ConfigFactory.load())
+class Expect[R](command: Seq[String], val defaultValue: R, config: Config)
                (expects: ExpectBlock[R]*) extends LazyLogging {
   val settings = new Settings(config)
 
   def this(command: String, defaultValue: R = Unit)(expects: ExpectBlock[R]*) = {
-    this(command.split("""\s+""").filter(_.nonEmpty).toSeq, defaultValue)(expects:_*)
+    this(command.split("""\s+""").filter(_.nonEmpty).toSeq, defaultValue, ConfigFactory.load())(expects:_*)
   }
   require(command.nonEmpty, "Expect must have a command to run.")
 
