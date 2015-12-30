@@ -67,6 +67,11 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
       Future.successful(intermediateResult.value)
   }
 
+  //TODO: make expect composable by implementing:
+  // map[T](f: R => T): Expect[T]
+  // flatMap[T](f: R => Expect[T]): Expect[T]
+
+
   override def toString: String =
     s"""Expect:
        |\tCommand: $command

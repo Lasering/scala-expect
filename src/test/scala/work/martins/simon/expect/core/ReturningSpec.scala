@@ -86,11 +86,11 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
     val e = new Expect("bc -i", defaultValue = 5)(
       new ExpectBlock(
         new StringWhen("For details type `warranty'.")(
-          Sendln("1 + 2")
+          Sendln("1+2")
         )
       ),
       new ExpectBlock(
-        new RegexWhen("""(\d+)$""".r)(
+        new RegexWhen("""(?m)^(\d+)$""".r)(
           ReturningWithRegex(_.group(1).toInt)
         )
       )
