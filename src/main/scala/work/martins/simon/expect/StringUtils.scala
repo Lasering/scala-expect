@@ -1,4 +1,4 @@
-package work.martins.simon.expect.core
+package work.martins.simon.expect
 
 object StringUtils {
   //http://stackoverflow.com/questions/9913971/scala-how-can-i-get-an-escaped-representation-of-a-string
@@ -6,4 +6,6 @@ object StringUtils {
     import scala.reflect.runtime.universe._
     Literal(Constant(raw)).toString
   }
+
+  def splitBySpaces(command: String): Seq[String] = command.split("""\s+""").filter(_.nonEmpty).toSeq
 }

@@ -2,10 +2,10 @@ package work.martins.simon.expect.fluent
 
 import java.nio.charset.Charset
 
+import work.martins.simon.expect.Settings
+
 import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.duration.FiniteDuration
-
-import work.martins.simon.expect.core.Settings
 
 trait Runnable[R] {
   protected val settings: Settings

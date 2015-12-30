@@ -1,12 +1,12 @@
 package work.martins.simon.expect.fluent
 
+import work.martins.simon.expect.StringUtils._
+import work.martins.simon.expect.core._
+import work.martins.simon.expect.core
+
 import scala.reflect.ClassTag
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
-
-import work.martins.simon.expect.core
-import work.martins.simon.expect.core._
-import work.martins.simon.expect.core.StringUtils._
 
 trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
   type W <: core.When[R]

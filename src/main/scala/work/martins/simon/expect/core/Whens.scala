@@ -1,6 +1,7 @@
 package work.martins.simon.expect.core
 
-import StringUtils._
+import work.martins.simon.expect.StringUtils._
+
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 

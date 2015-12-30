@@ -2,25 +2,36 @@ package work.martins.simon.expect.dsl
 
 import java.nio.charset.Charset
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.Config
+import work.martins.simon.expect.StringUtils._
+import work.martins.simon.expect.core.{EndOfFile, Timeout}
+import work.martins.simon.expect.{Settings, fluent}
 
 import scala.collection.mutable
-import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
-import work.martins.simon.expect.core.{Settings, EndOfFile, Timeout}
-import work.martins.simon.expect.fluent
-
-class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R, config: Config) extends DSL[R] {
-  def this(command: String, defaultValue: R = Unit) = {
-    this(command.split("""\s+""").filter(_.nonEmpty).toSeq, defaultValue, ConfigFactory.load())
+class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings())
+  extends DSL[R] {
+  def this(command: Seq[String], defaultValue: R, config: Config) = {
+    this(command, defaultValue, new Settings(config))
   }
-  val settings = new Settings(config)
+  def this(command: String, defaultValue: R, settings: Settings) = {
+    this(splitBySpaces(command), defaultValue, settings)
+  }
+  def this(command: String, defaultValue: R, config: Config) = {
+    this(command, defaultValue, new Settings(config))
+  }
+  def this(command: String, defaultValue: R) = {
+    this(command, defaultValue, new Settings())
+  }
 
-  protected val fluentExpect = new fluent.Expect(command, defaultValue, config)
+  import settings._
+
+  protected val fluentExpect = new fluent.Expect(command, defaultValue, settings)
 
   private val stack = new mutable.Stack[AbstractDefinition[R]]
 
@@ -68,8 +79,8 @@ class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R, config:
   def returning(result: Match => R): DSL[R] = addAction(_.returning(result))
   def exit(): DSL[R] = addAction(_.exit())
 
-  def run(timeout: FiniteDuration = settings.timeout, charset: Charset = settings.charset,
-          bufferSize: Int = settings.bufferSize, redirectStdErrToStdOut: Boolean = settings.redirectStdErrToStdOut)
+  def run(timeout: FiniteDuration = timeout, charset: Charset = charset,
+          bufferSize: Int = bufferSize, redirectStdErrToStdOut: Boolean = redirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
     fluentExpect.run(timeout, charset, bufferSize, redirectStdErrToStdOut)(ex)
   }

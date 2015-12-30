@@ -1,22 +1,35 @@
 package work.martins.simon.expect.core
 
 import java.nio.charset.Charset
-import com.typesafe.config.{Config, ConfigFactory}
+
+import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
+import work.martins.simon.expect.StringUtils._
+import work.martins.simon.expect.Settings
+
 import scala.concurrent._
 import scala.concurrent.duration.FiniteDuration
 
-class Expect[R](command: Seq[String], val defaultValue: R, config: Config)
+class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings())
                (expects: ExpectBlock[R]*) extends LazyLogging {
-  val settings = new Settings(config)
-
-  def this(command: String, defaultValue: R = Unit)(expects: ExpectBlock[R]*) = {
-    this(command.split("""\s+""").filter(_.nonEmpty).toSeq, defaultValue, ConfigFactory.load())(expects:_*)
+  def this(command: Seq[String], defaultValue: R, config: Config)(expects: ExpectBlock[R]*) = {
+    this(command, defaultValue, new Settings(config))(expects:_*)
   }
-  require(command.nonEmpty, "Expect must have a command to run.")
+  def this(command: String, defaultValue: R, settings: Settings)(expects: ExpectBlock[R]*) = {
+    this(splitBySpaces(command), defaultValue, settings)(expects:_*)
+  }
+  def this(command: String, defaultValue: R, config: Config)(expects: ExpectBlock[R]*) = {
+    this(command, defaultValue, new Settings(config))(expects:_*)
+  }
+  def this(command: String, defaultValue: R)(expects: ExpectBlock[R]*) = {
+    this(command, defaultValue, new Settings())(expects:_*)
+  }
 
-  def run(timeout: FiniteDuration = settings.timeout, charset: Charset = settings.charset,
-          bufferSize: Int = settings.bufferSize, redirectStdErrToStdOut: Boolean = settings.redirectStdErrToStdOut)
+  require(command.nonEmpty, "Expect must have a command to run.")
+  import settings._
+
+  def run(timeout: FiniteDuration = timeout, charset: Charset = charset,
+          bufferSize: Int = bufferSize, redirectStdErrToStdOut: Boolean = redirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
     val richProcess = RichProcess(command, timeout, charset, bufferSize, redirectStdErrToStdOut)
     innerRun(richProcess, IntermediateResult("", defaultValue, Continue), expects.toList)
