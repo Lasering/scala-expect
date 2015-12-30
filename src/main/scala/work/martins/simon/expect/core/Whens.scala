@@ -56,6 +56,14 @@ case class StringWhen[R](pattern: String)(val actions: Action[StringWhen[R]]*) e
   }
 
   override def toString: String = toString(escape(pattern))
+  override def equals(other: Any): Boolean = other match {
+    case that: StringWhen[R] => pattern == that.pattern && actions == that.actions
+    case _ => false
+  }
+  override def hashCode(): Int = {
+    val state = Seq(pattern, actions)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 case class RegexWhen[R](pattern: Regex)(val actions: Action[RegexWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = pattern.findFirstIn(output).isDefined
@@ -97,14 +105,34 @@ case class RegexWhen[R](pattern: Regex)(val actions: Action[RegexWhen[R]]*) exte
   }
 
   override def toString: String = toString(escape(pattern.regex) + ".r")
+  override def equals(other: Any): Boolean = other match {
+    case that: RegexWhen[R] => pattern == that.pattern && actions == that.actions
+    case _ => false
+  }
+  override def hashCode(): Int = {
+    val state = Seq(pattern, actions)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 case class EndOfFileWhen[R](actions: Action[EndOfFileWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = false
   def trimToMatchedText(output: String): String = output
+
   override def toString: String = toString("EndOfFile")
+  override def equals(other: Any): Boolean = other match {
+    case that: EndOfFileWhen[R] => actions == that.actions
+    case _ => false
+  }
+  override def hashCode(): Int = actions.hashCode()
 }
 case class TimeoutWhen[R](actions: Action[TimeoutWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = false
   def trimToMatchedText(output: String): String = output
+
   override def toString: String = toString("Timeout")
+  override def equals(other: Any): Boolean = other match {
+    case that: TimeoutWhen[R] => actions == that.actions
+    case _ => false
+  }
+  override def hashCode(): Int = actions.hashCode()
 }

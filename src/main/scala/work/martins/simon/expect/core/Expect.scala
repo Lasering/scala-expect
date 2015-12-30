@@ -35,7 +35,7 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
     innerRun(richProcess, IntermediateResult("", defaultValue, Continue), expects.toList)
   }
 
-  private def innerRun(richProcess: RichProcess, intermediateResult: IntermediateResult[R],
+  protected def innerRun(richProcess: RichProcess, intermediateResult: IntermediateResult[R],
                        expectsStack: List[ExpectBlock[R]])
                       (implicit ec: ExecutionContext): Future[R] = expectsStack match {
     case headExpectBlock :: remainingExpectBlocks =>
@@ -73,4 +73,15 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
        |\tDefaultValue: $defaultValue
        |\t${expects.mkString("\n\t")}
      """.stripMargin
+  override def equals(other: Any): Boolean = other match {
+    case that: Expect =>
+        command == that.command &&
+        defaultValue == that.defaultValue &&
+        settings == that.settings
+    case _ => false
+  }
+  override def hashCode(): Int = {
+    val state = Seq(command, defaultValue, settings)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }

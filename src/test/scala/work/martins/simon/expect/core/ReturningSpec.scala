@@ -12,7 +12,7 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
   )
 
   "An Expect" should "return the specified value" in {
-    val e = new Expect("scala", "")(
+    val e = new Expect("scala", defaultValue = "")(
       new ExpectBlock (
         new StringWhen("Scala version") (
           Returning(() => "ReturnedValue")
@@ -20,26 +20,6 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
       )
     )
     e.run().futureValue(defaultPatience(e)) shouldBe "ReturnedValue"
-  }
-
-  it should "only return the last returning action but still execute the other actions" in {
-    var test = 5
-    val e = new Expect("scala", "")(
-      new ExpectBlock (
-        new RegexWhen("""Scala version (\d+\.\d+\.\d+)""".r) (
-          ReturningWithRegex{ m =>
-            test = 6
-            m.group(1)
-          },
-          Returning(() => "5")
-        )
-      )
-    )
-    test shouldBe 5
-    whenReady(e.run()) { s =>
-      s shouldBe "5"
-      test shouldBe 6
-    }(defaultPatience(e))
   }
 
   it should "only invoke the returning function when that returning action is executed" in {
@@ -56,14 +36,34 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
     )
     test shouldBe 5
     whenReady(e.run()) { s =>
-      s shouldBe "ReturnedValue"
       test shouldBe 7
+      s shouldBe "ReturnedValue"
     }(defaultPatience(e))
   }
 
-  it should "not execute any action after a exit action" in {
+  it should "only return the last returning action but still execute the other actions" in {
     var test = 5
-    val e = new Expect("scala", "")(
+    val e = new Expect("scala", defaultValue = "")(
+      new ExpectBlock (
+        new RegexWhen("""Scala version (\d+\.\d+\.\d+)""".r) (
+          ReturningWithRegex{ m =>
+            test = 6
+            m.group(1)
+          },
+          Returning(() => "5")
+        )
+      )
+    )
+    test shouldBe 5
+    whenReady(e.run()) { s =>
+      test shouldBe 6
+      s shouldBe "5"
+    }(defaultPatience(e))
+  }
+
+  it should "not execute any action after an exit action" in {
+    var test = 5
+    val e = new Expect("scala", defaultValue = "")(
       new ExpectBlock(
         new RegexWhen("""Scala version (\d+\.\d+\.\d+)""".r) (
           ReturningWithRegex(_.group(1)),
@@ -77,8 +77,8 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
     )
 
     whenReady(e.run()) { s =>
-      s should not be "ThisValue"
       test shouldBe 5
+      s should not be "ThisValue"
     }(defaultPatience(e))
   }
 
@@ -100,7 +100,6 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
       interval = Span(e.settings.timeout.toSeconds * 10, Seconds)
     )) shouldBe 3
   }
-
 
   //Test returning with expect
 }

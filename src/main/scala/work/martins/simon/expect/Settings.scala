@@ -45,4 +45,15 @@ class Settings(config: Config = ConfigFactory.load()) {
   val redirectStdErrToStdOut: Boolean = getBoolean("redirect-std-err-to-std-out")
 
   override def toString: String = scalaExpectConfig.root.render
+  override def equals(other: Any): Boolean = other match {
+    case that: Settings =>timeout == that.timeout &&
+        charset == that.charset &&
+        bufferSize == that.bufferSize &&
+        redirectStdErrToStdOut == that.redirectStdErrToStdOut
+    case _ => false
+  }
+  override def hashCode(): Int = {
+    val state = Seq(timeout, charset, bufferSize, redirectStdErrToStdOut)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }

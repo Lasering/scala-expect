@@ -27,7 +27,7 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
   def this(command: String, defaultValue: R) = {
     this(command, defaultValue, new Settings())
   }
-
+  require(command.nonEmpty, "Expect must have a command to run.")
   import settings._
 
   protected val fluentExpect = new fluent.Expect(command, defaultValue, settings)

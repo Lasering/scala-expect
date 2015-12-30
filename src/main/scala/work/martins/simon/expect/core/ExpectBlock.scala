@@ -5,10 +5,10 @@ import java.io.EOFException
 import com.typesafe.scalalogging.LazyLogging
 import scala.concurrent.{TimeoutException, Future, ExecutionContext}
 
-class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
+class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
   require(whens.nonEmpty, "ExpectBlock must have at least a When.")
 
-  private def runWithMoreOutput(process: RichProcess, intermediateResult: IntermediateResult[R])
+  protected def runWithMoreOutput(process: RichProcess, intermediateResult: IntermediateResult[R])
                                (implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
     case class NoMatchingPatternException(output: String) extends Exception
     Future {
@@ -36,7 +36,7 @@ class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
         tryExecuteWhen(_.isInstanceOf[EndOfFileWhen[R]], process, intermediateResult, e)
     }
   }
-  private def tryExecuteWhen(filter: When[R] => Boolean, process: RichProcess,
+  protected def tryExecuteWhen(filter: When[R] => Boolean, process: RichProcess,
                              intermediateResult: IntermediateResult[R], e: Exception)
                             (implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
     whens.find(filter) match {
@@ -81,4 +81,9 @@ class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
     s"""expect {
        |\t${whens.mkString("\n\t")}
        |}""".stripMargin
+  override def equals(other: Any): Boolean = other match {
+    case that: ExpectBlock => whens == that.whens
+    case _ => false
+  }
+  override def hashCode(): Int = whens.hashCode()
 }

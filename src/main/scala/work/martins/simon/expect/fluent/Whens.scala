@@ -111,7 +111,16 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
 case class StringWhen[R](parent: ExpectBlock[R], pattern: String) extends When[R]{
   type W = core.StringWhen[R]
   def toCore: W = new core.StringWhen[R](pattern)(actions:_*)
+
   override def toString: String = toString(escape(pattern))
+  override def equals(other: Any): Boolean = other match {
+    case that: StringWhen[R] => pattern == that.pattern && actions == that.actions
+    case _ => false
+  }
+  override def hashCode(): Int = {
+    val state = Seq(pattern, actions)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 case class RegexWhen[R](parent: ExpectBlock[R], pattern: Regex) extends When[R] {
   type W = core.RegexWhen[R]
@@ -140,15 +149,36 @@ case class RegexWhen[R](parent: ExpectBlock[R], pattern: Regex) extends When[R] 
   def returningExpect(result: Match => core.Expect[R]): When[R] = newAction(ReturningExpectWithRegex(result))
 
   def toCore: W = new core.RegexWhen[R](pattern)(actions:_*)
+
   override def toString: String = toString(escape(pattern.regex) + ".r")
+  override def equals(other: Any): Boolean = other match {
+    case that: RegexWhen[R] => pattern == that.pattern && actions == that.actions
+    case _ => false
+  }
+  override def hashCode(): Int = {
+    val state = Seq(pattern, actions)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 case class TimeoutWhen[R](parent: ExpectBlock[R]) extends When[R] {
   type W = core.TimeoutWhen[R]
   def toCore: W = new core.TimeoutWhen[R](actions:_*)
+
   override def toString: String = toString("EndOfFile")
+  override def equals(other: Any): Boolean = other match {
+    case that: TimeoutWhen[R] => actions == that.actions
+    case _ => false
+  }
+  override def hashCode(): Int = actions.hashCode()
 }
 case class EndOfFileWhen[R](parent: ExpectBlock[R]) extends When[R] {
   type W = core.EndOfFileWhen[R]
   def toCore: W = new core.EndOfFileWhen[R](actions:_*)
+
   override def toString: String = toString("Timeout")
+  override def equals(other: Any): Boolean = other match {
+    case that: EndOfFileWhen[R] => actions == that.actions
+    case _ => false
+  }
+  override def hashCode(): Int = actions.hashCode()
 }

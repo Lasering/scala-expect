@@ -25,6 +25,7 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
     this(command, defaultValue, new Settings())
   }
 
+  require(command.nonEmpty, "Expect must have a command to run.")
   import settings._
 
   //The value we set here is irrelevant since we override the implementation of 'expect'.
@@ -103,4 +104,15 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
         |\tDefaultValue: $defaultValue
         |\t${expects.mkString("\n\t")}
      """.stripMargin
+  override def equals(other: Any): Boolean = other match {
+    case that: Expect =>
+        command == that.command &&
+        defaultValue == that.defaultValue &&
+        settings == that.settings
+    case _ => false
+  }
+  override def hashCode(): Int = {
+    val state = Seq(command, defaultValue, settings)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }

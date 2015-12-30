@@ -13,8 +13,8 @@ class ExpectBlock[R](val parent: Expect[R]) extends Runnable[R] with Expectable[
   //The value we set here is irrelevant since we override the implementation of all the 'when' methods.
   //We decided to set whenableParent to 'this' to make it obvious that this is the root of all Whenables.
   protected val whenableParent: Whenable[R] = this
-  private var whens = Seq.empty[When[R]]
-  private def newWhen[W <: When[R]](when: W): W = {
+  protected var whens = Seq.empty[When[R]]
+  protected def newWhen[W <: When[R]](when: W): W = {
     whens :+= when
     when
   }
@@ -109,4 +109,9 @@ class ExpectBlock[R](val parent: Expect[R]) extends Runnable[R] with Expectable[
         |\t\t${whens.mkString("\n\t\t")}
         |\t}""".stripMargin
   }
+  override def equals(other: Any): Boolean = other match {
+    case that: ExpectBlock => whens == that.whens
+    case _ => false
+  }
+  override def hashCode(): Int = whens.hashCode()
 }

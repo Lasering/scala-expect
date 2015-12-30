@@ -1,13 +1,14 @@
 package work.martins.simon.expect.core
 
 import scala.util.matching.Regex.Match
+import work.martins.simon.expect.StringUtils._
 
 /**
  * @define regexWhen This action can only be added to a RegexWhen.
  * @define returningAction When this action is executed the result of evaluating `result` is returned by
  *         the current run of Expect.
  * @define moreThanOne If more than one returning action is added to a When only the last `result` will be returned.
- *                     Note however that every `ReturningAction` will be executed.
+ *                     Note however that every `ReturningAction` will still be executed.
  * @tparam W the type of When to which this action can be applied.
  */
 trait Action[-W <: When[_]]
@@ -16,7 +17,9 @@ trait Action[-W <: When[_]]
  * When this action is executed `text` will be sent to the stdIn of the underlying process.
  * @param text the text to send.
  */
-case class Send(text: String) extends Action[When[_]]
+case class Send(text: String) extends Action[When[_]] {
+  override def toString: String = s"Send(${escape(text)})"
+}
 object Sendln {
   def apply(text: String): Send = new Send(text + System.lineSeparator())
 }
