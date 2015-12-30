@@ -53,7 +53,7 @@ class Settings(config: Config = ConfigFactory.load()) {
     case _ => false
   }
   override def hashCode(): Int = {
-    val state = Seq(timeout, charset, bufferSize, redirectStdErrToStdOut)
+    val state: Seq[Any] = Seq(timeout, charset, bufferSize, redirectStdErrToStdOut)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }

@@ -110,7 +110,7 @@ class ExpectBlock[R](val parent: Expect[R]) extends Runnable[R] with Expectable[
         |\t}""".stripMargin
   }
   override def equals(other: Any): Boolean = other match {
-    case that: ExpectBlock => whens == that.whens
+    case that: ExpectBlock[R] => whens == that.whens
     case _ => false
   }
   override def hashCode(): Int = whens.hashCode()

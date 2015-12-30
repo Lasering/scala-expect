@@ -30,4 +30,15 @@ class EmptySpec extends FlatSpec with Matchers with ScalaFutures {
       new Expect("ls", defaultValue = Unit)(new ExpectBlock())
     }
   }
+
+  "An Expect with an empty when" should "return the default value" in {
+    val e = new Expect("echo ola", defaultValue = Unit)(
+      new ExpectBlock(
+        new StringWhen("ola")()
+      )
+    )
+    e.run().futureValue(PatienceConfig(
+      timeout = Span(e.settings.timeout.toSeconds + 2, Seconds)
+    )) shouldBe Unit
+  }
 }

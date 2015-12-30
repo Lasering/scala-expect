@@ -82,7 +82,7 @@ class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
        |\t${whens.mkString("\n\t")}
        |}""".stripMargin
   override def equals(other: Any): Boolean = other match {
-    case that: ExpectBlock => whens == that.whens
+    case that: ExpectBlock[R] => whens == that.whens
     case _ => false
   }
   override def hashCode(): Int = whens.hashCode()
