@@ -1,6 +1,6 @@
 package work.martins.simon.expect.core
 
-import java.io.{EOFException, IOException}
+import java.io.IOException
 
 import org.scalatest.time.{Seconds, Span}
 import org.scalatest.{Matchers, FlatSpec}

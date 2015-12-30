@@ -90,15 +90,12 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
         )
       ),
       new ExpectBlock(
-        new RegexWhen("""(\d+)""".r)(
+        new RegexWhen("""(\d+)$""".r)(
           ReturningWithRegex(_.group(1).toInt)
         )
       )
     )
-    e.run().futureValue(PatienceConfig(
-      timeout = Span(e.settings.timeout.toSeconds * 10, Seconds),
-      interval = Span(e.settings.timeout.toSeconds * 10, Seconds)
-    )) shouldBe 3
+    e.run().futureValue(defaultPatience(e)) shouldBe 3
   }
 
   //Test returning with expect
