@@ -4,7 +4,6 @@ import work.martins.simon.expect.StringUtils._
 import work.martins.simon.expect.core._
 import work.martins.simon.expect.core
 
-import scala.reflect.ClassTag
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
@@ -45,8 +44,7 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
    */
   def returning(result: => R): When[R] = newAction(Returning(() => result))
 
-
-  def returning(result: Expect[R]): When[R] = newAction(ReturningExpect(() => result))
+  def returningExpect(result: => core.Expect[R]): When[R] = newAction(ReturningExpect(() => result))
 
   /**
    * Add arbitrary `Action`s to this `When`.
@@ -115,7 +113,7 @@ case class StringWhen[R](parent: ExpectBlock[R], pattern: String) extends When[R
   def toCore: W = new core.StringWhen[R](pattern)(actions:_*)
   override def toString: String = toString(escape(pattern))
 }
-case class RegexWhen[R: ClassTag](parent: ExpectBlock[R], pattern: Regex) extends When[R] {
+case class RegexWhen[R](parent: ExpectBlock[R], pattern: Regex) extends When[R] {
   type W = core.RegexWhen[R]
   /**
    * Send the result of invoking `text` with the `Match` of the regex used, to the stdIn of the underlying process.
@@ -137,17 +135,9 @@ case class RegexWhen[R: ClassTag](parent: ExpectBlock[R], pattern: Regex) extend
    *
    * @return this When.
    */
-  def returning(result: Match => R): When[R] = newAction{
-    //Tricky business to overcome type erasure that we would arise if these two methods were to exist
-    //  def returning(result: Match => R): When[R]
-    //  def returning(result: Match => CExpect[R]): When[R]
-    import scala.reflect.classTag
-    if (classTag[R].runtimeClass == classOf[core.Expect[_]]) {
-      ReturningExpectWithRegex(result.asInstanceOf[Match => core.Expect[R]])
-    } else {
-      ReturningWithRegex(result)
-    }
-  }
+  def returning(result: Match => R): When[R] = newAction(ReturningWithRegex(result))
+
+  def returningExpect(result: Match => core.Expect[R]): When[R] = newAction(ReturningExpectWithRegex(result))
 
   def toCore: W = new core.RegexWhen[R](pattern)(actions:_*)
   override def toString: String = toString(escape(pattern.regex) + ".r")

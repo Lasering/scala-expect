@@ -1,12 +1,11 @@
 package work.martins.simon.expect.fluent
 
-import scala.reflect.ClassTag
 import scala.util.matching.Regex
 
 import work.martins.simon.expect.core
 import work.martins.simon.expect.core.{Timeout, EndOfFile}
 
-class ExpectBlock[R: ClassTag](val parent: Expect[R]) extends Runnable[R] with Expectable[R] with Whenable[R] {
+class ExpectBlock[R](val parent: Expect[R]) extends Runnable[R] with Expectable[R] with Whenable[R] {
   val settings = parent.settings
   protected val runnableParent: Runnable[R] = parent
   protected val expectableParent: Expectable[R] = parent

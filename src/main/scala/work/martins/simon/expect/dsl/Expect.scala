@@ -10,11 +10,10 @@ import work.martins.simon.expect.{Settings, fluent}
 import scala.collection.mutable
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
-import scala.reflect.ClassTag
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
-class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings())
+class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings())
   extends DSL[R] {
   def this(command: Seq[String], defaultValue: R, config: Config) = {
     this(command, defaultValue, new Settings(config))

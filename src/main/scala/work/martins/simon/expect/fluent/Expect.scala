@@ -8,9 +8,8 @@ import work.martins.simon.expect.{Settings, core}
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
-import scala.reflect.ClassTag
 
-class Expect[R: ClassTag](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings())
+class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings())
   extends Runnable[R] with Expectable[R] {
 
   def this(command: Seq[String], defaultValue: R, config: Config) = {
