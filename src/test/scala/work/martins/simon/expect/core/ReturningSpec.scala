@@ -12,9 +12,9 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
   )
 
   "An Expect" should "return the specified value" in {
-    val e = new Expect("scala", defaultValue = "")(
+    val e = new Expect("bc -i", defaultValue = "")(
       new ExpectBlock (
-        new StringWhen("Scala version") (
+        new StringWhen("bc") (
           Returning(() => "ReturnedValue")
         )
       )
@@ -24,9 +24,9 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
 
   it should "only invoke the returning function when that returning action is executed" in {
     var test = 5
-    val e = new Expect("scala", "")(
+    val e = new Expect("bc -i", defaultValue = "")(
       new ExpectBlock (
-        new StringWhen("Scala version") (
+        new StringWhen("bc") (
           Returning { () =>
             test = 7
             "ReturnedValue"
@@ -43,9 +43,9 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
 
   it should "only return the last returning action but still execute the other actions" in {
     var test = 5
-    val e = new Expect("scala", defaultValue = "")(
+    val e = new Expect("bc -i", defaultValue = "")(
       new ExpectBlock (
-        new RegexWhen("""Scala version (\d+\.\d+\.\d+)""".r) (
+        new RegexWhen("""bc (\d+\.\d+\.\d+)""".r) (
           ReturningWithRegex{ m =>
             test = 6
             m.group(1)
@@ -63,9 +63,9 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
 
   it should "not execute any action after an exit action" in {
     var test = 5
-    val e = new Expect("scala", defaultValue = "")(
+    val e = new Expect("bc -i", defaultValue = "")(
       new ExpectBlock(
-        new RegexWhen("""Scala version (\d+\.\d+\.\d+)""".r) (
+        new RegexWhen("""bc (\d+\.\d+\.\d+)""".r) (
           ReturningWithRegex(_.group(1)),
           Exit,
           Returning { () =>
@@ -83,14 +83,14 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
   }
 
   it should "be able to interact with the spawned program" in {
-    val e = new Expect("scala", defaultValue = 5)(
+    val e = new Expect("bc -i", defaultValue = 5)(
       new ExpectBlock(
-        new StringWhen("scala>")(
-          Send("1 + 2\n")
+        new StringWhen("For details type `warranty'.")(
+          Sendln("1 + 2")
         )
       ),
       new ExpectBlock(
-        new RegexWhen("""res0: Int = (\d+)""".r)(
+        new RegexWhen("""(\d+)""".r)(
           ReturningWithRegex(_.group(1).toInt)
         )
       )

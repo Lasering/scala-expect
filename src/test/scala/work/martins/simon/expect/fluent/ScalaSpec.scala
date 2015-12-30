@@ -8,10 +8,10 @@ class ScalaSpec {
   //So there isn't a need to test execution of Expects in the fluent package.
   //There is, however, the need to test that the core.Expect generated from a fluent.Expect is the correct one.
 
-  val e = new Expect("scala", defaultValue = 5)
-    .expect("scala>")
+  val e = new Expect("bc -i", defaultValue = 5)
+    .expect("For details type `warranty'.")
       .sendln("1 + 2")
-    .expect("""res0: Int = (\d+)""".r)
+    .expect("""(\d+)""".r)
       .returning{ m: Match =>
         println("Blas")
         m.group(1).toInt

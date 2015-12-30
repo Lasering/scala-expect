@@ -27,7 +27,7 @@ class WhenSpec extends WordSpec with Matchers with ScalaFutures with BeforeAndAf
   "An Expect " when {
     "the stdOut does not match with any When" should {
       "run the actions in the TimeoutWhen if one exists" in {
-        val e = new Expect("scala", defaultValue = "")(
+        val e = new Expect("bc -i", defaultValue = "")(
           new ExpectBlock (
             new StringWhen("Is there anybody out there?") (
               Returning(() => "Just nod if you can hear me.")
@@ -40,7 +40,7 @@ class WhenSpec extends WordSpec with Matchers with ScalaFutures with BeforeAndAf
         e.run(timeout = 500.millis).futureValue(defaultPatience) shouldBe "Is there anyone at home?"
       }
       "fail with TimeoutException if no TimeoutWhen exists" in {
-        val e = new Expect("scala", defaultValue = "")(
+        val e = new Expect("bc -i", defaultValue = "")(
           new ExpectBlock (
             new StringWhen("Come on, now,") (
               Returning(() => "I hear you're feeling down.")
@@ -79,12 +79,12 @@ class WhenSpec extends WordSpec with Matchers with ScalaFutures with BeforeAndAf
 
     "more than one When matches" should {
       "run the actions in the first matching when" in {
-        val e = new Expect("scala", defaultValue = "")(
+        val e = new Expect("bc -i", defaultValue = "")(
           new ExpectBlock(
-            new RegexWhen("""Scala version""".r)(
+            new RegexWhen("""bc""".r)(
               ReturningWithRegex(_.group(0))
             ),
-            new StringWhen("Scala version")(
+            new StringWhen("bc")(
               Returning(() => "Ohh no")
             )
           )

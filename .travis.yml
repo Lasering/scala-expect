@@ -1,18 +1,4 @@
-sudo: required
-
-dist: trusty
-
 language: scala
-
-addons:
-  apt:
-    packages:
-    - scala
-    
-cache:
-  apt: true
-  directories:
-    - $HOME/.ivy2
 
 scala:
   - 2.11.7
