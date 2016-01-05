@@ -1,8 +1,8 @@
 package work.martins.simon.expect.fluent
 
-import scala.util.matching.Regex
+import work.martins.simon.expect.{Timeout, EndOfFile}
 
-import work.martins.simon.expect.core.{Timeout, EndOfFile}
+import scala.util.matching.Regex
 
 trait Whenable[R] {
   protected val whenableParent: Whenable[R]

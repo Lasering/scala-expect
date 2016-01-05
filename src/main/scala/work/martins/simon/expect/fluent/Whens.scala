@@ -105,8 +105,8 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
 
   def toString(pattern: String): String =
     s"""when $pattern {
-       |\t\t\t${actions.mkString("\n\t\t\t")}
-       |\t\t}""".stripMargin
+       |${actions.mkString("\n").indent()}
+       |}""".stripMargin
 }
 case class StringWhen[R](parent: ExpectBlock[R], pattern: String) extends When[R]{
   type W = core.StringWhen[R]
@@ -152,7 +152,7 @@ case class RegexWhen[R](parent: ExpectBlock[R], pattern: Regex) extends When[R] 
 
   override def toString: String = toString(escape(pattern.regex) + ".r")
   override def equals(other: Any): Boolean = other match {
-    case that: RegexWhen[R] => pattern == that.pattern && actions == that.actions
+    case that: RegexWhen[R] => pattern.regex == that.pattern.regex && actions == that.actions
     case _ => false
   }
   override def hashCode(): Int = {

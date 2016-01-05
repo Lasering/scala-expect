@@ -1,8 +1,8 @@
 package work.martins.simon.expect.fluent
 
-import scala.util.matching.Regex
+import work.martins.simon.expect.{Timeout, EndOfFile}
 
-import work.martins.simon.expect.core.{EndOfFile, Timeout}
+import scala.util.matching.Regex
 
 trait Expectable[R] {
   protected val expectableParent: Expectable[R]

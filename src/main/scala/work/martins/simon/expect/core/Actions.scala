@@ -11,7 +11,22 @@ import work.martins.simon.expect.StringUtils._
  *                     Note however that every `ReturningAction` will still be executed.
  * @tparam W the type of When to which this action can be applied.
  */
-trait Action[-W <: When[_]]
+trait Action[-W <: When[_]] {
+  def structurallyEquals[WW <: W](other: Action[WW]): Boolean = this match {
+    case _: Send => other.isInstanceOf[Send]
+    case _: SendWithRegex => other.isInstanceOf[SendWithRegex]
+    case _: Returning[_] => other.isInstanceOf[Returning[_]]
+    case _: ReturningWithRegex[_] => other.isInstanceOf[ReturningWithRegex[_]]
+    case _: ReturningExpect[_] => other.isInstanceOf[ReturningExpect[_]]
+    case _: ReturningExpectWithRegex[_] => other.isInstanceOf[ReturningExpectWithRegex[_]]
+    case Exit => other == Exit
+    case _ => false
+  }
+
+  def toIndentedString(level: Int = 1, text: String = "\t"): String = {
+    toString.replaceAll("(?m)^", text * level)
+  }
+}
 
 /**
  * When this action is executed `text` will be sent to the stdIn of the underlying process.

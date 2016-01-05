@@ -1,9 +1,8 @@
 package work.martins.simon.expect.fluent
 
 import scala.util.matching.Regex
-
-import work.martins.simon.expect.core
-import work.martins.simon.expect.core.{Timeout, EndOfFile}
+import work.martins.simon.expect.{Timeout, EndOfFile, core}
+import work.martins.simon.expect.StringUtils._
 
 class ExpectBlock[R](val parent: Expect[R]) extends Runnable[R] with Expectable[R] with Whenable[R] {
   val settings = parent.settings
@@ -89,7 +88,7 @@ class ExpectBlock[R](val parent: Expect[R]) extends Runnable[R] with Expectable[
     * This method is very similar to the `addWhen` with the following differences:
     *  1. `f` has a more relaxed type.
     *  1. It returns this ExpectBlock. Which effectively prohibits you from invoking When methods.
-    *  1. Has a more semantic name when it comes to add multiple When's.
+    *  1. Has a more semantic name when it comes to adding multiple When's.
     *
     * @param f function that adds `When`s.
     * @return this ExpectBlock.
@@ -106,8 +105,8 @@ class ExpectBlock[R](val parent: Expect[R]) extends Runnable[R] with Expectable[
 
   override def toString: String = {
     s"""expect {
-        |\t\t${whens.mkString("\n\t\t")}
-        |\t}""".stripMargin
+        |${whens.mkString("\n").indent()}
+        |}""".stripMargin
   }
   override def equals(other: Any): Boolean = other match {
     case that: ExpectBlock[R] => whens == that.whens

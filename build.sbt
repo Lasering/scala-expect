@@ -1,6 +1,6 @@
 organization := "work.martins.simon"
 name := "scala-expect"
-version := "1.6.1"
+version := "1.7.0"
 
 scalaVersion := "2.11.7"
 initialize := {

@@ -102,17 +102,18 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
     s"""Expect:
         |\tCommand: $command
         |\tDefaultValue: $defaultValue
-        |\t${expects.mkString("\n\t")}
+        |${expects.mkString("\n").indent()}
      """.stripMargin
   override def equals(other: Any): Boolean = other match {
     case that: Expect[R] =>
         command == that.command &&
         defaultValue == that.defaultValue &&
-        settings == that.settings
+        settings == that.settings &&
+        expects == that.expects
     case _ => false
   }
   override def hashCode(): Int = {
-    val state: Seq[Any] = Seq(command, defaultValue, settings)
+    val state: Seq[Any] = Seq(command, defaultValue, settings, expects)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }

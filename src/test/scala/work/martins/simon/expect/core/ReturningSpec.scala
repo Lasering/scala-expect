@@ -5,6 +5,7 @@ import org.scalatest.time.{Seconds, Span}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.matching.Regex.Match
 
 class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
   def defaultPatience(e: Expect[_]) = PatienceConfig(
@@ -86,7 +87,14 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
     val e = new Expect("bc -i", defaultValue = 5)(
       new ExpectBlock(
         new StringWhen("For details type `warranty'.")(
-          Sendln("1+2")
+          Sendln("1 + 2")
+        )
+      ),
+      new ExpectBlock(
+        new RegexWhen("""(?m)^(\d+)$""".r)(
+          SendlnWithRegex{ m: Match =>
+            s"${m.group(1)} + 3"
+          }
         )
       ),
       new ExpectBlock(
@@ -95,7 +103,21 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
         )
       )
     )
-    e.run().futureValue(defaultPatience(e)) shouldBe 3
+    e.run().futureValue(defaultPatience(e)) shouldBe 6
+  }
+
+  it should "fail if an exception is thrown inside an action" in {
+    val e = new Expect("bc -i", defaultValue = 5)(
+      new ExpectBlock(
+        new StringWhen("For details type `warranty'.")(
+          Sendln("1 + 2"),
+          Returning{ () =>
+            throw new IllegalArgumentException()
+          }
+        )
+      )
+    )
+    e.run().failed.futureValue(defaultPatience(e)) shouldBe a [IllegalArgumentException]
   }
 
   //Test returning with expect

@@ -4,6 +4,7 @@ import java.io.EOFException
 
 import com.typesafe.scalalogging.LazyLogging
 import scala.concurrent.{TimeoutException, Future, ExecutionContext}
+import work.martins.simon.expect.StringUtils._
 
 class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
   require(whens.nonEmpty, "ExpectBlock must have at least a When.")
@@ -25,9 +26,9 @@ class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
           when.execute(process, intermediateResult.copy(output = newOutput))
       }
     } recoverWith {
-      case NoMatchingPatternException(output) if process.deadLineHasTimeLeft() =>
+      case NoMatchingPatternException(newOutput) if process.deadLineHasTimeLeft() =>
         logger.info(s"Did not match. Going to read more.")
-        runWithMoreOutput(process, intermediateResult.copy(output = output))
+        runWithMoreOutput(process, intermediateResult.copy(output = newOutput))
       case e: TimeoutException =>
         logger.info(s"Read timed out after ${process.timeout}. Going to try and execute a TimeoutWhen.")
         tryExecuteWhen(_.isInstanceOf[TimeoutWhen[R]], process, intermediateResult, e)
@@ -40,14 +41,14 @@ class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
                              intermediateResult: IntermediateResult[R], e: Exception)
                             (implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
     whens.find(filter) match {
-      case None =>
-        //Now we really failed. So we must destroy the running process and the streams.
-        process.destroy()
-        Future.failed(e)
       case Some(when) =>
         Future {
           when.execute(process, intermediateResult)
         }
+      case None =>
+        //Now we really failed. So we must destroy the running process and the streams.
+        process.destroy()
+        Future.failed(e)
     }
   }
   /**
@@ -64,13 +65,11 @@ class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
          (implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
     whens.find(_.matches(intermediateResult.output)) match {
       case Some(when) =>
-        //A When matches with lastOutput so we can execute it directly.
         logger.info("Matched with lastOutput")
         Future {
           when.execute(process, intermediateResult)
         }
       case None =>
-        //We need to read more lines to find a matching When. Or lastOutput was None.
         logger.info("Need more output. Going to read...")
         process.resetDeadline()
         runWithMoreOutput(process, intermediateResult)
@@ -79,11 +78,16 @@ class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
 
   override def toString: String =
     s"""expect {
-       |\t${whens.mkString("\n\t")}
-       |}""".stripMargin
+        |${whens.mkString("\n").indent()}
+        |}""".stripMargin
+
   override def equals(other: Any): Boolean = other match {
     case that: ExpectBlock[R] => whens == that.whens
     case _ => false
+  }
+
+  def structurallyEquals(other: ExpectBlock[R]): Boolean = {
+    whens.size == other.whens.size && whens.zip(other.whens).forall{ case (a, b) => a.structurallyEquals(b) }
   }
   override def hashCode(): Int = whens.hashCode()
 }

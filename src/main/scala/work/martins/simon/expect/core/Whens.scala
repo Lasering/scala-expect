@@ -5,9 +5,6 @@ import work.martins.simon.expect.StringUtils._
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
-object EndOfFile
-object Timeout
-
 trait When[R] extends {
   def actions: Seq[Action[this.type]]
 
@@ -46,8 +43,10 @@ trait When[R] extends {
 
   def toString(pattern: String): String =
     s"""when $pattern {
-       |\t${actions.mkString("\n")}
+       |${actions.mkString("\n").indent()}
        |}""".stripMargin
+
+  def structurallyEquals(other: When[R]): Boolean
 }
 case class StringWhen[R](pattern: String)(val actions: Action[StringWhen[R]]*) extends When[R] {
   def matches(output: String): Boolean = output.contains(pattern)
@@ -58,6 +57,12 @@ case class StringWhen[R](pattern: String)(val actions: Action[StringWhen[R]]*) e
   override def toString: String = toString(escape(pattern))
   override def equals(other: Any): Boolean = other match {
     case that: StringWhen[R] => pattern == that.pattern && actions == that.actions
+    case _ => false
+  }
+  def structurallyEquals(other: When[R]): Boolean = other match {
+    case that: StringWhen[R] =>
+      pattern == that.pattern &&
+      actions.size == that.actions.size && actions.zip(that.actions).forall { case (a, b) => a.structurallyEquals(b) }
     case _ => false
   }
   override def hashCode(): Int = {
@@ -106,7 +111,13 @@ case class RegexWhen[R](pattern: Regex)(val actions: Action[RegexWhen[R]]*) exte
 
   override def toString: String = toString(escape(pattern.regex) + ".r")
   override def equals(other: Any): Boolean = other match {
-    case that: RegexWhen[R] => pattern == that.pattern && actions == that.actions
+    case that: RegexWhen[R] => pattern.regex == that.pattern.regex && actions == that.actions
+    case _ => false
+  }
+  def structurallyEquals(other: When[R]): Boolean = other match {
+    case that: RegexWhen[R] =>
+      pattern.regex == that.pattern.regex &&
+      actions.size == that.actions.size && actions.zip(that.actions).forall { case (a, b) => a.structurallyEquals(b) }
     case _ => false
   }
   override def hashCode(): Int = {
@@ -123,6 +134,11 @@ case class EndOfFileWhen[R](actions: Action[EndOfFileWhen[R]]*) extends When[R] 
     case that: EndOfFileWhen[R] => actions == that.actions
     case _ => false
   }
+  def structurallyEquals(other: When[R]): Boolean = other match {
+    case that: EndOfFileWhen[R] =>
+      actions.size == that.actions.size && actions.zip(that.actions).forall { case (a, b) => a.structurallyEquals(b) }
+    case _ => false
+  }
   override def hashCode(): Int = actions.hashCode()
 }
 case class TimeoutWhen[R](actions: Action[TimeoutWhen[R]]*) extends When[R] {
@@ -132,6 +148,11 @@ case class TimeoutWhen[R](actions: Action[TimeoutWhen[R]]*) extends When[R] {
   override def toString: String = toString("Timeout")
   override def equals(other: Any): Boolean = other match {
     case that: TimeoutWhen[R] => actions == that.actions
+    case _ => false
+  }
+  def structurallyEquals(other: When[R]): Boolean = other match {
+    case that: TimeoutWhen[R] =>
+      actions.size == that.actions.size && actions.zip(that.actions).forall { case (a, b) => a.structurallyEquals(b) }
     case _ => false
   }
   override def hashCode(): Int = actions.hashCode()

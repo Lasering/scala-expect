@@ -49,6 +49,19 @@ class WhenSpec extends WordSpec with Matchers with ScalaFutures with BeforeAndAf
         )
         e.run(timeout = 500.millis).failed.futureValue(defaultPatience) shouldBe a [TimeoutException]
       }
+      "fail if an exception is thrown inside the TimeoutWhen" in {
+        val e = new Expect("bc -i", defaultValue = "")(
+          new ExpectBlock (
+            new StringWhen("Is there anybody out there?") (
+              Returning(() => "Just nod if you can hear me.")
+            ),
+            new TimeoutWhen(
+              Returning(() => throw new IllegalArgumentException())
+            )
+          )
+        )
+        e.run(timeout = 500.millis).failed.futureValue(defaultPatience) shouldBe a [IllegalArgumentException]
+      }
     }
 
     "eof is read from stdOut" should {
@@ -74,6 +87,19 @@ class WhenSpec extends WordSpec with Matchers with ScalaFutures with BeforeAndAf
           )
         )
         e.run().failed.futureValue(defaultPatience) shouldBe a [EOFException]
+      }
+      "fail if an exception is thrown inside the EndOfFileWhen" in {
+        val e = new Expect("ls", defaultValue = "")(
+          new ExpectBlock (
+            new StringWhen("Well I can ease your pain") (
+              Returning(() => "Get you on your feet again.")
+            ),
+            new EndOfFileWhen(
+              Returning(() => throw new IllegalArgumentException())
+            )
+          )
+        )
+        e.run().failed.futureValue(defaultPatience) shouldBe a [IllegalArgumentException]
       }
     }
 

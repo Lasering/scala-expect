@@ -1,9 +1,9 @@
 package work.martins.simon.expect.dsl
 
+import work.martins.simon.expect.{Timeout, EndOfFile}
+
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
-
-import work.martins.simon.expect.core.{EndOfFile, Timeout}
 
 trait DSL[R] {
   type DSLWithBlock = DSL[R] with Block[R]

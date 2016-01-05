@@ -1,6 +1,6 @@
 package work.martins.simon.expect.dsl
 
-import work.martins.simon.expect.core.EndOfFile
+import work.martins.simon.expect.EndOfFile
 
 import scala.concurrent.Await
 

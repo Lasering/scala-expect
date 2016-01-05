@@ -4,8 +4,7 @@ import java.nio.charset.Charset
 
 import com.typesafe.config.Config
 import work.martins.simon.expect.StringUtils._
-import work.martins.simon.expect.core.{EndOfFile, Timeout}
-import work.martins.simon.expect.{Settings, fluent}
+import work.martins.simon.expect.{Timeout, EndOfFile, Settings, fluent}
 
 import scala.collection.mutable
 import scala.concurrent.duration.FiniteDuration
