@@ -8,7 +8,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.matching.Regex.Match
 
 class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
-  def defaultPatience(e: Expect[_]) = PatienceConfig(
+  def defaultPatience(e: Expect[_]): PatienceConfig = PatienceConfig(
     timeout = Span(e.settings.timeout.toSeconds + 2, Seconds)
   )
 
@@ -93,7 +93,9 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
       new ExpectBlock(
         new RegexWhen("""(?m)^(\d+)$""".r)(
           SendlnWithRegex{ m: Match =>
-            s"${m.group(1)} + 3"
+            val previousAnswer = m.group(1)
+            println(s"Got $previousAnswer")
+            s"$previousAnswer + 3"
           }
         )
       ),

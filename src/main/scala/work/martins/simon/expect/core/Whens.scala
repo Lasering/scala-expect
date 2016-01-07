@@ -5,20 +5,20 @@ import work.martins.simon.expect.StringUtils._
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
-trait When[R] extends {
+trait When[R] {
   def actions: Seq[Action[this.type]]
 
   /**
    * @param output the String to match against.
    * @return whether this When matches against `output`.
    */
-  def matches(output: String): Boolean
+  def matches(output: String): Boolean = false
   /**
    * @param output the output to trim.
    * @return the text in `output` that remains after removing all the text up to the first occurrence of the text
    *         matched by this When and then removing the text matched by this When.
    */
-  def trimToMatchedText(output: String): String
+  def trimToMatchedText(output: String): String = output
 
   /**
    * Executes all the actions of this When.
@@ -41,17 +41,25 @@ trait When[R] extends {
     result
   }
 
+  protected def structurallyEqualActions(other: When[R]): Boolean = {
+    actions.size == other.actions.size && actions.zip(other.actions).forall { case (a, b) => a.structurallyEquals(b) }
+  }
+  def structurallyEquals(other: When[R]): Boolean
+
   def toString(pattern: String): String =
-    s"""when $pattern {
+    s"""when($pattern) {
        |${actions.mkString("\n").indent()}
        |}""".stripMargin
-
-  def structurallyEquals(other: When[R]): Boolean
 }
 case class StringWhen[R](pattern: String)(val actions: Action[StringWhen[R]]*) extends When[R] {
-  def matches(output: String): Boolean = output.contains(pattern)
-  def trimToMatchedText(output: String): String = {
+  override def matches(output: String): Boolean = output.contains(pattern)
+  override def trimToMatchedText(output: String): String = {
     output.substring(output.indexOf(pattern) + pattern.length)
+  }
+
+  def structurallyEquals(other: When[R]): Boolean = other match {
+    case that: StringWhen[R] => structurallyEqualActions(other) && pattern == that.pattern
+    case _ => false
   }
 
   override def toString: String = toString(escape(pattern))
@@ -59,20 +67,11 @@ case class StringWhen[R](pattern: String)(val actions: Action[StringWhen[R]]*) e
     case that: StringWhen[R] => pattern == that.pattern && actions == that.actions
     case _ => false
   }
-  def structurallyEquals(other: When[R]): Boolean = other match {
-    case that: StringWhen[R] =>
-      pattern == that.pattern &&
-      actions.size == that.actions.size && actions.zip(that.actions).forall { case (a, b) => a.structurallyEquals(b) }
-    case _ => false
-  }
-  override def hashCode(): Int = {
-    val state = Seq(pattern, actions)
-    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
-  }
+  override def hashCode(): Int = Seq(pattern, actions).map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
 }
 case class RegexWhen[R](pattern: Regex)(val actions: Action[RegexWhen[R]]*) extends When[R] {
-  def matches(output: String): Boolean = pattern.findFirstIn(output).isDefined
-  def trimToMatchedText(output: String): String = output.substring(getMatch(output).end(0))
+  override def matches(output: String): Boolean = pattern.findFirstIn(output).isDefined
+  override def trimToMatchedText(output: String): String = output.substring(getMatch(output).end(0))
 
   private def getMatch(output: String): Match = {
     //We have the guarantee that .get will be successful because this method
@@ -84,6 +83,7 @@ case class RegexWhen[R](pattern: Regex)(val actions: Action[RegexWhen[R]]*) exte
     //Would be nice not to duplicate most of this code here.
     val trimmedOutput = trimToMatchedText(intermediateResult.output)
     var result = intermediateResult.copy[R](output = trimmedOutput)
+
     val regexMatch = getMatch(intermediateResult.output)
     actions foreach {
       case Send(text) =>
@@ -109,51 +109,31 @@ case class RegexWhen[R](pattern: Regex)(val actions: Action[RegexWhen[R]]*) exte
     result
   }
 
+  def structurallyEquals(other: When[R]): Boolean = other match {
+    case that: RegexWhen[R] => structurallyEqualActions(other) && pattern.regex == that.pattern.regex
+    case _ => false
+  }
+
   override def toString: String = toString(escape(pattern.regex) + ".r")
   override def equals(other: Any): Boolean = other match {
     case that: RegexWhen[R] => pattern.regex == that.pattern.regex && actions == that.actions
     case _ => false
   }
-  def structurallyEquals(other: When[R]): Boolean = other match {
-    case that: RegexWhen[R] =>
-      pattern.regex == that.pattern.regex &&
-      actions.size == that.actions.size && actions.zip(that.actions).forall { case (a, b) => a.structurallyEquals(b) }
-    case _ => false
-  }
-  override def hashCode(): Int = {
-    val state = Seq(pattern, actions)
-    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
-  }
+  override def hashCode(): Int = Seq(pattern, actions).map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
 }
 case class EndOfFileWhen[R](actions: Action[EndOfFileWhen[R]]*) extends When[R] {
-  def matches(output: String): Boolean = false
-  def trimToMatchedText(output: String): String = output
+  def structurallyEquals(other: When[R]): Boolean = other match {
+    case that: EndOfFileWhen[R] => structurallyEqualActions(other)
+    case _ => false
+  }
 
   override def toString: String = toString("EndOfFile")
-  override def equals(other: Any): Boolean = other match {
-    case that: EndOfFileWhen[R] => actions == that.actions
-    case _ => false
-  }
-  def structurallyEquals(other: When[R]): Boolean = other match {
-    case that: EndOfFileWhen[R] =>
-      actions.size == that.actions.size && actions.zip(that.actions).forall { case (a, b) => a.structurallyEquals(b) }
-    case _ => false
-  }
-  override def hashCode(): Int = actions.hashCode()
 }
 case class TimeoutWhen[R](actions: Action[TimeoutWhen[R]]*) extends When[R] {
-  def matches(output: String): Boolean = false
-  def trimToMatchedText(output: String): String = output
+  def structurallyEquals(other: When[R]): Boolean = other match {
+    case that: TimeoutWhen[R] => structurallyEqualActions(other)
+    case _ => false
+  }
 
   override def toString: String = toString("Timeout")
-  override def equals(other: Any): Boolean = other match {
-    case that: TimeoutWhen[R] => actions == that.actions
-    case _ => false
-  }
-  def structurallyEquals(other: When[R]): Boolean = other match {
-    case that: TimeoutWhen[R] =>
-      actions.size == that.actions.size && actions.zip(that.actions).forall { case (a, b) => a.structurallyEquals(b) }
-    case _ => false
-  }
-  override def hashCode(): Int = actions.hashCode()
 }

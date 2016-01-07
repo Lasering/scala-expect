@@ -3,6 +3,11 @@ package work.martins.simon.expect.fluent
 import org.scalatest.{FreeSpec, Matchers}
 import work.martins.simon.expect.core
 
+//The execution of a fluent.Expect is delegated to core.Expect
+//This means fluent.Expect does not know how to execute Expects.
+//So there isn't a need to test execution of Expects in the fluent package.
+//There is, however, the need to test that the core.Expect generated from a fluent.Expect is the correct one.
+
 class ExpectAndWhenSpec extends FreeSpec with Matchers {
   "An Expect should generate the correct core.Expect when" - {
     "multiple expect blocks are added" - {
@@ -72,7 +77,7 @@ class ExpectAndWhenSpec extends FreeSpec with Matchers {
         )
       )
 
-      def addIWhen(i: Int)(e: ExpectBlock[Unit]) = e.when(s"$i")
+      def addIWhen(i: Int)(e: ExpectBlock[Unit]): StringWhen[Unit] = e.when(s"$i")
 
       "using the verbose way" in {
         val fe = new Expect("ls", defaultValue = ())

@@ -6,6 +6,11 @@ import work.martins.simon.expect.core._
 
 import scala.util.matching.Regex.Match
 
+//The execution of a fluent.Expect is delegated to core.Expect
+//This means fluent.Expect does not know how to execute Expects.
+//So there isn't a need to test execution of Expects in the fluent package.
+//There is, however, the need to test that the core.Expect generated from a fluent.Expect is the correct one.
+
 class ActionsSpec extends WordSpec with Matchers {
   "An Expect" when {
     //We cannot test that a fluent.Expect generates the correct core.Expect when an Action that contains
@@ -33,18 +38,19 @@ class ActionsSpec extends WordSpec with Matchers {
           )
         )
 
-        val fe = new Expect("ls", defaultValue = "")
-        fe.expect
-          .when("1")
-            .send("string1")
-            .exit()
-        fe.expect
-          .when("""(\d+) \w+""".r)
-            .sendln("string2")
-          .when("""(\d+ \w+)""".r)
-            .exit()
+        val fluentExpect = new Expect("ls", defaultValue = "") {
+          expect
+            .when("1")
+              .send("string1")
+              .exit()
+          expect
+            .when("""(\d+) \w+""".r)
+              .sendln("string2")
+            .when("""(\d+ \w+)""".r)
+              .exit()
+        }
 
-        fe.toCore shouldEqual coreExpect
+        fluentExpect.toCore shouldEqual coreExpect
       }
     }
     "multiple actions with functions are added" should {
@@ -60,7 +66,7 @@ class ActionsSpec extends WordSpec with Matchers {
           new core.ExpectBlock(
             new core.RegexWhen("""(\d+) \w+""".r)(
               SendlnWithRegex { m: Match =>
-                val i = m.group(1).toInt
+                val i = m.group(1)
                 s"string$i"
               }
             ),
@@ -71,20 +77,24 @@ class ActionsSpec extends WordSpec with Matchers {
           )
         )
 
-        val fe = new Expect("ls", defaultValue = "")
-        fe.expect
-          .when("1")
-            .sendln("string1")
-            .returning("string2")
-            .exit()
-        fe.expect
-          .when("""(\d+) \w+""".r)
-            .sendln(m => s"string${m.group(1).toInt}")
-          .when("""(\d+ \w+)""".r)
-            .returning(_.group(1))
-            .exit()
+        val fluentExpect = new Expect("ls", defaultValue = "") {
+          expect
+            .when("1")
+              .sendln("string1")
+              .returning("string2")
+              .exit()
+          expect
+            .when("""(\d+) \w+""".r)
+              .sendln { m: Match =>
+                val i = m.group(1)
+                s"string$i"
+              }
+            .when("""(\d+ \w+)""".r)
+              .returning(_.group(1))
+              .exit()
+        }
 
-        fe.toCore.structurallyEquals(coreExpect) shouldBe true
+        fluentExpect.toCore.structurallyEquals(coreExpect) shouldBe true
       }
     }
   }

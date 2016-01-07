@@ -21,7 +21,7 @@ class EmptySpec extends FlatSpec with Matchers with ScalaFutures {
   }
 
   "An Expect without expect blocks" should "return the default value" in {
-    val e = new Expect("ls", defaultValue = ())()
+    val e = new Expect("ls", defaultValue = Unit)()
     e.run().futureValue shouldBe Unit
   }
 
@@ -32,7 +32,7 @@ class EmptySpec extends FlatSpec with Matchers with ScalaFutures {
   }
 
   "An Expect with an empty when" should "return the default value" in {
-    val e = new Expect("echo ola", defaultValue = ())(
+    val e = new Expect("echo ola", defaultValue = Unit)(
       new ExpectBlock(
         new StringWhen("ola")()
       )

@@ -4,7 +4,8 @@ import java.nio.charset.Charset
 
 import com.typesafe.config.Config
 import work.martins.simon.expect.StringUtils._
-import work.martins.simon.expect.{Timeout, EndOfFile, Settings, fluent}
+import work.martins.simon.expect._
+import work.martins.simon.expect.fluent._
 
 import scala.collection.mutable
 import scala.concurrent.duration.FiniteDuration
@@ -12,8 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
-class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings())
-  extends DSL[R] {
+class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings()) extends DSL[R] {
   def this(command: Seq[String], defaultValue: R, config: Config) = {
     this(command, defaultValue, new Settings(config))
   }
@@ -29,44 +29,37 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
   require(command.nonEmpty, "Expect must have a command to run.")
   import settings._
 
-  protected val fluentExpect = new fluent.Expect(command, defaultValue, settings)
+  protected[dsl] val fluentExpect = new fluent.Expect(command, defaultValue, settings)
+  private val stack = new mutable.Stack[DSL[R]]
 
-  private val stack = new mutable.Stack[AbstractDefinition[R]]
-
-  def build(currentDefinition: AbstractDefinition[R], block: => Unit): Unit = {
+  def build(currentDefinition: DSL[R], block: => Unit): Unit = {
     stack.push(currentDefinition)
     block
     stack.pop()
   }
 
   //This is the only entry point of the DSL
-  def expect: DSL[R] with Block[R] = {
+  def expect: ExpectBlockDefinition[R] = {
     require(stack.isEmpty, "Expect block must be the top level object.")
-    new ExpectDefinition(this, fluentExpect.expect)
+    new ExpectBlockDefinition(this, fluentExpect.expect)
   }
 
-  def expect(pattern: String): DSLWithBlock = expect.apply(when(pattern))
-  def expect(pattern: Regex): DSLWithBlock = expect.apply(when(pattern))
-  def expect(pattern: Timeout.type): DSLWithBlock = expect.apply(when(pattern))
-  def expect(pattern: EndOfFile.type): DSLWithBlock = expect.apply(when(pattern))
-
-  private def addWhen(block: AbstractDefinition[R] => DSLWithBlock): DSLWithBlock = {
-    require(stack.size == 1 && stack.top.isInstanceOf[ExpectDefinition[R]], "When can only be added inside an Expect.")
+  private def addWhen[W <: When[R]](block: DSL[R] => WhenDefinition[R, W]): WhenDefinition[R, W] = {
+    require(stack.size == 1/* && stack.top.isInstanceOf[ExpectDefinition[R]]*/, "When can only be added inside an Expect.")
     block(stack.top)
   }
-  def when(pattern: String): DSLWithBlock = addWhen(_.when(pattern))
-  def when(pattern: Regex): DSLWithBlock = addWhen(_.when(pattern))
-  def when(pattern: EndOfFile.type): DSLWithBlock = addWhen(_.when(pattern))
-  def when(pattern: Timeout.type): DSLWithBlock = addWhen(_.when(pattern))
+  def when(pattern: String): WhenDefinition[R, StringWhen[R]] = addWhen(_.when(pattern))
+  def when(pattern: Regex): WhenDefinition[R, RegexWhen[R]] = addWhen(_.when(pattern))
+  def when(pattern: Timeout.type): WhenDefinition[R, TimeoutWhen[R]] = addWhen(_.when(pattern))
+  def when(pattern: EndOfFile.type): WhenDefinition[R, EndOfFileWhen[R]] = addWhen(_.when(pattern))
 
   def withBlock(block: DSL[R] => Unit): DSL[R] = {
     block(stack.top)
     this
   }
 
-  private def addAction(block: AbstractDefinition[R] => DSL[R]): DSL[R] = {
-    require(stack.size == 2 && stack.top.isInstanceOf[WhenDefinition[R, _]],
-            "An Action can only be added inside a When.")
+  private def addAction(block: DSL[R] => DSL[R]): DSL[R] = {
+    require(stack.size == 2/* && stack.top.isInstanceOf[WhenDefinition[R, _]]*/, "An Action can only be added inside a When.")
     block(stack.top)
   }
   def send(text: String): DSL[R] = addAction(_.send(text))
@@ -75,6 +68,8 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
   def sendln(text: Match => String): DSL[R] = addAction(_.sendln(text))
   def returning(result: => R): DSL[R] = addAction(_.returning(result))
   def returning(result: Match => R): DSL[R] = addAction(_.returning(result))
+  def returningExpect(result: => core.Expect[R]): DSL[R] = addAction(_.returningExpect(result))
+  def returningExpect(result: Match => core.Expect[R]): DSL[R] = addAction(_.returningExpect(result))
   def exit(): DSL[R] = addAction(_.exit())
 
   def run(timeout: FiniteDuration = timeout, charset: Charset = charset,
@@ -84,4 +79,6 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
   }
 
   override def toString: String = fluentExpect.toString
+
+  def toCore: core.Expect[R] = fluentExpect.toCore
 }
