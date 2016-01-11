@@ -2,6 +2,7 @@
 
 A Scala implementation of a very small subset of the widely known TCL expect.
 
+Scala-expect comes with three different flavors: `core`, `fluent` and `dsl`.
 <!---
 ## Get scala-expect
 ```scala
@@ -9,10 +10,7 @@ libraryDependencies += "work.martins.simon" %% "scala-expect" % "1.7.1"
 ```
 --->
 
-## Flavors of expect
-Scala-expect comes with three different flavors: core, fluent and dsl.
-
-### Core
+## Core
 #### Advantages
 * Closer to the metal / The basis for the other flavors.
 * Immutable and therefore thread-safe.
@@ -52,7 +50,7 @@ val e = new Expect("bc -i", defaultValue = 5)(
 e.run() //Should return 6 inside a Future[Int]
 ```
 
-### Fluent
+## Fluent
 #### Advantages
 * Less verbose syntax.
 * Most errors will be caught in compile time.
@@ -87,7 +85,7 @@ e.expect("""(?m)^(\d+)$""".r)
 e.run() //Should return 6 inside a Future[Int]
 ```
 
-### DSL
+## DSL
 #### Advantages
 * Code will be indented in blocks so IDE's won't screw the indentation.
 * Syntax more close to the TCL expect.
