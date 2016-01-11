@@ -9,10 +9,9 @@ class ExpectBlock[R](val parent: Expect[R]) extends Runnable[R] with Expectable[
   protected val runnableParent: Runnable[R] = parent
   protected val expectableParent: Expectable[R] = parent
 
-  //The value we set here is irrelevant since we override every method of the Whenable trait.
   //We decided to set whenableParent to 'this' to make it obvious that this is the root of all Whenables.
   protected val whenableParent: Whenable[R] = this
-  protected var whens = Seq.empty[When[R]]
+  private var whens = Seq.empty[When[R]]
   protected def newWhen[W <: When[R]](when: W): W = {
     whens :+= when
     when
