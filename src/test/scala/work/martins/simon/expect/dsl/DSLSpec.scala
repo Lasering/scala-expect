@@ -122,5 +122,26 @@ class DSLSpec extends WordSpec with Matchers {
         }
       }
     }
+
+
+    "asdasd" should {
+      "cenas" in {
+        def principalDoesNotExist(expectBlock: ExpectBlock[Either[Int, String]]) = {
+          import expectBlock._
+          when("Principal does not exist") {
+            returning(Left(5))
+          }
+        }
+        val defaultValue: Either[Int, String] = Left(1)
+        new Expect("ls", defaultValue) {
+          expect {
+            addWhen(principalDoesNotExist)
+            when("cenas") {
+              exit()
+            }
+          }
+        }
+      }
+    }
   }
 }

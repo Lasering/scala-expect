@@ -1,12 +1,11 @@
 package work.martins.simon.expect.dsl
 
 import work.martins.simon.expect.core
+import work.martins.simon.expect.fluent.{RegexWhen, When => FWhen}
 
 import scala.util.matching.Regex.Match
 
-import work.martins.simon.expect.fluent.{RegexWhen, When}
-
-class WhenDefinition[R, FW <: When[R]](builder: Expect[R], when: FW) extends AbstractDefinition[R](builder) {
+class When[R, FW <: FWhen[R]](builder: Expect[R], when: FW) extends AbstractDefinition[R](builder) {
   private def addAction(block: FW => Unit): DSL[R] = {
     block(when)
     this
