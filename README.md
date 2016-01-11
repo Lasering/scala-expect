@@ -93,8 +93,8 @@ e.run() //Should return 6 inside a Future[Int]
 * Easy to refactor the creation of expects.
 
 #### Disadvantages
-* Most errors will only be catched in runtime as oposed to compile time.
-* More overhead than the fluent expect since it's just a wrapper arround fluent expect that allows for a dsl like construction of an expect.
+* Most errors will only be caught in runtime as oposed to compile time.
+* More overhead than the fluent expect since it's just a wrapper arround fluent expect.
 * Mutable - it uses a fluent expect as the backing expect and a mutable stack to keep track of the current context.
 
 #### Example
