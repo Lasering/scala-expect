@@ -11,6 +11,7 @@ libraryDependencies += "work.martins.simon" %% "scala-expect" % "1.7.1"
 --->
 
 ## Core
+#### [Documentation](../../wiki/Core)
 #### Advantages
 * Closer to metal / basis for the other flavors.
 * Immutable and therefore thread-safe.
@@ -19,8 +20,6 @@ libraryDependencies += "work.martins.simon" %% "scala-expect" % "1.7.1"
 #### Disadvantages
 * Verbose syntax.
 * Can't cleanly add expect blocks/whens/actions based on a condition.
-
-#### [Documentation](../../wiki/Core)
 
 #### Example
 ```scala
@@ -53,6 +52,7 @@ e.run() //Should return 6 inside a Future[Int]
 ```
 
 ## Fluent
+#### [Documentation](../../wiki/Fluent)
 #### Advantages
 * Less verbose syntax.
 * Most errors will be caught in compile time.
@@ -63,8 +63,6 @@ e.run() //Should return 6 inside a Future[Int]
 * Some overhead since the fluent expect is just a builder for a core expect.
 * Mutable - the fluent expect has to maintain a state of the objects that have been built.
 * IDE's will easily mess the custom indentation.
-
-#### [Documentation](../../wiki/Fluent)
 
 #### Example
 ```scala
@@ -90,6 +88,7 @@ e.run() //Should return 6 inside a Future[Int]
 ```
 
 ## DSL
+#### [Documentation](../../wiki/DSL)
 #### Advantages
 * Code will be indented in blocks so IDE's won't mess the indentation.
 * Syntax more close to the TCL expect.
@@ -100,8 +99,6 @@ e.run() //Should return 6 inside a Future[Int]
 * Most errors will only be caught in runtime as oposed to compile time.
 * More overhead than the fluent expect since it's just a wrapper arround fluent expect.
 * Mutable - it uses a fluent expect as the backing expect and a mutable stack to keep track of the current context.
-
-#### [Documentation](../../wiki/DSL)
 
 #### Example
 ```scala
