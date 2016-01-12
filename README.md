@@ -1,8 +1,8 @@
-# Scala-expect [![Build Status](https://travis-ci.org/Lasering/scala-expect.svg)](https://travis-ci.org/Lasering/scala-expect) [![Codacy Badge](https://api.codacy.com/project/badge/74ba0150f4034c8294e66f6b97a2f69f)](https://www.codacy.com/app/lasering/scala-expect)
+# Scala Expect [![Build Status](https://travis-ci.org/Lasering/scala-expect.svg)](https://travis-ci.org/Lasering/scala-expect) [![Codacy Badge](https://api.codacy.com/project/badge/74ba0150f4034c8294e66f6b97a2f69f)](https://www.codacy.com/app/lasering/scala-expect)
 
 A Scala implementation of a very small subset of the widely known TCL expect.
 
-Scala-expect comes with three different flavors: `core`, `fluent` and `dsl`.
+Scala Expect comes with three different flavors: `core`, `fluent` and `dsl`.
 <!---
 ## Get scala-expect
 ```scala
@@ -128,3 +128,6 @@ val e = new Expect("bc -i", defaultValue = 5) {
 }
 e.run() //Should return 6 inside a Future[Int]
 ```
+
+## License
+Scala Expect is open source and available under the [MIT license](LICENSE).
