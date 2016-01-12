@@ -3,12 +3,11 @@
 A Scala implementation of a very small subset of the widely known TCL expect.
 
 Scala Expect comes with three different flavors: `core`, `fluent` and `dsl`.
-<!---
-## Get scala-expect
+
+## Get Scala Expect
 ```scala
 libraryDependencies += "work.martins.simon" %% "scala-expect" % "1.7.1"
 ```
---->
 
 ## Core
 #### [Documentation](../../wiki/Core)
