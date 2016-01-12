@@ -91,7 +91,7 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
         )
       ),
       new ExpectBlock(
-        new RegexWhen("""(?m)^(\d+)$""".r)(
+        new RegexWhen("""\n(\d+)\n""".r)(
           SendlnWithRegex{ m: Match =>
             val previousAnswer = m.group(1)
             println(s"Got $previousAnswer")
@@ -100,7 +100,7 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
         )
       ),
       new ExpectBlock(
-        new RegexWhen("""(?m)^(\d+)$""".r)(
+        new RegexWhen("""\n(\d+)\n""".r)(
           ReturningWithRegex(_.group(1).toInt)
         )
       )
