@@ -12,7 +12,7 @@ libraryDependencies += "work.martins.simon" %% "scala-expect" % "1.7.1"
 
 ## Core
 #### Advantages
-* Closer to the metal / The basis for the other flavors.
+* Closer to metal / basis for the other flavors.
 * Immutable and therefore thread-safe.
 * Most errors will be caught in compile time.
 
@@ -60,7 +60,7 @@ e.run() //Should return 6 inside a Future[Int]
 #### Disadvantages
 * Some overhead since the fluent expect is just a builder for a core expect.
 * Mutable - the fluent expect has to maintain a state of the objects that have been built.
-* IDE's will easily screw the custom indentation.
+* IDE's will easily mess the custom indentation.
 
 #### Example
 ```scala
@@ -87,7 +87,7 @@ e.run() //Should return 6 inside a Future[Int]
 
 ## DSL
 #### Advantages
-* Code will be indented in blocks so IDE's won't screw the indentation.
+* Code will be indented in blocks so IDE's won't mess the indentation.
 * Syntax more close to the TCL expect.
 * Easy to add expect blocks/whens/actions based on a condition.
 * Easy to refactor the creation of expects.
