@@ -21,7 +21,7 @@ libraryDependencies += "work.martins.simon" %% "scala-expect" % "1.7.1"
 * Can't cleanly add expect blocks/whens/actions based on a condition.
 
 #### Full documentation
-[Full core expect documentation](Core)
+[Full core expect documentation](../../wiki/Core)
 
 #### Example
 ```scala
@@ -66,7 +66,7 @@ e.run() //Should return 6 inside a Future[Int]
 * IDE's will easily mess the custom indentation.
 
 #### Full documentation
-[Full fluent expect documentation](Fluent)
+[Full fluent expect documentation](../../wiki/Fluent)
 
 #### Example
 ```scala
@@ -104,7 +104,7 @@ e.run() //Should return 6 inside a Future[Int]
 * Mutable - it uses a fluent expect as the backing expect and a mutable stack to keep track of the current context.
 
 #### Full documentation
-[Full dsl expect documentation](DSL)
+[Full dsl expect documentation](../../wiki/DSL)
 
 #### Example
 ```scala
