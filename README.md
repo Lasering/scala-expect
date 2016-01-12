@@ -20,6 +20,9 @@ libraryDependencies += "work.martins.simon" %% "scala-expect" % "1.7.1"
 * Verbose syntax.
 * Can't cleanly add expect blocks/whens/actions based on a condition.
 
+#### Full documentation
+[Full core expect documentation](Core)
+
 #### Example
 ```scala
 import work.martins.simon.core._
@@ -33,7 +36,7 @@ val e = new Expect("bc -i", defaultValue = 5)(
     )
   ),
   new ExpectBlock(
-    new RegexWhen("""(?m)^(\d+)$""".r)(
+    new RegexWhen("""\n(\d+)\n""".r)(
       SendlnWithRegex { m: Match =>
         val previousAnswer = m.group(1)
         println(s"Got $previousAnswer")
@@ -42,7 +45,7 @@ val e = new Expect("bc -i", defaultValue = 5)(
     )
   ),
   new ExpectBlock(
-	new RegexWhen("""(?m)^(\d+)$""".r)(
+	new RegexWhen("""\n(\d+)\n""".r)(
 	  ReturningWithRegex(_.group(1).toInt)
 	)
   )
@@ -62,6 +65,9 @@ e.run() //Should return 6 inside a Future[Int]
 * Mutable - the fluent expect has to maintain a state of the objects that have been built.
 * IDE's will easily mess the custom indentation.
 
+#### Full documentation
+[Full fluent expect documentation](Fluent)
+
 #### Example
 ```scala
 import work.martins.simon.fluent._
@@ -73,14 +79,14 @@ e.expect
   .when("For details type `warranty'.")
     .sendln("1 + 2")
 e.expect
-  .when("""(?m)^(\d+)$""".r)
+  .when("""\n(\d+)\n""".r)
     .sendln { m: Match =>
       val previousAnswer = m.group(1)
       println(s"Got $previousAnswer")
       s"$previousAnswer + 3"
     }
 //This is a shortcut. It works just like the previous expect block.
-e.expect("""(?m)^(\d+)$""".r)
+e.expect("""\n(\d+)\n""".r)
   .returning(_.group(1).toInt)
 e.run() //Should return 6 inside a Future[Int]
 ```
@@ -97,6 +103,9 @@ e.run() //Should return 6 inside a Future[Int]
 * More overhead than the fluent expect since it's just a wrapper arround fluent expect.
 * Mutable - it uses a fluent expect as the backing expect and a mutable stack to keep track of the current context.
 
+#### Full documentation
+[Full dsl expect documentation](DSL)
+
 #### Example
 ```scala
 import work.martins.simon.dsl._
@@ -110,7 +119,7 @@ val e = new Expect("bc -i", defaultValue = 5) {
     }
   }
   expect {
-    when("""(?m)^(\d+)$""".r) {
+    when("""\n(\d+)\n""".r) {
       sendln { m: Match =>
         val previousAnswer = m.group(1)
         println(s"Got $previousAnswer")
@@ -119,7 +128,7 @@ val e = new Expect("bc -i", defaultValue = 5) {
     }
   }
   //This is a shortcut. It works just like the previous expect block.
-  expect("""(?m)^(\d+)$""".r) { 
+  expect("""\n(\d+)\n""".r) {
     returning(_.group(1).toInt)
   }
 }
