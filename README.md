@@ -14,7 +14,7 @@ libraryDependencies += "work.martins.simon" %% "scala-expect" % "1.7.1"
 #### Advantages
 * Closer to metal / basis for the other flavors.
 * Immutable and therefore thread-safe.
-* Most errors will be caught in compile time.
+* Most errors will be caught at compile time.
 
 #### Disadvantages
 * Verbose syntax.
@@ -54,7 +54,7 @@ e.run() //Should return 6 inside a Future[Int]
 #### [Documentation](../../wiki/Fluent)
 #### Advantages
 * Less verbose syntax.
-* Most errors will be caught in compile time.
+* Most errors will be caught at compile time.
 * Easy to add expect blocks/whens/actions based on a condition.
 * Easy to refactor the creation of expects.
 
@@ -95,7 +95,7 @@ e.run() //Should return 6 inside a Future[Int]
 * Easy to refactor the creation of expects.
 
 #### Disadvantages
-* Most errors will only be caught in runtime as oposed to compile time.
+* Most errors will only be caught at runtime as opposed to compile time.
 * More overhead than the fluent expect since it's just a wrapper arround fluent expect.
 * Mutable - it uses a fluent expect as the backing expect and a mutable stack to keep track of the current context.
 
