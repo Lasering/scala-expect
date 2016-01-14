@@ -22,10 +22,6 @@ trait Action[-W <: When[_]] {
     case Exit => other == Exit
     case _ => false
   }
-
-  def toIndentedString(level: Int = 1, text: String = "\t"): String = {
-    toString.replaceAll("(?m)^", text * level)
-  }
 }
 
 /**
@@ -56,7 +52,7 @@ object SendlnWithRegex {
  **/
 case class Returning[R](result: () => R) extends Action[When[R]]
 /**
- * returningAction
+ * $returningAction
  * This allows to return data based on the regex Match.
  * $regexWhen
  * $moreThanOne

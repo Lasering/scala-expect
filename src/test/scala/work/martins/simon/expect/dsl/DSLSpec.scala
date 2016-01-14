@@ -1,6 +1,7 @@
 package work.martins.simon.expect.dsl
 
 import org.scalatest.{Matchers, WordSpec}
+import work.martins.simon.expect.fluent.StringWhen
 
 class DSLSpec extends WordSpec with Matchers {
   "An Expect" when {
@@ -126,7 +127,7 @@ class DSLSpec extends WordSpec with Matchers {
 
     "asdasd" should {
       "cenas" in {
-        def principalDoesNotExist(expectBlock: ExpectBlock[Either[Int, String]]) = {
+        def principalDoesNotExist(expectBlock: ExpectBlock[Either[Int, String]]): When[Either[Int, String], StringWhen[Either[Int, String]]] = {
           import expectBlock._
           when("Principal does not exist") {
             returning(Left(5))
