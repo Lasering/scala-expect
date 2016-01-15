@@ -46,12 +46,16 @@ trait When[R] {
   }
   def structurallyEquals(other: When[R]): Boolean
 
-  def toString(pattern: String): String =
-    s"""when($pattern) {
+  def patternString: String
+
+  override def toString: String =
+    s"""when($patternString) {
        |${actions.mkString("\n").indent()}
        |}""".stripMargin
 }
 case class StringWhen[R](pattern: String)(val actions: Action[StringWhen[R]]*) extends When[R] {
+  val patternString: String = escape(pattern)
+
   override def matches(output: String): Boolean = output.contains(pattern)
   override def trimToMatchedText(output: String): String = {
     output.substring(output.indexOf(pattern) + pattern.length)
@@ -62,7 +66,6 @@ case class StringWhen[R](pattern: String)(val actions: Action[StringWhen[R]]*) e
     case _ => false
   }
 
-  override def toString: String = toString(escape(pattern))
   override def equals(other: Any): Boolean = other match {
     case that: StringWhen[R] => pattern == that.pattern && actions == that.actions
     case _ => false
@@ -70,6 +73,8 @@ case class StringWhen[R](pattern: String)(val actions: Action[StringWhen[R]]*) e
   override def hashCode(): Int = Seq(pattern, actions).map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
 }
 case class RegexWhen[R](pattern: Regex)(val actions: Action[RegexWhen[R]]*) extends When[R] {
+  val patternString: String = escape(pattern.regex) + ".r"
+
   override def matches(output: String): Boolean = pattern.findFirstIn(output).isDefined
   override def trimToMatchedText(output: String): String = output.substring(getMatch(output).end(0))
 
@@ -114,7 +119,6 @@ case class RegexWhen[R](pattern: Regex)(val actions: Action[RegexWhen[R]]*) exte
     case _ => false
   }
 
-  override def toString: String = toString(escape(pattern.regex) + ".r")
   override def equals(other: Any): Boolean = other match {
     case that: RegexWhen[R] => pattern.regex == that.pattern.regex && actions == that.actions
     case _ => false
@@ -122,18 +126,18 @@ case class RegexWhen[R](pattern: Regex)(val actions: Action[RegexWhen[R]]*) exte
   override def hashCode(): Int = Seq(pattern, actions).map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
 }
 case class EndOfFileWhen[R](actions: Action[EndOfFileWhen[R]]*) extends When[R] {
+  val patternString: String = "EndOfFile"
+
   def structurallyEquals(other: When[R]): Boolean = other match {
     case that: EndOfFileWhen[R] => structurallyEqualActions(other)
     case _ => false
   }
-
-  override def toString: String = toString("EndOfFile")
 }
 case class TimeoutWhen[R](actions: Action[TimeoutWhen[R]]*) extends When[R] {
+  val patternString: String = "Timeout"
+
   def structurallyEquals(other: When[R]): Boolean = other match {
     case that: TimeoutWhen[R] => structurallyEqualActions(other)
     case _ => false
   }
-
-  override def toString: String = toString("Timeout")
 }

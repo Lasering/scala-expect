@@ -47,7 +47,7 @@ trait Expectable[R] {
     * This is helpful to refactor code. For example: imagine you have an error case you want to add to multiple expects.
     * You could leverage this method to do so in the following way:
     * {{{
-    *   def errorCaseExpectBlock: Expect[String] => Unit = { expect =>
+    *   def errorCaseExpectBlock(expect: Expect[String]): Unit {
     *     expect.expect
     *       .when("Some error")
     *         .returning("Got some error")

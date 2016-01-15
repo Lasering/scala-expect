@@ -43,7 +43,7 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
                          expectsStack: List[ExpectBlock[R]])
                         (implicit ec: ExecutionContext): Future[R] = expectsStack match {
     case headExpectBlock :: remainingExpectBlocks =>
-      logger.info("Starting a new ExpectBlock.run")
+      logger.info(s"Started run of ExpectBlock:\n${headExpectBlock}")
       val result = headExpectBlock.run(richProcess, intermediateResult).flatMap {
         case result @ IntermediateResult(_, _, action) => action match {
           case Continue =>

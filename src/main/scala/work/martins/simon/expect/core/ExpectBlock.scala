@@ -22,12 +22,14 @@ class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
       whens.find(_.matches(newOutput)) match {
         case None => throw new NoMatchingPatternException(newOutput)
         case Some(when) =>
-          logger.info(s"Matched with:\n$when")
+          logger.info(s"when(${when.patternString}) matched with lastOutput.")
           when.execute(process, intermediateResult.copy(output = newOutput))
       }
     } recoverWith {
       case NoMatchingPatternException(newOutput) if process.deadLineHasTimeLeft() =>
-        logger.info(s"Did not match. Going to read more.")
+        logger.info("Did not match any when. Going to read more output.")
+        logger.debug(s"""Unmatched whens:
+                         |${whens.map(w => s"when(${w.patternString})").mkString("\n").indent()}""".stripMargin)
         runWithMoreOutput(process, intermediateResult.copy(output = newOutput))
       case e: TimeoutException =>
         logger.info(s"Read timed out after ${process.timeout}. Going to try and execute a TimeoutWhen.")
@@ -65,12 +67,14 @@ class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
          (implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
     whens.find(_.matches(intermediateResult.output)) match {
       case Some(when) =>
-        logger.info("Matched with lastOutput")
+        logger.info(s"when(${when.patternString}) matched with lastOutput.")
         Future {
           when.execute(process, intermediateResult)
         }
       case None =>
-        logger.info("Need more output. Going to read...")
+        logger.info("Did not match any when. Going to read more output.")
+        logger.debug(s"""Unmatched whens:
+            |${whens.map(w => s"when(${w.patternString})").mkString("\n").indent()}""".stripMargin)
         process.resetDeadline()
         runWithMoreOutput(process, intermediateResult)
     }

@@ -52,7 +52,7 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
    * This is helpful to refactor code. For example: imagine you want to perform the same actions whenever an error
    * occurs. You could leverage this method to do so in the following way:
    * {{{
-   *   def preemtiveExit: When[String] => Unit = { when =>
+   *   def preemtiveExit(when: When[String]): Unit {
    *     when
    *       .returning("Got some error")
    *       .exit()
