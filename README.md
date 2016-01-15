@@ -1,27 +1,24 @@
-# Scala-expect [![Build Status](https://travis-ci.org/Lasering/scala-expect.svg)](https://travis-ci.org/Lasering/scala-expect) [![Codacy Badge](https://api.codacy.com/project/badge/74ba0150f4034c8294e66f6b97a2f69f)](https://www.codacy.com/app/lasering/scala-expect)
+# Scala Expect [![Build Status](https://travis-ci.org/Lasering/scala-expect.svg)](https://travis-ci.org/Lasering/scala-expect) [![Codacy Badge](https://api.codacy.com/project/badge/74ba0150f4034c8294e66f6b97a2f69f)](https://www.codacy.com/app/lasering/scala-expect)
 
 A Scala implementation of a very small subset of the widely known TCL expect.
 
-Scala-expect comes with three different flavors: `core`, `fluent` and `dsl`.
-<!---
-## Get scala-expect
+Scala Expect comes with three different flavors: `core`, `fluent` and `dsl`.
+
+## Install
 ```scala
-libraryDependencies += "work.martins.simon" %% "scala-expect" % "1.7.1"
+libraryDependencies += "work.martins.simon" %% "scala-expect" % "1.7.2"
 ```
---->
 
 ## Core
+#### [Documentation](../../wiki/Core)
 #### Advantages
 * Closer to metal / basis for the other flavors.
 * Immutable and therefore thread-safe.
-* Most errors will be caught in compile time.
+* Most errors will be caught at compile time.
 
 #### Disadvantages
 * Verbose syntax.
 * Can't cleanly add expect blocks/whens/actions based on a condition.
-
-#### Full documentation
-[Full core expect documentation](Core)
 
 #### Example
 ```scala
@@ -54,9 +51,10 @@ e.run() //Should return 6 inside a Future[Int]
 ```
 
 ## Fluent
+#### [Documentation](../../wiki/Fluent)
 #### Advantages
 * Less verbose syntax.
-* Most errors will be caught in compile time.
+* Most errors will be caught at compile time.
 * Easy to add expect blocks/whens/actions based on a condition.
 * Easy to refactor the creation of expects.
 
@@ -64,9 +62,6 @@ e.run() //Should return 6 inside a Future[Int]
 * Some overhead since the fluent expect is just a builder for a core expect.
 * Mutable - the fluent expect has to maintain a state of the objects that have been built.
 * IDE's will easily mess the custom indentation.
-
-#### Full documentation
-[Full fluent expect documentation](Fluent)
 
 #### Example
 ```scala
@@ -92,6 +87,7 @@ e.run() //Should return 6 inside a Future[Int]
 ```
 
 ## DSL
+#### [Documentation](../../wiki/DSL)
 #### Advantages
 * Code will be indented in blocks so IDE's won't mess the indentation.
 * Syntax more close to the TCL expect.
@@ -99,12 +95,9 @@ e.run() //Should return 6 inside a Future[Int]
 * Easy to refactor the creation of expects.
 
 #### Disadvantages
-* Most errors will only be caught in runtime as oposed to compile time.
+* Most errors will only be caught at runtime as opposed to compile time.
 * More overhead than the fluent expect since it's just a wrapper arround fluent expect.
 * Mutable - it uses a fluent expect as the backing expect and a mutable stack to keep track of the current context.
-
-#### Full documentation
-[Full dsl expect documentation](DSL)
 
 #### Example
 ```scala
@@ -134,3 +127,6 @@ val e = new Expect("bc -i", defaultValue = 5) {
 }
 e.run() //Should return 6 inside a Future[Int]
 ```
+
+## License
+Scala Expect is open source and available under the [MIT license](LICENSE).
