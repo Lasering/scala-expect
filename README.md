@@ -6,7 +6,7 @@ Scala Expect comes with three different flavors: `core`, `fluent` and `dsl`.
 
 ## Install
 ```scala
-libraryDependencies += "work.martins.simon" %% "scala-expect" % "1.7.2"
+libraryDependencies += "work.martins.simon" %% "scala-expect" % "1.7.5"
 ```
 
 ## Core
@@ -47,7 +47,7 @@ val e = new Expect("bc -i", defaultValue = 5)(
 	)
   )
 )
-e.run() //Should return 6 inside a Future[Int]
+e.run() //Returns 6 inside a Future[Int]
 ```
 
 ## Fluent
@@ -83,7 +83,7 @@ e.expect
 //This is a shortcut. It works just like the previous expect block.
 e.expect("""\n(\d+)\n""".r)
   .returning(_.group(1).toInt)
-e.run() //Should return 6 inside a Future[Int]
+e.run() //Returns 6 inside a Future[Int]
 ```
 
 ## DSL
@@ -125,7 +125,7 @@ val e = new Expect("bc -i", defaultValue = 5) {
     returning(_.group(1).toInt)
   }
 }
-e.run() //Should return 6 inside a Future[Int]
+e.run() //Returns 6 inside a Future[Int]
 ```
 
 ## License
