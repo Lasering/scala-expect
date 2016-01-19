@@ -9,33 +9,33 @@ import work.martins.simon.expect.StringUtils._
 class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
   require(whens.nonEmpty, "ExpectBlock must have at least a When.")
 
-  protected def runWithMoreOutput(process: RichProcess, intermediateResult: IntermediateResult[R])
+  protected def runWithMoreOutput(process: RichProcess, intermediateResult: IntermediateResult[R], expectID: String)
                                (implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
     case class NoMatchingPatternException(output: String) extends Exception
     Future {
       val readText = process.read()
       val newOutput = intermediateResult.output + readText
-      logger.info(s"""New output:
+      logger.info(s"""$expectID New output:
                      |----------------------------------------
                      |$newOutput
                      |----------------------------------------""".stripMargin)
       whens.find(_.matches(newOutput)) match {
         case None => throw new NoMatchingPatternException(newOutput)
         case Some(when) =>
-          logger.info(s"when(${when.patternString}) matched with lastOutput.")
+          logger.info(s"$expectID Matched with:\n$when")
           when.execute(process, intermediateResult.copy(output = newOutput))
       }
     } recoverWith {
       case NoMatchingPatternException(newOutput) if process.deadLineHasTimeLeft() =>
-        logger.info("Did not match any when. Going to read more output.")
-        logger.debug(s"""Unmatched whens:
+        logger.info(s"$expectID Did not match any when. Going to read more output.")
+        logger.debug(s"""$expectID Unmatched whens:
                          |${whens.map(w => s"when(${w.patternString})").mkString("\n").indent()}""".stripMargin)
-        runWithMoreOutput(process, intermediateResult.copy(output = newOutput))
+        runWithMoreOutput(process, intermediateResult.copy(output = newOutput), expectID)
       case e: TimeoutException =>
-        logger.info(s"Read timed out after ${process.timeout}. Going to try and execute a TimeoutWhen.")
+        logger.info(s"$expectID Read timed out after ${process.timeout}. Going to try and execute a TimeoutWhen.")
         tryExecuteWhen(_.isInstanceOf[TimeoutWhen[R]], process, intermediateResult, e)
       case e: EOFException =>
-        logger.info(s"Read returned EndOfFile. Going to try and execute a EndOfFileWhen.")
+        logger.info(s"$expectID Read returned EndOfFile. Going to try and execute a EndOfFileWhen.")
         tryExecuteWhen(_.isInstanceOf[EndOfFileWhen[R]], process, intermediateResult, e)
     }
   }
@@ -63,20 +63,20 @@ class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
    * @return the result of executing the When that matches either `lastOutput` or the text read from `process`.
    *         Or a TimeoutException.
    */
-  def run(process: RichProcess, intermediateResult: IntermediateResult[R])
+  def run(process: RichProcess, intermediateResult: IntermediateResult[R], expectID: String)
          (implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
     whens.find(_.matches(intermediateResult.output)) match {
       case Some(when) =>
-        logger.info(s"when(${when.patternString}) matched with lastOutput.")
+        logger.info(s"$expectID Last output matched with:\n$when")
         Future {
           when.execute(process, intermediateResult)
         }
       case None =>
-        logger.info("Did not match any when. Going to read more output.")
-        logger.debug(s"""Unmatched whens:
+        logger.info(s"$expectID Did not match any when. Going to read more output.")
+        logger.debug(s"""$expectID Unmatched whens:
             |${whens.map(w => s"when(${w.patternString})").mkString("\n").indent()}""".stripMargin)
         process.resetDeadline()
-        runWithMoreOutput(process, intermediateResult)
+        runWithMoreOutput(process, intermediateResult, expectID)
     }
   }
 

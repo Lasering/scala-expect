@@ -39,12 +39,14 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
     innerRun(richProcess, IntermediateResult(output = "", defaultValue, Continue), expects.toList)
   }
 
+  private val expectID = s"[ID:${hashCode()}]"
+
   protected def innerRun(richProcess: RichProcess, intermediateResult: IntermediateResult[R],
                          expectsStack: List[ExpectBlock[R]])
                         (implicit ec: ExecutionContext): Future[R] = expectsStack match {
     case headExpectBlock :: remainingExpectBlocks =>
-      logger.info(s"Started run of ExpectBlock:\n${headExpectBlock}")
-      val result = headExpectBlock.run(richProcess, intermediateResult).flatMap {
+      logger.info(s"$expectID Now running:\n$headExpectBlock")
+      val result = headExpectBlock.run(richProcess, intermediateResult, expectID).flatMap {
         case result @ IntermediateResult(_, _, action) => action match {
           case Continue =>
             innerRun(richProcess, result, remainingExpectBlocks)
@@ -77,6 +79,7 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
 
   override def toString: String =
     s"""Expect:
+       |\tHashCode: ${hashCode()}
        |\tCommand: $command
        |\tDefaultValue: $defaultValue
        |${expects.mkString("\n").indent()}
