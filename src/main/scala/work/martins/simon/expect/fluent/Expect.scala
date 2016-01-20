@@ -30,10 +30,10 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
 
   //We decided to set expectableParent to 'this' to make it obvious that this is the root of all Expectables.
   protected val expectableParent: Expectable[R] = this
-  private var expects = Seq.empty[ExpectBlock[R]]
+  private var expectBlocks = Seq.empty[ExpectBlock[R]]
   override def expect: ExpectBlock[R] = {
     val block = new ExpectBlock(this)
-    expects :+= block
+    expectBlocks :+= block
     block
   }
   override def addExpectBlock(f: Expect[R] => Unit): Expect[R] = {
@@ -44,7 +44,7 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
   /**
     * @return the core.Expect equivalent of this fluent.Expect.
     */
-  def toCore: core.Expect[R] = new core.Expect[R](command, defaultValue, settings)(expects.map(_.toCore):_*)
+  def toCore: core.Expect[R] = new core.Expect[R](command, defaultValue, settings)(expectBlocks.map(_.toCore):_*)
 
   //We decided to set runnableParent to 'this' to make it obvious that this is the root of all Runnables.
   protected val runnableParent: Runnable[R] = this
@@ -58,18 +58,18 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
     s"""Expect:
         |\tCommand: $command
         |\tDefaultValue: $defaultValue
-        |${expects.mkString("\n").indent()}
+        |${expectBlocks.mkString("\n").indent()}
      """.stripMargin
   override def equals(other: Any): Boolean = other match {
     case that: Expect[R] =>
         command == that.command &&
         defaultValue == that.defaultValue &&
         settings == that.settings &&
-        expects == that.expects
+        expectBlocks == that.expectBlocks
     case _ => false
   }
   override def hashCode(): Int = {
-    val state: Seq[Any] = Seq(command, defaultValue, settings, expects)
+    val state: Seq[Any] = Seq(command, defaultValue, settings, expectBlocks)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }

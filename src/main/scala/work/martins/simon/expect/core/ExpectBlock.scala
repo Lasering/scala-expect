@@ -72,9 +72,9 @@ class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
           when.execute(process, intermediateResult)
         }
       case None =>
-        logger.info(s"$expectID Did not match any when. Going to read more output.")
-        logger.debug(s"""$expectID Unmatched whens:
-            |${whens.map(w => s"when(${w.patternString})").mkString("\n").indent()}""".stripMargin)
+        logger.info(s"""$expectID No When pattern matched. Expecting one of:
+                       |${whens.map(_.patternString).mkString("\n").indent()}
+                       |Going to read more output.""".stripMargin)
         process.resetDeadline()
         runWithMoreOutput(process, intermediateResult, expectID)
     }

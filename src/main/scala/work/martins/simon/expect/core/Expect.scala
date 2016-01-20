@@ -11,21 +11,21 @@ import scala.concurrent._
 import scala.concurrent.duration.FiniteDuration
 
 class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings())
-               (val expects: ExpectBlock[R]*) extends LazyLogging {
+               (val expectBlocks: ExpectBlock[R]*) extends LazyLogging {
   def this(command: Seq[String], defaultValue: R, config: Config)(expects: ExpectBlock[R]*) = {
     this(command, defaultValue, new Settings(config))(expects: _*)
   }
 
-  def this(command: String, defaultValue: R, settings: Settings)(expects: ExpectBlock[R]*) = {
-    this(splitBySpaces(command), defaultValue, settings)(expects: _*)
+  def this(command: String, defaultValue: R, settings: Settings)(expectBlocks: ExpectBlock[R]*) = {
+    this(splitBySpaces(command), defaultValue, settings)(expectBlocks: _*)
   }
 
-  def this(command: String, defaultValue: R, config: Config)(expects: ExpectBlock[R]*) = {
-    this(command, defaultValue, new Settings(config))(expects: _*)
+  def this(command: String, defaultValue: R, config: Config)(expectBlocks: ExpectBlock[R]*) = {
+    this(command, defaultValue, new Settings(config))(expectBlocks: _*)
   }
 
-  def this(command: String, defaultValue: R)(expects: ExpectBlock[R]*) = {
-    this(command, defaultValue, new Settings())(expects: _*)
+  def this(command: String, defaultValue: R)(expectBlocks: ExpectBlock[R]*) = {
+    this(command, defaultValue, new Settings())(expectBlocks: _*)
   }
 
   require(command.nonEmpty, "Expect must have a command to run.")
@@ -36,14 +36,14 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
           bufferSize: Int = bufferSize, redirectStdErrToStdOut: Boolean = redirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
     val richProcess = RichProcess(command, timeout, charset, bufferSize, redirectStdErrToStdOut)
-    innerRun(richProcess, IntermediateResult(output = "", defaultValue, Continue), expects.toList)
+    innerRun(richProcess, IntermediateResult(output = "", defaultValue, Continue), expectBlocks.toList)
   }
 
   private val expectID = s"[ID:${hashCode()}]"
 
   protected def innerRun(richProcess: RichProcess, intermediateResult: IntermediateResult[R],
-                         expectsStack: List[ExpectBlock[R]])
-                        (implicit ec: ExecutionContext): Future[R] = expectsStack match {
+                         expectBlocks: Seq[ExpectBlock[R]])
+                        (implicit ec: ExecutionContext): Future[R] = expectBlocks match {
     case headExpectBlock :: remainingExpectBlocks =>
       logger.info(s"$expectID Now running:\n$headExpectBlock")
       val result = headExpectBlock.run(richProcess, intermediateResult, expectID).flatMap {
@@ -51,7 +51,7 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
           case Continue =>
             innerRun(richProcess, result, remainingExpectBlocks)
           case Terminate =>
-            innerRun(richProcess, result, List.empty[ExpectBlock[R]])
+            innerRun(richProcess, result, List.empty)
           case ChangeToNewExpect(newExpect) =>
             richProcess.destroy()
             newExpect.asInstanceOf[Expect[R]].run(richProcess.timeout, richProcess.charset, richProcess.bufferSize)
@@ -82,7 +82,7 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
        |\tHashCode: ${hashCode()}
        |\tCommand: $command
        |\tDefaultValue: $defaultValue
-       |${expects.mkString("\n").indent()}
+       |${expectBlocks.mkString("\n").indent()}
      """.stripMargin
 
   /**
@@ -93,14 +93,15 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
     * because equality is not defined for functions.
     *
     * The method `structurallyEqual` can be used to test that two expects contain the same structure.
+ *
     * @param other
     */
   override def equals(other: Any): Boolean = other match {
     case that: Expect[R] =>
-        command == that.command &&
-        defaultValue == that.defaultValue &&
-        settings == that.settings &&
-        expects == that.expects
+      command == that.command &&
+      defaultValue == that.defaultValue &&
+      settings == that.settings &&
+      expectBlocks == that.expectBlocks
     case _ => false
   }
 
@@ -108,16 +109,17 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
     * Returns whether the other expect has the same command, the same defaultValue, the same settings and
     * the same expects structurally. The expects are structurally equal if there are the same number of expects and each
     * expect has the same number of Whens with the same structure.
+ *
     * @param other
     */
   def structurallyEquals(other: Expect[R]): Boolean = {
     command == other.command &&
       defaultValue == other.defaultValue &&
       settings == other.settings &&
-      expects.size == other.expects.size && expects.zip(other.expects).forall{ case (a, b) => a.structurallyEquals(b) }
+      expectBlocks.size == other.expectBlocks.size && expectBlocks.zip(other.expectBlocks).forall{ case (a, b) => a.structurallyEquals(b) }
   }
   override def hashCode(): Int = {
-    val state: Seq[Any] = Seq(command, defaultValue, settings, expects)
+    val state: Seq[Any] = Seq(command, defaultValue, settings, expectBlocks)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
