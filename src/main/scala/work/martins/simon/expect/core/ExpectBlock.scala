@@ -9,76 +9,62 @@ import work.martins.simon.expect.StringUtils._
 class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
   require(whens.nonEmpty, "ExpectBlock must have at least a When.")
 
-  protected def runWithMoreOutput(process: RichProcess, intermediateResult: IntermediateResult[R], expectID: String)
-                               (implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
-    case class NoMatchingPatternException(output: String) extends Exception
-    Future {
-      val readText = process.read()
-      val newOutput = intermediateResult.output + readText
-      logger.info(s"""$expectID New output:
-                     |----------------------------------------
-                     |$newOutput
-                     |----------------------------------------""".stripMargin)
-      whens.find(_.matches(newOutput)) match {
-        case None => throw new NoMatchingPatternException(newOutput)
-        case Some(when) =>
-          logger.info(s"$expectID Matched with:\n$when")
-          when.execute(process, intermediateResult.copy(output = newOutput))
-      }
-    } recoverWith {
-      case NoMatchingPatternException(newOutput) if process.deadLineHasTimeLeft() =>
-        logger.info(s"$expectID Did not match any when. Going to read more output.")
-        logger.debug(s"""$expectID Unmatched whens:
-                         |${whens.map(w => s"when(${w.patternString})").mkString("\n").indent()}""".stripMargin)
-        runWithMoreOutput(process, intermediateResult.copy(output = newOutput), expectID)
-      case e: TimeoutException =>
-        logger.info(s"$expectID Read timed out after ${process.timeout}. Going to try and execute a TimeoutWhen.")
-        tryExecuteWhen(_.isInstanceOf[TimeoutWhen[R]], process, intermediateResult, e)
-      case e: EOFException =>
-        logger.info(s"$expectID Read returned EndOfFile. Going to try and execute a EndOfFileWhen.")
-        tryExecuteWhen(_.isInstanceOf[EndOfFileWhen[R]], process, intermediateResult, e)
-    }
-  }
-  protected def tryExecuteWhen(filter: When[R] => Boolean, process: RichProcess,
-                             intermediateResult: IntermediateResult[R], e: Exception)
-                            (implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
-    whens.find(filter) match {
-      case Some(when) =>
-        Future {
-          when.execute(process, intermediateResult)
-        }
-      case None =>
-        //Now we really failed. So we must destroy the running process and the streams.
-        process.destroy()
-        Future.failed(e)
-    }
-  }
   /**
-   * First checks if any of the Whens of this ExpectBlock matches against the last output.
-   * If one such When exists then the result of executing it is returned.
-   * Otherwise continuously reads text from `process` until one of the Whens of this ExpectBlock matches against it.
-   * If it is not able to do so before the timeout expires a TimeoutException will be thrown inside the Future.
-   * @param process the underlying process of Expect.
-   * @param ex the ExecutionContext upon which the internal future is ran.
-   * @return the result of executing the When that matches either `lastOutput` or the text read from `process`.
-   *         Or a TimeoutException.
-   */
+    * First checks if any of the Whens of this ExpectBlock matches against the last output.
+    * If one such When exists then the result of executing it is returned.
+    * Otherwise continuously reads text from `process` until one of the Whens of this ExpectBlock matches against it.
+    * If it is not able to do so before the timeout expires a TimeoutException will be thrown inside the Future.
+    *
+    * @param process the underlying process of Expect.
+    * @param ex the ExecutionContext upon which the internal future is ran.
+    * @return the result of executing the When that matches either `lastOutput` or the text read from `process`.
+    *         Or a TimeoutException.
+    */
   def run(process: RichProcess, intermediateResult: IntermediateResult[R], expectID: String)
          (implicit ex: ExecutionContext): Future[IntermediateResult[R]] = {
-    whens.find(_.matches(intermediateResult.output)) match {
-      case Some(when) =>
-        logger.info(s"$expectID Last output matched with:\n$when")
+    def tryExecuteWhen(filter: When[R] => Boolean, result: IntermediateResult[R])
+                   (onFailure: => Future[IntermediateResult[R]]): Future[IntermediateResult[R]] = {
+      whens.find(filter).map { when =>
+        logger.info(s"$expectID Matched with:\n$when")
         Future {
-          when.execute(process, intermediateResult)
+          when.execute(process, result)
         }
-      case None =>
-        logger.info(s"""$expectID No When pattern matched. Expecting one of:
-                       |${whens.map(_.patternString).mkString("\n").indent()}
-                       |Going to read more output.""".stripMargin)
-        process.resetDeadline()
-        runWithMoreOutput(process, intermediateResult, expectID)
+      }.getOrElse(onFailure)
+    }
+
+    def runWithMoreOutput(intermediateResult: IntermediateResult[R]): Future[IntermediateResult[R]] = {
+      Future {
+        val newOutput = intermediateResult.output + process.read()
+        logger.info(s"$expectID New output:\n$newOutput")
+        intermediateResult.copy[R](output = newOutput)
+      } flatMap { result =>
+        tryExecuteWhen(_.matches(result.output), result) {
+          if (process.deadLineHasTimeLeft()) {
+            logger.info(s"$expectID Did not match with new output. Going to read more output.")
+            runWithMoreOutput(result)
+          } else {
+            throw new TimeoutException()
+          }
+        }
+      } recoverWith {
+        case e: TimeoutException =>
+          logger.info(s"$expectID Read timed out after ${process.timeout}.")
+          tryExecuteWhen(_.isInstanceOf[TimeoutWhen[R]], intermediateResult)(Future.failed(e))
+        case e: EOFException =>
+          logger.info(s"$expectID Read returned EndOfFile.")
+          tryExecuteWhen(_.isInstanceOf[EndOfFileWhen[R]], intermediateResult)(Future.failed(e))
+      }
+    }
+
+    tryExecuteWhen(_.matches(intermediateResult.output), intermediateResult) {
+      logger.info(s"$expectID Did not match with last output. Going to read more output.")
+      process.resetDeadline()
+      runWithMoreOutput(intermediateResult)
     }
   }
+
+
+
 
   override def toString: String =
     s"""expect {

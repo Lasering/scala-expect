@@ -25,6 +25,8 @@ case class RichProcess(command: Seq[String], timeout: FiniteDuration, charset: C
   val stdin = process.getOutputStream
   private var deadline = timeout.fromNow
 
+  private val array = Array.ofDim[Byte](bufferSize)
+
   /**
    * Resets the underlying deadline used when performing a `read`.
    * The new deadline is `timeout.fromNow`.
@@ -46,12 +48,15 @@ case class RichProcess(command: Seq[String], timeout: FiniteDuration, charset: C
    */
   def read()(implicit ex: ExecutionContext): String = {
     Await.result(Future {
-      val array = Array.ofDim[Byte](bufferSize)
       blocking {
         stdout.read(array)
       } match {
         case -1 => throw new EOFException()
-        case n => new String(array, 0, n, charset)
+        case n =>
+          val s = new String(array, 0, n, charset)
+          //Re-zeros the array to ensure we don't garble the next output
+          (0 to n).foreach(array(_) = 0)
+          s
       }
     }, deadline.timeLeft)
   }

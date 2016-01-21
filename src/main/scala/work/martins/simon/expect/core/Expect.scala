@@ -70,6 +70,7 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
       //Make sure to destroy the process and close the streams.
       richProcess.destroy()
       //Return just the value to the user.
+      logger.info(s"$expectID Finished returning: ${intermediateResult.value}")
       Future.successful(intermediateResult.value)
   }
 
@@ -94,7 +95,7 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
     *
     * The method `structurallyEqual` can be used to test that two expects contain the same structure.
  *
-    * @param other
+    * @param other the other Expect to campare this Expect to.
     */
   override def equals(other: Any): Boolean = other match {
     case that: Expect[R] =>
@@ -110,7 +111,7 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
     * the same expects structurally. The expects are structurally equal if there are the same number of expects and each
     * expect has the same number of Whens with the same structure.
  *
-    * @param other
+    * @param other the other Expect to campare this Expect to.
     */
   def structurallyEquals(other: Expect[R]): Boolean = {
     command == other.command &&
