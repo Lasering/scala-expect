@@ -36,42 +36,42 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
           bufferSize: Int = bufferSize, redirectStdErrToStdOut: Boolean = redirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
     val richProcess = RichProcess(command, timeout, charset, bufferSize, redirectStdErrToStdOut)
-    innerRun(richProcess, IntermediateResult(output = "", defaultValue, Continue), expectBlocks.toList)
-  }
+    val expectID = s"[ID:${hashCode()}]"
 
-  private val expectID = s"[ID:${hashCode()}]"
-
-  protected def innerRun(richProcess: RichProcess, intermediateResult: IntermediateResult[R],
-                         expectBlocks: Seq[ExpectBlock[R]])
-                        (implicit ec: ExecutionContext): Future[R] = expectBlocks match {
-    case headExpectBlock :: remainingExpectBlocks =>
-      logger.info(s"$expectID Now running:\n$headExpectBlock")
-      val result = headExpectBlock.run(richProcess, intermediateResult, expectID).flatMap {
-        case result @ IntermediateResult(_, _, action) => action match {
-          case Continue =>
-            innerRun(richProcess, result, remainingExpectBlocks)
-          case Terminate =>
-            innerRun(richProcess, result, List.empty)
-          case ChangeToNewExpect(newExpect) =>
-            richProcess.destroy()
-            newExpect.asInstanceOf[Expect[R]].run(richProcess.timeout, richProcess.charset, richProcess.bufferSize)
-        }
-      }
-
-      //If in the process of running the head expect block we get an exception we want to make sure the
-      //rich process is destroyed.
-      result.onFailure {
-        case e: Throwable => richProcess.destroy()
-      }
-
-      result
-    case _ =>
-      //We have no more expect blocks. So we can finish the execution.
-      //Make sure to destroy the process and close the streams.
-      richProcess.destroy()
-      //Return just the value to the user.
+    def successful(intermediateResult: IntermediateResult[R]): Future[R] = {
       logger.info(s"$expectID Finished returning: ${intermediateResult.value}")
+      richProcess.destroy()
       Future.successful(intermediateResult.value)
+    }
+
+    def innerRun(intermediateResult: IntermediateResult[R], expectBlocks: Seq[ExpectBlock[R]]): Future[R] = {
+      expectBlocks.headOption.map { headExpectBlock =>
+        //We still have expect blocks to run
+        val result = headExpectBlock.run(richProcess, intermediateResult, expectID).flatMap { innerResult =>
+          innerResult.executionAction match {
+            case Continue =>
+              //Continue with the remaining expect blocks
+              innerRun(innerResult, expectBlocks.tail)
+            case Terminate =>
+              //Simply terminate with the innerResult
+              successful(innerResult)
+            case ChangeToNewExpect(newExpect) =>
+              richProcess.destroy()
+              newExpect.asInstanceOf[Expect[R]].run(richProcess.timeout, richProcess.charset, richProcess.bufferSize)
+          }
+        }
+        //If we get an exception while running the head expect block we want to make sure the rich process is destroyed.
+        result onFailure {
+          case e: Throwable => richProcess.destroy()
+        }
+        result
+      } getOrElse {
+        //No more expect blocks. We just return the current intermediateResult
+        successful(intermediateResult)
+      }
+    }
+
+    innerRun(IntermediateResult(output = "", defaultValue, Continue), expectBlocks)
   }
 
   //TODO: make expect composable by implementing:

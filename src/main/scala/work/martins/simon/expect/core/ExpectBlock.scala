@@ -56,15 +56,13 @@ class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
       }
     }
 
+    logger.info(s"$expectID Now running:\n$this")
     tryExecuteWhen(_.matches(intermediateResult.output), intermediateResult) {
       logger.info(s"$expectID Did not match with last output. Going to read more output.")
       process.resetDeadline()
       runWithMoreOutput(intermediateResult)
     }
   }
-
-
-
 
   override def toString: String =
     s"""expect {
