@@ -6,7 +6,7 @@ Scala Expect comes with three different flavors: `core`, `fluent` and `dsl`.
 
 ## Install
 ```scala
-libraryDependencies += "work.martins.simon" %% "scala-expect" % "1.7.5"
+libraryDependencies += "work.martins.simon" %% "scala-expect" % "1.8.0"
 ```
 
 ## Core
