@@ -55,7 +55,7 @@ case class RichProcess(command: Seq[String], timeout: FiniteDuration, charset: C
         case n =>
           val s = new String(array, 0, n, charset)
           //Re-zeros the array to ensure we don't garble the next output
-          (0 to n).foreach(array(_) = 0)
+          (0 until n).foreach(array(_) = 0)
           s
       }
     }, deadline.timeLeft)

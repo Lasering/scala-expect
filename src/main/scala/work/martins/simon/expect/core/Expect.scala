@@ -37,6 +37,7 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
          (implicit ex: ExecutionContext): Future[R] = {
     val richProcess = RichProcess(command, timeout, charset, bufferSize, redirectStdErrToStdOut)
     val expectID = s"[ID:${hashCode()}]"
+    logger.info(s"""$expectID Launched: "${command.mkString(" ")}"""")
 
     def successful(intermediateResult: IntermediateResult[R]): Future[R] = {
       logger.info(s"$expectID Finished returning: ${intermediateResult.value}")
@@ -61,9 +62,7 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
           }
         }
         //If we get an exception while running the head expect block we want to make sure the rich process is destroyed.
-        result onFailure {
-          case e: Throwable => richProcess.destroy()
-        }
+        result onFailure { case _ => richProcess.destroy() }
         result
       } getOrElse {
         //No more expect blocks. We just return the current intermediateResult
@@ -117,7 +116,8 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
     command == other.command &&
       defaultValue == other.defaultValue &&
       settings == other.settings &&
-      expectBlocks.size == other.expectBlocks.size && expectBlocks.zip(other.expectBlocks).forall{ case (a, b) => a.structurallyEquals(b) }
+      expectBlocks.size == other.expectBlocks.size &&
+      expectBlocks.zip(other.expectBlocks).forall{ case (a, b) => a.structurallyEquals(b) }
   }
   override def hashCode(): Int = {
     val state: Seq[Any] = Seq(command, defaultValue, settings, expectBlocks)

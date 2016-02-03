@@ -127,7 +127,8 @@ class DSLSpec extends WordSpec with Matchers {
 
     "asdasd" should {
       "cenas" in {
-        def principalDoesNotExist(expectBlock: ExpectBlock[Either[Int, String]]): When[Either[Int, String], StringWhen[Either[Int, String]]] = {
+        type E = Either[Int, String]
+        def principalDoesNotExist(expectBlock: ExpectBlock[E]): When[E, StringWhen[E]] = {
           import expectBlock._
           when("Principal does not exist") {
             returning(Left(5))
