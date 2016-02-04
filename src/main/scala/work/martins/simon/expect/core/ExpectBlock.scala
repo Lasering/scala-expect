@@ -34,33 +34,35 @@ class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
 
     def runWithMoreOutput(intermediateResult: IntermediateResult[R]): Future[IntermediateResult[R]] = {
       Future {
-        val newOutput = intermediateResult.output + process.read()
-        logger.info(s"$expectID New output:\n$newOutput")
+        val readText = process.read()
+        val newOutput = intermediateResult.output + readText
+        logger.info(s"$expectID Newly read text:\n$readText")
+        logger.debug(s"$expectID New output:\n$newOutput")
         intermediateResult.copy[R](output = newOutput)
       } flatMap { result =>
         tryExecuteWhen(_.matches(result.output), result) {
           if (process.deadLineHasTimeLeft()) {
-            logger.info(s"$expectID Did not match with new output. Going to read more output.")
+            logger.info(s"$expectID Did not match with new output (last output + newly read text). Going to read more.")
             runWithMoreOutput(result)
           } else {
             throw new TimeoutException()
           }
         }
-      } recoverWith {
-        case e: TimeoutException =>
-          logger.info(s"$expectID Read timed out after ${process.timeout}.")
-          tryExecuteWhen(_.isInstanceOf[TimeoutWhen[R]], intermediateResult)(Future.failed(e))
-        case e: EOFException =>
-          logger.info(s"$expectID Read returned EndOfFile.")
-          tryExecuteWhen(_.isInstanceOf[EndOfFileWhen[R]], intermediateResult)(Future.failed(e))
       }
     }
 
     logger.info(s"$expectID Now running:\n$this")
     tryExecuteWhen(_.matches(intermediateResult.output), intermediateResult) {
-      logger.info(s"$expectID Did not match with last output. Going to read more output.")
+      logger.info(s"$expectID Did not match with last output. Going to read more.")
       process.resetDeadline()
       runWithMoreOutput(intermediateResult)
+    } recoverWith {
+      case e: TimeoutException =>
+        logger.info(s"$expectID Read timed out after ${process.timeout}.")
+        tryExecuteWhen(_.isInstanceOf[TimeoutWhen[R]], intermediateResult)(Future.failed(e))
+      case e: EOFException =>
+        logger.info(s"$expectID Read returned EndOfFile.")
+        tryExecuteWhen(_.isInstanceOf[EndOfFileWhen[R]], intermediateResult)(Future.failed(e))
     }
   }
 
