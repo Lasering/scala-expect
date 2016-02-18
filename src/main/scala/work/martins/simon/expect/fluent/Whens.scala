@@ -19,7 +19,7 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
   protected val whenableParent: Whenable[R] = parent
 
   protected var actions = Seq.empty[Action[CW]]
-  protected def newAction(action: Action[CW]): When[R] = {
+  protected def newAction(action: Action[CW]): this.type = {
     actions :+= action
     this
   }
@@ -29,22 +29,22 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
    * Send will only occur when Expect is run.
    * @return this When.
    */
-  def send(text: String): When[R] = newAction(Send(text))
+  def send(text: String): this.type = newAction(Send(text))
   /**
    * Sends `text` terminated with `System.lineSeparator()` to the stdIn of the underlying process.
    * Send will only occur when Expect is run.
    * @return this When.
    */
-  def sendln(text: String): When[R] = newAction(Sendln(text))
+  def sendln(text: String): this.type = newAction(Sendln(text))
   /**
    * Returns `result` when this Expect is run.
    * If this method is invoked more than once only the last `result` will be returned.
    * Note however that the previous returning actions will also be executed.
    * @return this When.
    */
-  def returning(result: => R): When[R] = newAction(Returning(() => result))
+  def returning(result: => R): this.type = newAction(Returning(() => result))
 
-  def returningExpect(result: => core.Expect[R]): When[R] = newAction(ReturningExpect(() => result))
+  def returningExpect(result: => core.Expect[R]): this.type = newAction(ReturningExpect(() => result))
 
   /**
    * Add arbitrary `Action`s to this `When`.
@@ -120,14 +120,14 @@ case class RegexWhen[R](parent: ExpectBlock[R], pattern: Regex) extends When[R] 
    * Send will only occur when Expect is run.
    * @return this When.
    */
-  def send(text: Match => String): When[R] = newAction(SendWithRegex(text))
+  def send(text: Match => String): RegexWhen[R] = newAction(SendWithRegex(text))
   /**
    * Send the result of invoking `text` with the `Match` of the regex used with a `System.lineSeparator()` appended
    * to the end, to the stdIn of the underlying process.
    * Send will only occur when Expect is run.
    * @return this When.
    */
-  def sendln(text: Match => String): When[R] = newAction(SendlnWithRegex(text))
+  def sendln(text: Match => String): RegexWhen[R] = newAction(SendlnWithRegex(text))
   /**
    * Returns the result of invoking `result` with the `Match` of the regex used, when this Expect is run.
    * If this method is invoked more than once only the last `result` will be returned.
@@ -135,9 +135,9 @@ case class RegexWhen[R](parent: ExpectBlock[R], pattern: Regex) extends When[R] 
    *
    * @return this When.
    */
-  def returning(result: Match => R): When[R] = newAction(ReturningWithRegex(result))
+  def returning(result: Match => R): RegexWhen[R] = newAction(ReturningWithRegex(result))
 
-  def returningExpect(result: Match => core.Expect[R]): When[R] = newAction(ReturningExpectWithRegex(result))
+  def returningExpect(result: Match => core.Expect[R]): RegexWhen[R] = newAction(ReturningExpectWithRegex(result))
 
   def toCore: CW = new core.RegexWhen[R](pattern)(actions:_*)
 
