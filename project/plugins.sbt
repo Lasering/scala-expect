@@ -12,3 +12,4 @@ addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "1.1")
 
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.3.5")
 addSbtPlugin("com.codacy" % "sbt-codacy-coverage" % "1.2.1")
+resolvers += "Typesafe Repository" at "https://repo.typesafe.com/typesafe/releases/"
