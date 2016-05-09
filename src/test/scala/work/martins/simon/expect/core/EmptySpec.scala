@@ -2,12 +2,12 @@ package work.martins.simon.expect.core
 
 import java.io.IOException
 
-import org.scalatest.time.{Seconds, Span}
-import org.scalatest.{Matchers, FlatSpec}
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.{FlatSpec, Matchers}
+import work.martins.simon.expect.TestUtils
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class EmptySpec extends FlatSpec with Matchers with ScalaFutures {
+class EmptySpec extends FlatSpec with Matchers with TestUtils {
   "An Expect without a command" should "throw IllegalArgumentException" in {
     intercept[IllegalArgumentException] {
       new Expect("", defaultValue = ())()
@@ -21,8 +21,7 @@ class EmptySpec extends FlatSpec with Matchers with ScalaFutures {
   }
 
   "An Expect without expect blocks" should "return the default value" in {
-    val e = new Expect("ls", defaultValue = Unit)()
-    e.run().futureValue shouldBe Unit
+    new Expect("ls", defaultValue = Unit)().futureValue shouldBe Unit
   }
 
   "An Expect with an empty expect block" should "fail with IllegalArgumentException" in {
@@ -37,8 +36,6 @@ class EmptySpec extends FlatSpec with Matchers with ScalaFutures {
         new StringWhen("ola")()
       )
     )
-    e.run().futureValue(PatienceConfig(
-      timeout = Span(e.settings.timeout.toSeconds + 2, Seconds)
-    )) shouldBe Unit
+    e.futureValue shouldBe Unit
   }
 }

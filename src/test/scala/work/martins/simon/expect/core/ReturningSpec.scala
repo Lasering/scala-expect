@@ -1,17 +1,11 @@
 package work.martins.simon.expect.core
 
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Seconds, Span}
 import org.scalatest.{FlatSpec, Matchers}
+import work.martins.simon.expect.TestUtils
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.matching.Regex.Match
 
-class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
-  def defaultPatience(e: Expect[_]): PatienceConfig = PatienceConfig(
-    timeout = Span(e.settings.timeout.toSeconds + 2, Seconds)
-  )
-
+class ReturningSpec extends FlatSpec with Matchers with TestUtils {
   "An Expect" should "return the specified value" in {
     val e = new Expect("bc -i", defaultValue = "")(
       new ExpectBlock (
@@ -20,7 +14,7 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
         )
       )
     )
-    e.run().futureValue(defaultPatience(e)) shouldBe "ReturnedValue"
+    e.futureValue shouldBe "ReturnedValue"
   }
 
   it should "only invoke the returning function when that returning action is executed" in {
@@ -36,10 +30,10 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
       )
     )
     test shouldBe 5
-    whenReady(e.run()) { s =>
+    e.whenReady { s =>
       test shouldBe 7
       s shouldBe "ReturnedValue"
-    }(defaultPatience(e))
+    }
   }
 
   it should "only return the last returning action but still execute the other actions" in {
@@ -56,10 +50,10 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
       )
     )
     test shouldBe 5
-    whenReady(e.run()) { s =>
+    e.whenReady { s =>
       test shouldBe 6
       s shouldBe "5"
-    }(defaultPatience(e))
+    }
   }
 
   it should "not execute any action after an exit action" in {
@@ -77,10 +71,10 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
       )
     )
 
-    whenReady(e.run()) { s =>
+    e.whenReady { s =>
       test shouldBe 5
       s should not be "ThisValue"
-    }(defaultPatience(e))
+    }
   }
 
   it should "be able to interact with the spawned program" in {
@@ -105,7 +99,7 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
         )
       )
     )
-    e.run().futureValue(defaultPatience(e)) shouldBe 6
+    e.futureValue shouldBe 6
   }
 
   it should "fail if an exception is thrown inside an action" in {
@@ -119,7 +113,7 @@ class ReturningSpec extends FlatSpec with Matchers with ScalaFutures {
         )
       )
     )
-    e.run().failed.futureValue(defaultPatience(e)) shouldBe a [IllegalArgumentException]
+    e.failedFutureValue shouldBe a [IllegalArgumentException]
   }
 
   //Test returning with expect

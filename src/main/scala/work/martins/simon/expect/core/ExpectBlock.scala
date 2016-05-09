@@ -42,7 +42,7 @@ class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
       } flatMap { result =>
         tryExecuteWhen(_.matches(result.output), result) {
           if (process.deadLineHasTimeLeft()) {
-            logger.info(s"$expectID Did not match with new output (last output + newly read text). Going to read more.")
+            logger.info(s"$expectID Didn't match with last output + newly read text. Going to read more.")
             runWithMoreOutput(result)
           } else {
             throw new TimeoutException()

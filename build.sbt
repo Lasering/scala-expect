@@ -1,8 +1,8 @@
 organization := "work.martins.simon"
 name := "scala-expect"
-version := "1.10.2"
+version := "1.11.0"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 initialize := {
   val required = "1.8"
   val current  = sys.props("java.specification.version")
@@ -14,10 +14,13 @@ javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
 
 libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
-  "ch.qos.logback" % "logback-classic" % "1.1.3",
+  "ch.qos.logback" % "logback-classic" % "1.1.7",
   "org.scalatest" %% "scalatest" % "2.2.4" % "test",
   "com.typesafe" % "config" % "1.3.0"
 )
+
+autoAPIMappings := true
+scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits", "-diagrams")
 
 scalacOptions ++= Seq(
   "-deprecation", //Emit warning and location for usages of deprecated APIs.
@@ -36,6 +39,10 @@ licenses += "MIT" -> url("http://opensource.org/licenses/MIT")
 homepage := Some(url(s"https://github.com/Lasering/${name.value}"))
 scmInfo := Some(ScmInfo(homepage.value.get, s"git@github.com:Lasering/${name.value}.git"))
 
+site.settings
+site.includeScaladoc()
+ghpages.settings
+git.remoteRepo := s"git@github.com:Lasering/${name.value}.git"
 
 publishMavenStyle := true
 publishTo := Some(if (isSnapshot.value) Opts.resolver.sonatypeSnapshots else Opts.resolver.sonatypeStaging)

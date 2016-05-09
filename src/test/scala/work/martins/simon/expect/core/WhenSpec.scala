@@ -3,27 +3,10 @@ package work.martins.simon.expect.core
 import java.io.EOFException
 import java.util.concurrent.TimeoutException
 
-import com.typesafe.scalalogging.LazyLogging
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.DurationInt
-
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Seconds, Span}
 import org.scalatest._
+import work.martins.simon.expect.TestUtils
 
-class WhenSpec extends WordSpec with Matchers with ScalaFutures with BeforeAndAfterEach with LazyLogging {
-  //When running the tests from the console this will print the test being ran.
-  override protected def runTest(testName: String, args: Args): Status = {
-    logger.info(s"Running test:\n$testName")
-    super.runTest(testName, args)
-  }
-
-  val defaultPatience = PatienceConfig(
-    timeout = Span(1, Seconds),
-    interval = Span(2, Seconds)
-  )
-
+class WhenSpec extends WordSpec with Matchers with TestUtils {
   "An Expect " when {
     "the stdOut does not match with any When" should {
       "run the actions in the TimeoutWhen if one exists" in {
@@ -37,7 +20,7 @@ class WhenSpec extends WordSpec with Matchers with ScalaFutures with BeforeAndAf
             )
           )
         )
-        e.run(timeout = 500.millis).futureValue(defaultPatience) shouldBe "Is there anyone at home?"
+        e.futureValue shouldBe "Is there anyone at home?"
       }
       "fail with TimeoutException if no TimeoutWhen exists" in {
         val e = new Expect("bc -i", defaultValue = "")(
@@ -47,7 +30,7 @@ class WhenSpec extends WordSpec with Matchers with ScalaFutures with BeforeAndAf
             )
           )
         )
-        e.run(timeout = 500.millis).failed.futureValue(defaultPatience) shouldBe a [TimeoutException]
+        e.failedFutureValue shouldBe a [TimeoutException]
       }
       "fail if an exception is thrown inside the TimeoutWhen" in {
         val e = new Expect("bc -i", defaultValue = "")(
@@ -60,7 +43,7 @@ class WhenSpec extends WordSpec with Matchers with ScalaFutures with BeforeAndAf
             )
           )
         )
-        e.run(timeout = 500.millis).failed.futureValue(defaultPatience) shouldBe a [IllegalArgumentException]
+        e.failedFutureValue shouldBe a [IllegalArgumentException]
       }
     }
 
@@ -76,7 +59,7 @@ class WhenSpec extends WordSpec with Matchers with ScalaFutures with BeforeAndAf
             )
           )
         )
-        e.run().futureValue(defaultPatience) shouldBe "Relax."
+        e.futureValue shouldBe "Relax."
       }
       "fail with EOFException if no EndOfFileWhen exists" in {
         val e = new Expect("ls", defaultValue = "")(
@@ -86,7 +69,7 @@ class WhenSpec extends WordSpec with Matchers with ScalaFutures with BeforeAndAf
             )
           )
         )
-        e.run().failed.futureValue(defaultPatience) shouldBe a [EOFException]
+        e.failedFutureValue shouldBe a [EOFException]
       }
       "fail if an exception is thrown inside the EndOfFileWhen" in {
         val e = new Expect("ls", defaultValue = "")(
@@ -99,7 +82,7 @@ class WhenSpec extends WordSpec with Matchers with ScalaFutures with BeforeAndAf
             )
           )
         )
-        e.run().failed.futureValue(defaultPatience) shouldBe a [IllegalArgumentException]
+        e.failedFutureValue shouldBe a [IllegalArgumentException]
       }
     }
 
@@ -116,7 +99,7 @@ class WhenSpec extends WordSpec with Matchers with ScalaFutures with BeforeAndAf
           )
         )
 
-        e.run().futureValue(defaultPatience) should not be "Ohh no"
+        e.futureValue should not be "Ohh no"
       }
     }
   }
