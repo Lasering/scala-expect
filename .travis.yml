@@ -14,3 +14,8 @@ scala:
 jdk:
   - oraclejdk8
   
+after_script:
+  - sbt coverage test
+  - sbt coverageReport
+  - sbt coverageAggregate
+  - sbt codacyCoverage

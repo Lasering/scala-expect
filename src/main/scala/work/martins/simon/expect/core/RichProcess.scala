@@ -27,7 +27,7 @@ case class RichProcess(command: Seq[String], timeout: FiniteDuration, charset: C
   val stdOut = new BufferedInputStream(process.getInputStream)
   val stdIn = new BufferedOutputStream(process.getOutputStream)
 
-  val blockingQueue = new LinkedBlockingDeque[Try[String]]()
+  val blockingQueue = new LinkedBlockingDeque[Either[EOFException, String]]()
 
   def spawnDaemonThread(f: Thread => Unit): Thread = {
     val thread = new Thread() { override def run() = { f(this) } }
@@ -40,22 +40,22 @@ case class RichProcess(command: Seq[String], timeout: FiniteDuration, charset: C
     val array = Array.ofDim[Byte](bufferSize)
 
     var readEOF = false
-    while (!thread.isInterrupted) {
-      while (!readEOF) {
-        val t = Try {
-          stdOut.read(array) match {
-            case -1 =>
-              readEOF = true
-              throw new EOFException()
-            case n =>
-              val s = new String(array, 0, n, charset)
-              //Re-zeros the array to ensure we don't garble the next output
-              (0 until n).foreach(array(_) = 0)
-              s
-          }
+    try {
+      while (!thread.isInterrupted && !readEOF) {
+        val either = stdOut.read(array) match {
+          case -1 =>
+            readEOF = true
+            Left(new EOFException())
+          case n =>
+            val s = new String(array, 0, n, charset)
+            //Re-zeros the array to ensure we don't garble the next output
+            (0 until n).foreach(array(_) = 0)
+            Right(s)
         }
-        blockingQueue.put(t)
+        blockingQueue.put(either)
       }
+    } finally {
+      stdOut.close()
     }
   }
 
@@ -86,7 +86,8 @@ case class RichProcess(command: Seq[String], timeout: FiniteDuration, charset: C
     }
     Option(data) match {
       case None => throw new TimeoutException
-      case Some(t) => t.get // This will throw the EOFException if the output has already reached the end
+      case Some(Left(eof)) => throw eof
+      case Some(Right(s)) => s
     }
   }
 
