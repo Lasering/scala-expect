@@ -1,27 +1,13 @@
 organization := "work.martins.simon"
 name := "scala-expect"
-version := "1.11.0"
 
-scalaVersion := "2.11.8"
 initialize := {
   val required = "1.8"
   val current  = sys.props("java.specification.version")
   assert(current == required, s"Unsupported JDK: java.specification.version $current != $required")
 }
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
-//crossScalaVersions := Seq("2.10.5", "2.11.7")
-//crossVersion := CrossVersion.binary
-
-libraryDependencies ++= Seq(
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
-  "ch.qos.logback" % "logback-classic" % "1.1.7",
-  "org.scalatest" %% "scalatest" % "2.2.4" % "test",
-  "com.typesafe" % "config" % "1.3.0"
-)
-
-autoAPIMappings := true
-scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits", "-diagrams")
-
+scalaVersion := "2.11.8"
 scalacOptions ++= Seq(
   "-deprecation", //Emit warning and location for usages of deprecated APIs.
   "-encoding", "UTF-8",
@@ -35,20 +21,29 @@ scalacOptions ++= Seq(
   "-Ywarn-dead-code" //Warn when dead code is identified.
 )
 
-licenses += "MIT" -> url("http://opensource.org/licenses/MIT")
-homepage := Some(url(s"https://github.com/Lasering/${name.value}"))
-scmInfo := Some(ScmInfo(homepage.value.get, s"git@github.com:Lasering/${name.value}.git"))
+libraryDependencies ++= Seq(
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
+  "ch.qos.logback" % "logback-classic" % "1.1.7",
+  "org.scalatest" %% "scalatest" % "2.2.4" % "test",
+  "com.typesafe" % "config" % "1.3.0"
+)
+
+autoAPIMappings := true
+scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits", "-diagrams")
 
 site.settings
 site.includeScaladoc()
 ghpages.settings
 git.remoteRepo := s"git@github.com:Lasering/${name.value}.git"
 
+licenses += "MIT" -> url("http://opensource.org/licenses/MIT")
+homepage := Some(url(s"https://github.com/Lasering/${name.value}"))
+scmInfo := Some(ScmInfo(homepage.value.get, s"git@github.com:Lasering/${name.value}.git"))
+
 publishMavenStyle := true
 publishTo := Some(if (isSnapshot.value) Opts.resolver.sonatypeSnapshots else Opts.resolver.sonatypeStaging)
 publishArtifact in Test := false
-//releaseCrossBuild := true
-//releasePublishArtifactsAction := PgpKeys.publishSigned.value
+
 pomIncludeRepository := { _ => false }
 pomExtra :=
   <developers>
@@ -58,3 +53,21 @@ pomExtra :=
       <url>https://github.com/Lasering</url>
     </developer>
   </developers>
+
+import ReleaseTransformations._
+
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  ReleaseStep(action = Command.process("publishSigned", _)),
+  ReleaseStep(action = Command.process("ghpagesPushSite", _)),
+  setNextVersion,
+  commitNextVersion,
+  ReleaseStep(action = Command.process("sonatypeRelease", _)),
+  pushChanges
+)

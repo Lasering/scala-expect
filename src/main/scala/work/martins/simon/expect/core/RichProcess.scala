@@ -1,6 +1,6 @@
 package work.martins.simon.expect.core
 
-import java.io.{BufferedInputStream, BufferedOutputStream, EOFException}
+import java.io.{BufferedInputStream, BufferedOutputStream, EOFException, IOException}
 import java.nio.charset.Charset
 import java.util.concurrent.{LinkedBlockingDeque, TimeUnit, TimeoutException}
 
@@ -54,9 +54,13 @@ case class RichProcess(command: Seq[String], timeout: FiniteDuration, charset: C
         }
         blockingQueue.put(either)
       }
-    } finally {
-      stdOut.close()
+    } catch {
+      case _: IOException | _: InterruptedException =>
+        //Ensure these exceptions are not thrown. The clean up will be executed right after.
     }
+
+    stdOut.close()
+    thread.interrupt()
   }
 
   private var deadline = timeout.fromNow
