@@ -11,28 +11,34 @@ import work.martins.simon.expect.StringUtils._
  *                     Note however that every `ReturningAction` will still be executed.
  * @tparam W the type of When to which this action can be applied.
  */
-trait Action[-W <: When[_]] {
-  def structurallyEquals[WW <: W](other: Action[WW]): Boolean = this match {
-    case _: Send => other.isInstanceOf[Send]
-    case _: SendWithRegex => other.isInstanceOf[SendWithRegex]
+trait Action[R, -W <: When[R]] {
+  def structurallyEquals(other: Action[_, _]): Boolean = this match {
+    case _: Send[_] => other.isInstanceOf[Send[_]]
+    case _: SendWithRegex[_] => other.isInstanceOf[SendWithRegex[_]]
     case _: Returning[_] => other.isInstanceOf[Returning[_]]
     case _: ReturningWithRegex[_] => other.isInstanceOf[ReturningWithRegex[_]]
     case _: ReturningExpect[_] => other.isInstanceOf[ReturningExpect[_]]
     case _: ReturningExpectWithRegex[_] => other.isInstanceOf[ReturningExpectWithRegex[_]]
-    case Exit => other == Exit
+    case _: Exit[_] => other.isInstanceOf[Exit[_]]
     case _ => false
   }
+
+  def map[T](f: R => T): Action[T, _ <: When[T]]
+  def flatMap[T](f: R => Expect[T]): Action[T, _ <: When[T]]
 }
 
 /**
  * When this action is executed `text` will be sent to the stdIn of the underlying process.
  * @param text the text to send.
  */
-case class Send(text: String) extends Action[When[_]] {
+case class Send[R](text: String) extends Action[R, When[R]] {
   override def toString: String = s"Send(${escape(text)})"
+
+  def map[T](f: R => T): Action[T, When[T]] = new Send[T](text)
+  def flatMap[T](f: (R) => Expect[T]): Action[T, When[T]] = new Send[T](text)
 }
 object Sendln {
-  def apply(text: String): Send = new Send(text + System.lineSeparator())
+  def apply[R](text: String): Send[R] = new Send(text + System.lineSeparator())
 }
 
 /**
@@ -41,23 +47,32 @@ object Sendln {
  * $regexWhen
  * @param text the text to send.
  */
-case class SendWithRegex(text: Match => String) extends Action[RegexWhen[_]]
+case class SendWithRegex[R](text: Match => String) extends Action[R, RegexWhen[R]] {
+  def map[T](f: R => T): Action[T, RegexWhen[T]] = new SendWithRegex[T](text)
+  def flatMap[T](f: R => Expect[T]): Action[T, RegexWhen[T]] = new SendWithRegex[T](text)
+}
 object SendlnWithRegex {
-  def apply(text: Match => String): SendWithRegex = new SendWithRegex(text.andThen(_ + System.lineSeparator()))
+  def apply[R](text: Match => String): SendWithRegex[R] = new SendWithRegex(text.andThen(_ + System.lineSeparator()))
 }
 
 /**
  * $returningAction
  * $moreThanOne
  **/
-case class Returning[R](result: () => R) extends Action[When[R]]
+case class Returning[R](result: () => R) extends Action[R, When[R]] {
+  def map[T](f: R => T): Action[T, When[T]] = this.copy(() => f(result.apply()))
+  def flatMap[T](f: R => Expect[T]): Action[T, When[T]] = new ReturningExpect[T](() => f(result.apply()))
+}
 /**
  * $returningAction
  * This allows to return data based on the regex Match.
  * $regexWhen
  * $moreThanOne
  */
-case class ReturningWithRegex[R](result: Match => R) extends Action[RegexWhen[R]]
+case class ReturningWithRegex[R](result: Match => R) extends Action[R, RegexWhen[R]] {
+  def map[T](f: R => T): Action[T, RegexWhen[T]] = this.copy(result andThen f)
+  def flatMap[T](f: R => Expect[T]): Action[T, RegexWhen[T]] = new ReturningExpectWithRegex[T](result andThen f)
+}
 
 /**
  * When this action is executed:
@@ -73,7 +88,10 @@ case class ReturningWithRegex[R](result: Match => R) extends Action[RegexWhen[R]
  *
  * Any action or expect block added after this will not be executed.
  */
-case class ReturningExpect[R](result: () => Expect[R]) extends Action[When[R]]
+case class ReturningExpect[R](result: () => Expect[R]) extends Action[R, When[R]] {
+  def map[T](f: R => T): Action[T, When[T]] = this.copy(() => result.apply().map(f))
+  def flatMap[T](f: R => Expect[T]): Action[T, When[T]] = this.copy(() => result.apply().flatMap(f))
+}
 /**
  * When this action is executed:
  *
@@ -90,11 +108,17 @@ case class ReturningExpect[R](result: () => Expect[R]) extends Action[When[R]]
  * $regexWhen
  * Any action or expect block added after this will not be executed.
  */
-case class ReturningExpectWithRegex[R](result: Match => Expect[R]) extends Action[RegexWhen[R]]
+case class ReturningExpectWithRegex[R](result: Match => Expect[R]) extends Action[R, RegexWhen[R]] {
+  def map[T](f: R => T): Action[T, RegexWhen[T]] = this.copy(result.andThen(_.map(f)))
+  def flatMap[T](f: R => Expect[T]): Action[T, RegexWhen[T]] = this.copy(result.andThen(_.flatMap(f)))
+}
 
 /**
  * When this action is executed the current run of Expect is terminated causing it to return the
  * last value, if there is a ReturningAction, or the default value otherwise.
  * Any action or expect block added after this will not be executed.
  */
-case object Exit extends Action[When[_]]
+case class Exit[R]() extends Action[R, When[R]] {
+  def map[T](f: R => T): Action[T, When[T]] = new Exit[T]
+  def flatMap[T](f: R => Expect[T]): Action[T, When[T]] = new Exit[T]
+}

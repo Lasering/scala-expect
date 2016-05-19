@@ -62,7 +62,7 @@ class ReturningSpec extends FlatSpec with Matchers with TestUtils {
       new ExpectBlock(
         new RegexWhen("""bc (\d+\.\d+\.\d+)""".r) (
           ReturningWithRegex(_.group(1)),
-          Exit,
+          Exit(),
           Returning { () =>
             test = 7
             "ThisValue"

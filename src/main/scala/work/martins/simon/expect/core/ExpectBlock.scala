@@ -66,6 +66,9 @@ class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
     }
   }
 
+  def map[T](f: R => T): ExpectBlock[T] = new ExpectBlock(whens.map(_.map(f)):_*)
+  def flatMap[T](f: R => Expect[T]): ExpectBlock[T] = new ExpectBlock(whens.map(_.flatMap(f)):_*)
+
   override def toString: String =
     s"""expect {
         |${whens.mkString("\n").indent()}

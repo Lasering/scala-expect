@@ -25,7 +25,7 @@ class ActionsSpec extends WordSpec with Matchers {
           new core.ExpectBlock(
             new core.StringWhen("1")(
               Send("string1"),
-              Exit
+              Exit()
             )
           ),
           new core.ExpectBlock(
@@ -33,7 +33,7 @@ class ActionsSpec extends WordSpec with Matchers {
               Sendln("string2")
             ),
             new core.RegexWhen("""(\d+ \w+)""".r)(
-              Exit
+              Exit()
             )
           )
         )
@@ -60,7 +60,7 @@ class ActionsSpec extends WordSpec with Matchers {
             new core.StringWhen("1")(
               Sendln("string1"),
               Returning(() => "string2"),
-              Exit
+              Exit()
             )
           ),
           new core.ExpectBlock(
@@ -72,7 +72,7 @@ class ActionsSpec extends WordSpec with Matchers {
             ),
             new core.RegexWhen("""(\d+ \w+)""".r)(
               ReturningWithRegex(_.group(1)),
-              Exit
+              Exit()
             )
           )
         )

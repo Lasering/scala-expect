@@ -74,8 +74,10 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
   }
 
   //TODO: make expect composable by implementing:
-  // map[T](f: R => T): Expect[T]
-  // flatMap[T](f: R => Expect[T]): Expect[T]
+  def map[T](f: R => T): Expect[T] = new Expect(command, f(defaultValue), settings)(expectBlocks.map(_.map(f)):_*)
+  def flatMap[T](f: R => Expect[T]): Expect[T] = {
+    new Expect[T](command, f(defaultValue).defaultValue, settings)(expectBlocks.map(_.flatMap(f)):_*)
+  }
 
   override def toString: String =
     s"""Expect:

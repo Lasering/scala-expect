@@ -18,8 +18,8 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
   protected val expectableParent: Expectable[R] = parent
   protected val whenableParent: Whenable[R] = parent
 
-  protected var actions = Seq.empty[Action[CW]]
-  protected def newAction(action: Action[CW]): this.type = {
+  protected var actions = Seq.empty[CW#Action[R]]
+  protected def newAction(action: CW#Action[R]): this.type = {
     actions :+= action
     this
   }
@@ -87,7 +87,7 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
    * Any action or expect block added after this Exit will not be executed.
    * @return this When.
    */
-  def exit(): When[R] = newAction(Exit)
+  def exit(): When[R] = newAction(Exit())
 
   /**
    * @return the core.When equivalent of this fluent.When.

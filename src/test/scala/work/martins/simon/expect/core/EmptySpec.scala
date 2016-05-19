@@ -21,7 +21,7 @@ class EmptySpec extends FlatSpec with Matchers with TestUtils {
   }
 
   "An Expect without expect blocks" should "return the default value" in {
-    new Expect("ls", defaultValue = Unit)().futureValue shouldBe Unit
+    new Expect("ls", defaultValue = ())().futureValue.shouldBe(())
   }
 
   "An Expect with an empty expect block" should "fail with IllegalArgumentException" in {
@@ -31,11 +31,11 @@ class EmptySpec extends FlatSpec with Matchers with TestUtils {
   }
 
   "An Expect with an empty when" should "return the default value" in {
-    val e = new Expect("echo ola", defaultValue = Unit)(
+    val e = new Expect("echo ola", defaultValue = ())(
       new ExpectBlock(
         new StringWhen("ola")()
       )
     )
-    e.futureValue shouldBe Unit
+    e.futureValue.shouldBe(())
   }
 }
