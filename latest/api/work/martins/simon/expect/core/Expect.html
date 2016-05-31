@@ -49,7 +49,7 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a href="https://oss.sonatype.org/service/local/repositories/releases/archive/com/typesafe/scala-logging/scala-logging_2.11/3.1.0/scala-logging_2.11-3.1.0-javadoc.jar/!/index.html#com.typesafe.scalalogging.LazyLogging" class="extype" target="_top">LazyLogging</a>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div><div class="toggleContainer block diagram-container" id="inheritance-diagram-container">
@@ -522,6 +522,24 @@ because equality is not defined for functions.</p><p>The method <code>structural
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="work.martins.simon.expect.core.Expect#flatMap" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="flatMap[T](f:R=&gt;work.martins.simon.expect.core.Expect[T]):work.martins.simon.expect.core.Expect[T]"></a>
+      <a id="flatMap[T]((R)⇒Expect[T]):Expect[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">flatMap</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>) ⇒ <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.flatMap.T">T</span>]</span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.flatMap.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#work.martins.simon.expect.core.Expect@flatMap[T](f:R=&gt;work.martins.simon.expect.core.Expect[T]):work.martins.simon.expect.core.Expect[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Creates a new Expect by applying a function to the returned result of this Expect, and returns the result
+of the function as the new Expect.</p>
     </li><li name="scala.Predef.StringFormat#formatted" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="formatted(fmtstr:String):String"></a>
       <a id="formatted(String):String"></a>
@@ -614,6 +632,23 @@ because equality is not defined for functions.</p><p>The method <code>structural
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>LazyLogging</dd></dl></div>
+    </li><li name="work.martins.simon.expect.core.Expect#map" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="map[T](f:R=&gt;T):work.martins.simon.expect.core.Expect[T]"></a>
+      <a id="map[T]((R)⇒T):Expect[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">map</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>) ⇒ <span class="extype" name="work.martins.simon.expect.core.Expect.map.T">T</span></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.map.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#work.martins.simon.expect.core.Expect@map[T](f:R=&gt;T):work.martins.simon.expect.core.Expect[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Creates a new Expect by applying a function to the returned result of this Expect.</p>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
@@ -699,7 +734,7 @@ because equality is not defined for functions.</p><p>The method <code>structural
       </a>
     </span>
       
-    </li><li name="work.martins.simon.expect.core.Expect#structurallyEquals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="work.martins.simon.expect.core.Expect#structurallyEquals" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="structurallyEquals(other:work.martins.simon.expect.core.Expect[R]):Boolean"></a>
       <a id="structurallyEquals(Expect[R]):Boolean"></a>
       <h4 class="signature">
@@ -715,11 +750,7 @@ because equality is not defined for functions.</p><p>The method <code>structural
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Returns whether the other expect has the same command, the same defaultValue, the same settings and
-the same expects structurally.</p><div class="fullcomment"><div class="comment cmt"><p>Returns whether the other expect has the same command, the same defaultValue, the same settings and
-the same expects structurally. The expects are structurally equal if there are the same number of expects and each
-expect has the same number of Whens with the same structure.
-</p></div><dl class="paramcmts block"><dt class="param">other</dt><dd class="cmt"><p>the other Expect to campare this Expect to.</p></dd></dl></div>
+      <p class="shortcomment cmt"></p>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>
@@ -754,6 +785,65 @@ expect has the same number of Whens with the same structure.
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a> → AnyRef → Any</dd></dl></div>
+    </li><li name="work.martins.simon.expect.core.Expect#transform" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="transform[T](mapPF:PartialFunction[R,T])(flatMapPF:PartialFunction[R,work.martins.simon.expect.core.Expect[T]]):work.martins.simon.expect.core.Expect[T]"></a>
+      <a id="transform[T](PartialFunction[R,T])(PartialFunction[R,Expect[T]]):Expect[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">transform</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="mapPF">mapPF: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.PartialFunction" class="extype" target="_top">PartialFunction</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>, <span class="extype" name="work.martins.simon.expect.core.Expect.transform.T">T</span>]</span>)</span><span class="params">(<span name="flatMapPF">flatMapPF: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.PartialFunction" class="extype" target="_top">PartialFunction</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>, <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.transform.T">T</span>]]</span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.transform.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#work.martins.simon.expect.core.Expect@transform[T](mapPF:PartialFunction[R,T])(flatMapPF:PartialFunction[R,work.martins.simon.expect.core.Expect[T]]):work.martins.simon.expect.core.Expect[T]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Transform this Expect result using the following strategy:</p><div class="fullcomment"><div class="comment cmt"><p>Transform this Expect result using the following strategy:</p><ul><li>if <code>mapPF</code> is defined for the result then the result is mapped using mapPF.</li><li>otherwise, if <code>flatMapPF</code> is defined for the result then the result is flatMapped using flatMapPF.</li><li>otherwise a NoSuchElementException is thrown where the result would be expected.</li></ul><p>This function is very useful when we need to map this Expect for some values of its result type and flatMap
+this Expect for some other values of its result type.</p><p>To ensure you don't get NoSuchElementException you should take special care in ensuring
+domain(mapPF) ∪ domain(flatMapPF) == domain(R)
+</p></div><dl class="paramcmts block"><dt class="tparam">T</dt><dd class="cmt"><p>the type of the returned Expect.</p></dd><dt class="param">mapPF</dt><dd class="cmt"><p>the function that will be applied when a map is needed.</p></dd><dt class="param">flatMapPF</dt><dd class="cmt"><p>the function that will be applied when a flatMap is needed.</p></dd><dt>returns</dt><dd class="cmt"><p>a new Expect whose result is either mapped or flatMapped according to whether mapPF or
+        flatMapPF is defined for the given result.</p></dd></dl><dl class="attributes block"> <div class="block">Example:
+               <ol><li class="cmt"><p></p><pre><span class="kw">def</span> listMount(dir: <span class="std">String</span>): Expect[Either[<span class="std">String</span>, <span class="std">Int</span>]] = { ... }
+<span class="kw">def</span> removeMount(dir: <span class="std">String</span>): Expect[Either[<span class="std">String</span>, <span class="std">Int</span>]] = { ... }
+<span class="kw">def</span> makeMount(dir: <span class="std">String</span>, destination: <span class="std">String</span>): Expect[Either[<span class="std">String</span>, <span class="std">String</span>] = {
+  <span class="kw">val</span> e = <span class="kw">new</span> Expect(s<span class="lit">"someMountCommand"</span>, Left(<span class="lit">"UnknownError"</span>): Either[<span class="std">String</span>, <span class="std">String</span>])(
+    <span class="kw">new</span> ExpectBlock(
+      <span class="kw">new</span> StringWhen(<span class="lit">"you can't do that"</span>)(
+        Returning(Left(<span class="lit">"insufficientPermission"</span>))
+      ),
+      <span class="kw">new</span> StringWhen(<span class="lit">"file already exists"</span>)(
+        ReturningExpect{
+          listMount(directory).fullCollect({
+            <span class="kw">case</span> Left(<span class="lit">"not a mount point"</span>) <span class="kw">=&gt;</span>
+              <span class="cmt">//The existing file is not a mount point we must return error.</span>
+              Left(<span class="lit">"file already exists"</span>)
+            <span class="kw">case</span> Left(s) <span class="kw">=&gt;</span>
+              <span class="cmt">//The listMount failed so we must return its error</span>
+              Left(s)
+            <span class="kw">case</span> Right(v) <span class="kw">if</span> v.contains(destination)
+              <span class="cmt">//The existing file is already a mount to the destination we want</span>
+              Right(<span class="lit">"success"</span>)
+          }, {
+            <span class="kw">case</span> Right(v) <span class="kw">=&gt;</span>
+             <span class="cmt">//The existing file is already a mount but to another destination</span>
+             <span class="cmt">//We must remove the existing mount in order to be able to make the</span>
+             <span class="cmt">//mount to the pretended destination</span>
+             removeMount(directory).fullCollect({
+               <span class="kw">case</span> Left(l) <span class="kw">=&gt;</span> Left(l)
+               <span class="kw">case</span> Right(s) <span class="kw">if</span> s != <span class="lit">"success"</span> <span class="kw">=&gt;</span> Right(s)
+             }, {
+               <span class="kw">case</span> Right(<span class="lit">"success"</span>) <span class="kw">=&gt;</span> makeMount(directory)
+             })
+          })
+        }
+      )
+    )
+  )
+}</pre></li></ol>
+            </div></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>
