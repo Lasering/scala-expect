@@ -84,7 +84,7 @@ class TransformSpec extends PropSpecLike with Matchers with TestUtils with Gener
     }
   }
 
-  property("Transform: mapping the default value, flatMapping the result must not cause the actions to be executed") {
+  property("Transform: mapping the default value, flatMapping the result - must return the correct result") {
     forAll(genSingleExpectBlockWhenMultipleActionExpect[String],
            genSingleExpectBlockWhenMultipleActionExpect[Int], arbitrary[Int]) { case (outer, inner, newDefaultvalue) =>
       val (outerExpect, outerBuilder, outerAddToBuilder, outerResult) = outer

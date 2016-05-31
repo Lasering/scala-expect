@@ -8,6 +8,9 @@ import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 import scala.language.higherKinds
 
+/**
+  * @define type When
+  */
 trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
   /** The concrete core.When type constructor which this fluent.When is a builder for. */
   type CW[X] <: core.When[X]
