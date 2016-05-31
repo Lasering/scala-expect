@@ -31,7 +31,7 @@ case class Returning[R](result: Unit => R) extends AbstractReturning[R, R] {
     ReturningExpect(result andThen f)
   }
   protected[expect] def transform[T](mapPF: PartialFunction[R, T])(flatMapPF: PartialFunction[R, Expect[T]]): AbstractReturning[_, T] = {
-    new ActionReturningAction(this, { r: R =>
+    val computeAction: R => AbstractReturning[_, T] = {
       //FIXME: is there any way of implementing this without the double evaluation of pattern matchers and guards?
       //the double evaluation occurs in isDefinedAt and the apply
 
@@ -39,14 +39,11 @@ case class Returning[R](result: Unit => R) extends AbstractReturning[R, R] {
       //Once inside the execute which invokes parent.result
       //And another when the action returned by the ActionReturningAction is ran
 
-      if (mapPF.isDefinedAt(r)) {
-        this.copy(_ => mapPF(r))
-      } else if (flatMapPF.isDefinedAt(r)) {
-        ReturningExpect(_ => flatMapPF(r))
-      } else {
-        pfNotDefined[AbstractReturning[_, T]]("transform")(r)
-      }
-    })
+      case r if mapPF.isDefinedAt(r) => this.copy(_ => mapPF(r))
+      case r if flatMapPF.isDefinedAt(r) => ReturningExpect(_ => flatMapPF(r))
+      case r => pfNotDefined[AbstractReturning[_, T]]("transform")(r)
+    }
+    new ActionReturningAction(this, computeAction)
   }
 
   def structurallyEquals[WW[X] <: When[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[Returning[_]]
@@ -108,7 +105,7 @@ case class ActionReturningAction[R, T](parent: Returning[R], resultAction: R => 
     def toU(r: AbstractReturning[_, T]): AbstractReturning[_, U] = r match {
       case r: Returning[T] => r.transform(mapPF)(flatMapPF) //stop case
       case r: ReturningExpect[T] => r.transform(mapPF)(flatMapPF) //stop case
-      case r: ActionReturningAction[_, _] => r.transform(mapPF)(flatMapPF) //recursive call
+      case r => r.transform(mapPF)(flatMapPF) //recursive call
     }
     this.copy(parent, resultAction andThen toU)
   }

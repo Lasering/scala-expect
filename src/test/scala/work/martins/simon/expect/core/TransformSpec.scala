@@ -10,31 +10,15 @@ import scala.annotation.tailrec
 
 
 class TransformSpec extends PropSpecLike with Matchers with TestUtils with Generators with LazyLogging {
-/*
-  def containsSimpleReturning[R](expect: Expect[R]): Boolean = {
-    expect.expectBlocks.exists(_.whens.exists(_.actions.exists {
-      case _: Returning[R] | _: ReturningWithRegex[R] => true
-      case _ => false
-    }))
-  }
-  def containsExpectReturning[R](expect: Expect[R]): Boolean = {
-    expect.expectBlocks.exists(_.whens.exists(_.actions.exists {
-      case _: ReturningExpect[R] | _: ReturningExpectWithRegex[R] => true
-      case _ => false
-    }))
-  }
-  def containsReturnings[R](expect: Expect[R]): Boolean = containsSimpleReturning(expect) || containsExpectReturning(expect)
-*/
-
   def numberOfReturningsToAnExit[R](expect: Expect[R]): Int = {
     expect.expectBlocks.flatMap(_.whens.map { when =>
       @tailrec
       def countReturnings(actions: Seq[Action[R, when.This]], count: Int): Int = actions match {
-        case Seq() => count
         case Seq(_: Exit[R], _*) => count
         case Seq((_: ReturningExpect[R] | _: ReturningExpectWithRegex[R]), _*) => count + 1
         case Seq((_: Returning[R] | _: ReturningWithRegex[R]), tail@_*) => countReturnings(tail, count + 1)
         case Seq(_, tail@_*) => countReturnings(tail, count)
+        case _/*Seq()*/ => count
       }
       countReturnings(when.actions, 0)
     }).headOption.getOrElse(0)

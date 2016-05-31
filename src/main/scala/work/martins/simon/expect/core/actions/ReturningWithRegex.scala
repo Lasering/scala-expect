@@ -22,7 +22,7 @@ trait AbstractReturningWithRegex[R, WR] extends Action[WR, RegexWhen] {
   */
 case class ReturningWithRegex[R](result: Match => R) extends AbstractReturningWithRegex[R, R] {
   def execute(when: RegexWhen[R], process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
-    val regexMatch = when.getMatch(intermediateResult.output)
+    val regexMatch = when.regexMatch(intermediateResult.output)
     intermediateResult.copy(value = result(regexMatch))
   }
 
@@ -33,22 +33,19 @@ case class ReturningWithRegex[R](result: Match => R) extends AbstractReturningWi
     ReturningExpectWithRegex(result andThen f)
   }
   protected[expect] def transform[T](mapPF: PartialFunction[R, T])(flatMapPF: PartialFunction[R, Expect[T]]): AbstractReturningWithRegex[_, T] = {
-    //FIXME: is there any way of implementing this without the double evaluation of pattern matchers and guards?
-    //the double evaluation occurs in isDefinedAt and the apply
+    val computeAction: R => AbstractReturningWithRegex[_, T] = {
+      //FIXME: is there any way of implementing this without the double evaluation of pattern matchers and guards?
+      //the double evaluation occurs in isDefinedAt and the apply
 
-    //We cannot invoke map/flatMap, because if we did the returning result would be ran twice in the ActionReturningAction:
-    //Once inside the execute which invokes parent.result
-    //And another when the action returned by the ActionReturningAction is ran
+      //We cannot invoke map/flatMap, because if we did the returning result would be ran twice in the ActionReturningAction:
+      //Once inside the execute which invokes parent.result
+      //And another when the action returned by the ActionReturningAction is ran
+      case r if mapPF.isDefinedAt(r) => this.copy(_ => mapPF(r))
+      case r if flatMapPF.isDefinedAt(r) => ReturningExpectWithRegex(_ => flatMapPF(r))
+      case r => pfNotDefined[AbstractReturningWithRegex[_, T]]("transform")(r)
+    }
 
-    new ActionReturningActionWithRegex(this, { r: R =>
-      if (mapPF.isDefinedAt(r)) {
-        this.copy(_ => mapPF(r))
-      } else if (flatMapPF.isDefinedAt(r)) {
-        ReturningExpectWithRegex(_ => flatMapPF(r))
-      } else {
-        pfNotDefined[AbstractReturningWithRegex[_, T]]("transform")(r)
-      }
-    })
+    new ActionReturningActionWithRegex(this, computeAction)
   }
 
   def structurallyEquals[WW[X] <: RegexWhen[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[ReturningWithRegex[_]]
@@ -72,7 +69,7 @@ case class ReturningWithRegex[R](result: Match => R) extends AbstractReturningWi
   */
 case class ReturningExpectWithRegex[R](result: Match => Expect[R]) extends AbstractReturningWithRegex[Expect[R], R] {
   def execute(when: RegexWhen[R], process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
-    val regexMatch = when.getMatch(intermediateResult.output)
+    val regexMatch = when.regexMatch(intermediateResult.output)
     val expect = result(regexMatch)
     intermediateResult.copy(executionAction = ChangeToNewExpect(expect))
   }
@@ -96,7 +93,7 @@ case class ActionReturningActionWithRegex[R, T](parent: ReturningWithRegex[R], r
   def result: Match => Nothing = _ => throw new IllegalArgumentException("no can do")
 
   def execute(when: RegexWhen[T], process: RichProcess, intermediateResult: IntermediateResult[T]): IntermediateResult[T] = {
-    val regexMatch = when.getMatch(intermediateResult.output)
+    val regexMatch = when.regexMatch(intermediateResult.output)
     val parentResult: R = parent.result(regexMatch)
     resultAction(parentResult).execute(when, process, intermediateResult)
   }
@@ -111,7 +108,7 @@ case class ActionReturningActionWithRegex[R, T](parent: ReturningWithRegex[R], r
     def toU(r: AbstractReturningWithRegex[_, T]): AbstractReturningWithRegex[_, U] = r match {
       case r: ReturningWithRegex[T] => r.transform(mapPF)(flatMapPF) //stop case
       case r: ReturningExpectWithRegex[T] => r.transform(mapPF)(flatMapPF) //stop case
-      case r: ActionReturningActionWithRegex[_, _] => r.transform(mapPF)(flatMapPF) //recursive call
+      case r => r.transform(mapPF)(flatMapPF) //recursive call
     }
     this.copy(parent, resultAction andThen toU)
   }

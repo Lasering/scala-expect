@@ -18,7 +18,7 @@ object SendlnWithRegex {
   */
 case class SendWithRegex[R](text: Match => String) extends Action[R, RegexWhen] {
   def execute(when: RegexWhen[R], process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
-    val regexMatch = when.getMatch(intermediateResult.output)
+    val regexMatch = when.regexMatch(intermediateResult.output)
     process.print(text(regexMatch))
     intermediateResult
   }

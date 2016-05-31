@@ -105,7 +105,7 @@ trait Generators extends GeneratorDrivenPropertyChecks {
   /**
     * Generates an Expect with a single ExpectBlock, with a single When, with multiple Actions.
     */
-  def genSingleExpectBlockWhenMultipleActionExpect[R](implicit a: Arbitrary[R]) = for {
+  def genSingleExpectBlockWhenMultipleActionExpect[R](implicit a: Arbitrary[R]): Gen[(Expect[R], StringBuilder, String, R)] = for {
     defaultValue <- arbitrary[R]
     result <- arbitrary[R].suchThat(_ != defaultValue)
     builder = new StringBuilder("")

@@ -116,9 +116,9 @@ case class RegexWhen[R](pattern: Regex)(val actions: Action[R, RegexWhen]*) exte
   final type This[X] = RegexWhen[X]
 
   override def matches(output: String): Boolean = pattern.findFirstIn(output).isDefined
-  override def trimToMatchedText(output: String): String = output.substring(getMatch(output).end(0))
+  override def trimToMatchedText(output: String): String = output.substring(regexMatch(output).end(0))
 
-  protected[core] def getMatch(output: String): Match = {
+  protected[core] def regexMatch(output: String): Match = {
     //We have the guarantee that .get will be successful because this method
     //is only invoked if `matches` returned true.
     pattern.findFirstMatchIn(output).get

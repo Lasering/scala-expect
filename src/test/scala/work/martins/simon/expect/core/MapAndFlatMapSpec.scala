@@ -12,11 +12,11 @@ class MapAndFlatMapSpec extends PropSpecLike with Matchers with TestUtils with G
     expect.expectBlocks.flatMap(_.whens.map { when =>
       @tailrec
       def countReturnings(actions: Seq[Action[R, when.This]], count: Int): Int = actions match {
-        case Nil => count
-        case (_: Exit[R]) :: tail => count
-        case (_: ReturningExpect[R] | _: ReturningExpectWithRegex[R]) :: tail => count + 1
-        case (_: Returning[R] | _: ReturningWithRegex[R]) :: tail => countReturnings(tail, count + 1)
-        case _ :: tail => countReturnings(tail, count)
+        case Seq(_: Exit[R], _*) => count
+        case Seq((_: ReturningExpect[R] | _: ReturningExpectWithRegex[R]), _*) => count + 1
+        case Seq((_: Returning[R] | _: ReturningWithRegex[R]), tail@_*) => countReturnings(tail, count + 1)
+        case Seq(_, tail@_*) => countReturnings(tail, count)
+        case _/*Seq()*/ => count
       }
       countReturnings(when.actions, 0)
     }).headOption.getOrElse(0)
