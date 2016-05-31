@@ -12,11 +12,11 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
     "the stdOut does not match with any When" should {
       "run the actions in the TimeoutWhen if one exists" in {
         val e = new Expect("bc -i", defaultValue = "")(
-          new ExpectBlock (
-            new StringWhen("Is there anybody out there?") (
+          ExpectBlock (
+            StringWhen("Is there anybody out there?") (
               Returning("Just nod if you can hear me.")
             ),
-            new TimeoutWhen(
+            TimeoutWhen(
               Returning("Is there anyone at home?")
             )
           )
@@ -25,8 +25,8 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
       }
       "fail with TimeoutException if no TimeoutWhen exists" in {
         val e = new Expect("bc -i", defaultValue = "")(
-          new ExpectBlock (
-            new StringWhen("Come on, now,") (
+          ExpectBlock (
+            StringWhen("Come on, now,") (
               Returning("I hear you're feeling down.")
             )
           )
@@ -35,11 +35,11 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
       }
       "fail if an exception is thrown inside the TimeoutWhen" in {
         val e = new Expect("bc -i", defaultValue = "")(
-          new ExpectBlock (
-            new StringWhen("Is there anybody out there?") (
+          ExpectBlock (
+            StringWhen("Is there anybody out there?") (
               Returning("Just nod if you can hear me.")
             ),
-            new TimeoutWhen(
+            TimeoutWhen(
               Returning { (u: Unit) =>
                 throw new IllegalArgumentException()
               }
@@ -53,11 +53,11 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
     "eof is read from stdOut" should {
       "run the actions in the EndOfFileWhen if one exists" in {
         val e = new Expect("ls", defaultValue = "")(
-          new ExpectBlock (
-            new StringWhen("Well I can ease your pain") (
+          ExpectBlock (
+            StringWhen("Well I can ease your pain") (
               Returning("Get you on your feet again.")
             ),
-            new EndOfFileWhen(
+            EndOfFileWhen(
               Returning("Relax.")
             )
           )
@@ -66,8 +66,8 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
       }
       "fail with EOFException if no EndOfFileWhen exists" in {
         val e = new Expect("ls", defaultValue = "")(
-          new ExpectBlock (
-            new StringWhen("I'll need some information first.") (
+          ExpectBlock (
+            StringWhen("I'll need some information first.") (
               Returning("Just the basic facts.")
             )
           )
@@ -76,11 +76,11 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
       }
       "fail if an exception is thrown inside the EndOfFileWhen" in {
         val e = new Expect("ls", defaultValue = "")(
-          new ExpectBlock (
-            new StringWhen("Well I can ease your pain") (
+          ExpectBlock (
+            StringWhen("Well I can ease your pain") (
               Returning("Get you on your feet again.")
             ),
-            new EndOfFileWhen(
+            EndOfFileWhen(
               Returning { (u: Unit) =>
                 throw new IllegalArgumentException()
               }
@@ -94,11 +94,11 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
     "more than one When matches" should {
       "run the actions in the first matching when" in {
         val e = new Expect("bc -i", defaultValue = "")(
-          new ExpectBlock(
-            new RegexWhen("""bc""".r)(
+          ExpectBlock(
+            RegexWhen("""bc""".r)(
               ReturningWithRegex(_.group(0))
             ),
-            new StringWhen("bc")(
+            StringWhen("bc")(
               Returning("Ohh no")
             )
           )

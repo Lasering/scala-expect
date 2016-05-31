@@ -9,8 +9,8 @@ import scala.util.matching.Regex.Match
 class ReturningSpec extends FlatSpec with Matchers with TestUtils {
   "An Expect" should "return the specified value" in {
     val e = new Expect("bc -i", defaultValue = "")(
-      new ExpectBlock (
-        new StringWhen("bc") (
+      ExpectBlock (
+        StringWhen("bc") (
           Returning("ReturnedValue")
         )
       )
@@ -21,8 +21,8 @@ class ReturningSpec extends FlatSpec with Matchers with TestUtils {
   it should "only invoke the returning function when the corresponding When is executed" in {
     var test = 5
     val e = new Expect("bc -i", defaultValue = "")(
-      new ExpectBlock (
-        new StringWhen("bc") (
+      ExpectBlock (
+        StringWhen("bc") (
           Returning {
             test += 1
             "ReturnedValue"
@@ -40,8 +40,8 @@ class ReturningSpec extends FlatSpec with Matchers with TestUtils {
   it should "only return the last returning action but still execute the other actions" in {
     var test = 5
     val e = new Expect("bc -i", defaultValue = "")(
-      new ExpectBlock (
-        new RegexWhen("""bc (\d+\.\d+\.\d+)""".r) (
+      ExpectBlock (
+        RegexWhen("""bc (\d+\.\d+\.\d+)""".r) (
           ReturningWithRegex{ m =>
             test += 1
             m.group(1)
@@ -64,8 +64,8 @@ class ReturningSpec extends FlatSpec with Matchers with TestUtils {
   it should "not execute any action after an exit action" in {
     var test = 5
     val e = new Expect("bc -i", defaultValue = "")(
-      new ExpectBlock(
-        new RegexWhen("""bc (\d+\.\d+\.\d+)""".r) (
+      ExpectBlock(
+        RegexWhen("""bc (\d+\.\d+\.\d+)""".r) (
           ReturningWithRegex(_.group(1)),
           Exit(),
           Returning {
@@ -86,13 +86,13 @@ class ReturningSpec extends FlatSpec with Matchers with TestUtils {
 
   it should "be able to interact with the spawned program" in {
     val e = new Expect("bc -i", defaultValue = 5)(
-      new ExpectBlock(
-        new StringWhen("For details type `warranty'.")(
+      ExpectBlock(
+        StringWhen("For details type `warranty'.")(
           Sendln("1 + 2")
         )
       ),
-      new ExpectBlock(
-        new RegexWhen("""\n(\d+)\n""".r)(
+      ExpectBlock(
+        RegexWhen("""\n(\d+)\n""".r)(
           SendlnWithRegex { m: Match =>
             val previousAnswer = m.group(1)
             println(s"Got $previousAnswer")
@@ -100,8 +100,8 @@ class ReturningSpec extends FlatSpec with Matchers with TestUtils {
           }
         )
       ),
-      new ExpectBlock(
-        new RegexWhen("""\n(\d+)\n""".r)(
+      ExpectBlock(
+        RegexWhen("""\n(\d+)\n""".r)(
           ReturningWithRegex(_.group(1).toInt)
         )
       )
@@ -111,8 +111,8 @@ class ReturningSpec extends FlatSpec with Matchers with TestUtils {
 
   it should "fail if an exception is thrown inside an action" in {
     val e = new Expect("bc -i", defaultValue = 5)(
-      new ExpectBlock(
-        new StringWhen("For details type `warranty'.")(
+      ExpectBlock(
+        StringWhen("For details type `warranty'.")(
           Sendln("1 + 2"),
           Returning { (u: Unit) =>
             throw new IllegalArgumentException()

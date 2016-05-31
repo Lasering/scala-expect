@@ -5,15 +5,15 @@ import work.martins.simon.expect.TestUtils
 import work.martins.simon.expect.core.actions._
 
 class CompileTimeErrorsSpec extends FlatSpec with Matchers with TestUtils {
-  "A StringWhen" should "not compile if it contains a SendWithRegex" in {
+  "A StringWhen" should "not type check if it contains a SendWithRegex" in {
     //new StringWhen("text")(SendWithRegex(m => m.group(1)))
     """new StringWhen("text")(SendWithRegex(m => m.group(1)))""" shouldNot typeCheck
   }
-  it should "not compile if it contains a ReturningWithRegex" in {
+  it should "not type check if it contains a ReturningWithRegex" in {
     //new StringWhen("text")(ReturningWithRegex(m => m.group(1)))
     """new StringWhen("text")(ReturningWithRegex(m => m.group(1)))""" shouldNot typeCheck
   }
-  it should "not compile if it contains a ReturningExpectWithRegex" in {
+  it should "not type check if it contains a ReturningExpectWithRegex" in {
     //new StringWhen("text")(ReturningExpectWithRegex(m => new Expect(m.group(1), "")()))
     """new StringWhen("text")(ReturningExpectWithRegex(m => new Expect(m.group(1), "")()))""" shouldNot typeCheck
   }

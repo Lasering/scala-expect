@@ -22,17 +22,17 @@ class ActionsSpec extends WordSpec with Matchers {
     "multiple actions without functions are added" should {
       "generate the correct core.Expect" in {
         val coreExpect = new core.Expect("ls", defaultValue = "")(
-          new core.ExpectBlock(
-            new core.StringWhen("1")(
+          core.ExpectBlock(
+            core.StringWhen("1")(
               Send("string1"),
               Exit()
             )
           ),
-          new core.ExpectBlock(
-            new core.RegexWhen("""(\d+) \w+""".r)(
+          core.ExpectBlock(
+            core.RegexWhen("""(\d+) \w+""".r)(
               Sendln("string2")
             ),
-            new core.RegexWhen("""(\d+ \w+)""".r)(
+            core.RegexWhen("""(\d+ \w+)""".r)(
               Exit()
             )
           )
@@ -56,21 +56,21 @@ class ActionsSpec extends WordSpec with Matchers {
     "multiple actions with functions are added" should {
       "generate a structurally correct core.Expect" in {
         val coreExpect = new core.Expect("ls", defaultValue = "")(
-          new core.ExpectBlock(
-            new core.StringWhen("1")(
+          core.ExpectBlock(
+            core.StringWhen("1")(
               Sendln("string1"),
               Returning("string2"),
               Exit()
             )
           ),
-          new core.ExpectBlock(
-            new core.RegexWhen("""(\d+) \w+""".r)(
+          core.ExpectBlock(
+            core.RegexWhen("""(\d+) \w+""".r)(
               SendlnWithRegex { m: Match =>
                 val i = m.group(1)
                 s"string$i"
               }
             ),
-            new core.RegexWhen("""(\d+ \w+)""".r)(
+            core.RegexWhen("""(\d+ \w+)""".r)(
               ReturningWithRegex(_.group(1)),
               Exit()
             )

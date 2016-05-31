@@ -34,8 +34,8 @@ class EmptySpec extends FlatSpec with Matchers with TestUtils {
   "An Expect with an empty when" should "return the default value" in {
     val defaultValue = "some nice default value"
     val e = new Expect("echo ola", defaultValue)(
-      new ExpectBlock(
-        new StringWhen("ola")()
+      ExpectBlock(
+        StringWhen("ola")()
       )
     )
     e.futureValue shouldBe defaultValue

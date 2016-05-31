@@ -3,13 +3,13 @@ package work.martins.simon.expect.core
 import java.io.EOFException
 
 import com.typesafe.scalalogging.LazyLogging
-import scala.concurrent.{TimeoutException, Future, ExecutionContext}
 import work.martins.simon.expect.StringUtils._
+import scala.concurrent.{ExecutionContext, Future, TimeoutException}
 
 /**
   * @define type ExpectBlock
   */
-class ExpectBlock[R](val whens: When[R]*) extends LazyLogging {
+case class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
   require(whens.nonEmpty, "ExpectBlock must have at least a When.")
 
   /**

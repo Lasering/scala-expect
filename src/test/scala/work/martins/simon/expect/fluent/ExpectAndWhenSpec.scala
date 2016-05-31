@@ -12,14 +12,14 @@ class ExpectAndWhenSpec extends FreeSpec with Matchers {
   "An Expect should generate the correct core.Expect when" - {
     "multiple expect blocks are added" - {
       val coreExpect = new core.Expect("ls", defaultValue = ())(
-        new core.ExpectBlock(
-          new core.StringWhen("1")()
+        core.ExpectBlock(
+          core.StringWhen("1")()
         ),
-        new core.ExpectBlock(
-          new core.StringWhen("2")()
+        core.ExpectBlock(
+          core.StringWhen("2")()
         ),
-        new core.ExpectBlock(
-          new core.StringWhen("3")()
+        core.ExpectBlock(
+          core.StringWhen("3")()
         )
       )
 
@@ -63,17 +63,17 @@ class ExpectAndWhenSpec extends FreeSpec with Matchers {
     }
     "multiple whens are added" - {
       val coreExpect = new core.Expect("ls", defaultValue = ())(
-        new core.ExpectBlock(
-          new core.StringWhen("1")(),
-          new core.StringWhen("2")(),
-          new core.StringWhen("3")()
+        core.ExpectBlock(
+          core.StringWhen("1")(),
+          core.StringWhen("2")(),
+          core.StringWhen("3")()
         ),
-        new core.ExpectBlock(
-          new core.StringWhen("1")(),
-          new core.StringWhen("2")()
+        core.ExpectBlock(
+          core.StringWhen("1")(),
+          core.StringWhen("2")()
         ),
-        new core.ExpectBlock(
-          new core.StringWhen("3")()
+        core.ExpectBlock(
+          core.StringWhen("3")()
         )
       )
 
