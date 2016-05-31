@@ -62,6 +62,7 @@ releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies,
   inquireVersions,
   runClean,
+  ReleaseStep(action = Command.process("doc", _)),
   runTest,
   setReleaseVersion,
   commitReleaseVersion,
