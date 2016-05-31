@@ -2,6 +2,7 @@ package work.martins.simon.expect.core
 
 import org.scalatest.{FlatSpec, Matchers}
 import work.martins.simon.expect.TestUtils
+import work.martins.simon.expect.core.actions._
 
 import scala.util.matching.Regex.Match
 
@@ -10,20 +11,20 @@ class ReturningSpec extends FlatSpec with Matchers with TestUtils {
     val e = new Expect("bc -i", defaultValue = "")(
       new ExpectBlock (
         new StringWhen("bc") (
-          Returning(() => "ReturnedValue")
+          Returning("ReturnedValue")
         )
       )
     )
     e.futureValue shouldBe "ReturnedValue"
   }
 
-  it should "only invoke the returning function when that returning action is executed" in {
+  it should "only invoke the returning function when the corresponding When is executed" in {
     var test = 5
     val e = new Expect("bc -i", defaultValue = "")(
       new ExpectBlock (
         new StringWhen("bc") (
-          Returning { () =>
-            test = 7
+          Returning {
+            test += 1
             "ReturnedValue"
           }
         )
@@ -31,7 +32,7 @@ class ReturningSpec extends FlatSpec with Matchers with TestUtils {
     )
     test shouldBe 5
     e.whenReady { s =>
-      test shouldBe 7
+      test shouldBe 6
       s shouldBe "ReturnedValue"
     }
   }
@@ -42,16 +43,20 @@ class ReturningSpec extends FlatSpec with Matchers with TestUtils {
       new ExpectBlock (
         new RegexWhen("""bc (\d+\.\d+\.\d+)""".r) (
           ReturningWithRegex{ m =>
-            test = 6
+            test += 1
             m.group(1)
           },
-          Returning(() => "5")
+          Returning{
+            test += 1
+            "5"
+          }
         )
       )
     )
+
     test shouldBe 5
     e.whenReady { s =>
-      test shouldBe 6
+      test shouldBe 7
       s shouldBe "5"
     }
   }
@@ -63,13 +68,15 @@ class ReturningSpec extends FlatSpec with Matchers with TestUtils {
         new RegexWhen("""bc (\d+\.\d+\.\d+)""".r) (
           ReturningWithRegex(_.group(1)),
           Exit(),
-          Returning { () =>
-            test = 7
+          Returning {
+            test += 1
             "ThisValue"
           }
         )
       )
     )
+
+    test shouldBe 5
 
     e.whenReady { s =>
       test shouldBe 5
@@ -107,7 +114,7 @@ class ReturningSpec extends FlatSpec with Matchers with TestUtils {
       new ExpectBlock(
         new StringWhen("For details type `warranty'.")(
           Sendln("1 + 2"),
-          Returning{ () =>
+          Returning { (u: Unit) =>
             throw new IllegalArgumentException()
           }
         )

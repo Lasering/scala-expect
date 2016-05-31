@@ -1,18 +1,24 @@
 package work.martins.simon.expect.core
 
+import com.typesafe.scalalogging.LazyLogging
+
 import scala.language.higherKinds
 import work.martins.simon.expect.StringUtils._
+import work.martins.simon.expect.core.actions.Action
+
+import scala.annotation.tailrec
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
-import work.martins.simon.expect.core.{Action => A}
 
-sealed trait When[R] {
-  /**The When subtype to which the actions will be applied*/
-  type W[T] <: When[T]
-  /**Type alias for Action to make it easier to read*/
-  type Action[T] = A[T, W[T]]
+/**
+  * @define type when
+  */
+sealed trait When[R] extends LazyLogging {
+  /** The concrete When type constructor to which the actions will be applied. */
+  type This[X] <: When[X]
 
-  def actions: Seq[Action[R]]
+  /** The actions this $type runs when it matches against the current output of Expect. */
+  def actions: Seq[Action[R, This]]
 
   /**
    * @param output the String to match against.
@@ -30,34 +36,51 @@ sealed trait When[R] {
    * Executes all the actions of this When.
    */
   def execute(process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
-    val trimmedOutput = trimToMatchedText(intermediateResult.output)
-    var result = intermediateResult.copy[R](output = trimmedOutput)
-    actions foreach {
-      case Send(text) =>
-        process.print(text)
-      case Returning(r) =>
-        result = result.copy(value = r.apply())
-      case ReturningExpect(r) =>
-        //Preemptive exit to guarantee anything after this action does not get executed
-        return result.copy(executionAction = ChangeToNewExpect(r.apply()))
-      case Exit() =>
-        //Preemptive exit to guarantee anything after this action does not get executed
-        return result.copy(executionAction = Terminate)
+    @tailrec
+    def executeInner(actions: Seq[Action[R, This]], result: IntermediateResult[R]): IntermediateResult[R] = {
+      actions.headOption match {
+        case Some(action) =>
+          val ir = action.execute(this.asInstanceOf[This[R]], process, result)
+          ir.executionAction match {
+            case Continue =>
+              //Continue with the remaining actions
+              executeInner(actions.tail, ir)
+            case Terminate | ChangeToNewExpect(_) =>
+              //We just return ir because we want do a preemptive exit
+              //ie, ensure anything after this action does not get executed)
+              ir
+          }
+        case None =>
+          //No more actions. We just return the current intermediateResult
+          result
+      }
     }
-    result
+
+    val finalResult = executeInner(actions, intermediateResult)
+    finalResult.copy(output = trimToMatchedText(finalResult.output))
   }
 
-  def map[T](f: R => T): W[T] = withActions(actions.map(_.map(f).asInstanceOf[Action[T]]))
-  def flatMap[T](f: R => Expect[T]): W[T] = withActions(actions.map(_.flatMap(f).asInstanceOf[Action[T]]))
+  private[core] def map[T](f: R => T): This[T] = withActions(actions.map(_.map(f)))
+  private[core] def flatMap[T](f: R => Expect[T]): This[T] = withActions(actions.map(_.flatMap(f)))
+  private[core] def transform[T](mapPF: PartialFunction[R, T])(flatMapPF: PartialFunction[R, Expect[T]]): This[T] = {
+    withActions(actions.map(_.transform(mapPF)(flatMapPF)))
+  }
 
-  def withActions[T](actions: Seq[Action[T]]): W[T]
-
+  /** Create a new $type with the specified actions. */
+  def withActions[T](actions: Seq[Action[T, This]]): This[T]
 
   protected def structurallyEqualActions(other: When[R]): Boolean = {
     actions.size == other.actions.size && actions.zip(other.actions).forall { case (a, b) => a.structurallyEquals(b) }
   }
-  def structurallyEquals(other: When[R]): Boolean
 
+  /**
+    * @define subtypes actions
+    * Returns whether the other $type has the same number of $subtypes as this $type and
+    * that each pair of $subtypes is structurally equal.
+    *
+    * @param other the other $type to campare this $type to.
+    */
+  def structurallyEquals(other: When[R]): Boolean
 
   def patternString: String
   override def toString: String =
@@ -66,15 +89,15 @@ sealed trait When[R] {
        |}""".stripMargin
 }
 
-case class StringWhen[R](pattern: String)(val actions: Action[R, StringWhen[R]]*) extends When[R] {
-  type W[T] = StringWhen[T]
+case class StringWhen[R](pattern: String)(val actions: Action[R, StringWhen]*) extends When[R] {
+  final type This[X] = StringWhen[X]
 
   override def matches(output: String): Boolean = output.contains(pattern)
   override def trimToMatchedText(output: String): String = {
     output.substring(output.indexOf(pattern) + pattern.length)
   }
 
-  def withActions[T](actions: Seq[Action[T]]): StringWhen[T] = StringWhen(pattern)(actions:_*)
+  def withActions[T](actions: Seq[Action[T, This]]): StringWhen[T] = StringWhen(pattern)(actions:_*)
 
   override def structurallyEquals(other: When[R]): Boolean = other match {
     case that: StringWhen[R] => structurallyEqualActions(other) && pattern == that.pattern
@@ -89,49 +112,19 @@ case class StringWhen[R](pattern: String)(val actions: Action[R, StringWhen[R]]*
 
   val patternString: String = escape(pattern)
 }
-case class RegexWhen[R](pattern: Regex)(val actions: Action[R, RegexWhen[R]]*) extends When[R] {
-  final type W[T] = RegexWhen[T]
+case class RegexWhen[R](pattern: Regex)(val actions: Action[R, RegexWhen]*) extends When[R] {
+  final type This[X] = RegexWhen[X]
 
   override def matches(output: String): Boolean = pattern.findFirstIn(output).isDefined
   override def trimToMatchedText(output: String): String = output.substring(getMatch(output).end(0))
 
-  private def getMatch(output: String): Match = {
+  protected[core] def getMatch(output: String): Match = {
     //We have the guarantee that .get will be successful because this method
     //is only invoked if `matches` returned true.
     pattern.findFirstMatchIn(output).get
   }
 
-  override def execute(process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
-    //Would be nice not to duplicate most of this code here.
-    val trimmedOutput = trimToMatchedText(intermediateResult.output)
-    var result = intermediateResult.copy[R](output = trimmedOutput)
-
-    val regexMatch = getMatch(intermediateResult.output)
-    actions foreach {
-      case Send(text) =>
-        process.print(text)
-      case SendWithRegex(text) =>
-        process.print(text(regexMatch))
-      case Returning(r) =>
-        result = result.copy(value = r.apply())
-      case ReturningWithRegex(r) =>
-        result = result.copy(value = r(regexMatch))
-      case ReturningExpect(r) =>
-        val expect = r.apply()
-        //Preemptive exit to guarantee anything after this action does not get executed
-        return result.copy(executionAction = ChangeToNewExpect(expect))
-      case ReturningExpectWithRegex(r) =>
-        val expect = r(regexMatch)
-        //Preemptive exit to guarantee anything after this action does not get executed
-        return result.copy(executionAction = ChangeToNewExpect(expect))
-      case Exit() =>
-        //Preemptive exit to guarantee anything after this action does not get executed
-        return result.copy(executionAction = Terminate)
-    }
-    result
-  }
-
-  def withActions[T](actions: Seq[Action[T]]): RegexWhen[T] = RegexWhen(pattern)(actions:_*)
+  def withActions[T](actions: Seq[Action[T, This]]): RegexWhen[T] = RegexWhen(pattern)(actions:_*)
 
   override def structurallyEquals(other: When[R]): Boolean = other match {
     case that: RegexWhen[R] => structurallyEqualActions(other) && pattern.regex == that.pattern.regex
@@ -146,27 +139,27 @@ case class RegexWhen[R](pattern: Regex)(val actions: Action[R, RegexWhen[R]]*) e
 
   val patternString: String = escape(pattern.regex) + ".r"
 }
-case class EndOfFileWhen[R](actions: Action[R, EndOfFileWhen[R]]*) extends When[R] {
-  final type W[T] = EndOfFileWhen[T]
+case class EndOfFileWhen[R](actions: Action[R, EndOfFileWhen]*) extends When[R] {
+  final type This[X] = EndOfFileWhen[X]
 
-  val patternString: String = "EndOfFile"
-
-  def withActions[T](actions: Seq[Action[T]]): EndOfFileWhen[T] = EndOfFileWhen(actions:_*)
+  def withActions[T](actions: Seq[Action[T, This]]): EndOfFileWhen[T] = EndOfFileWhen(actions:_*)
 
   def structurallyEquals(other: When[R]): Boolean = other match {
     case that: EndOfFileWhen[R] => structurallyEqualActions(other)
     case _ => false
   }
+
+  val patternString: String = "EndOfFile"
 }
-case class TimeoutWhen[R](actions: Action[R, TimeoutWhen[R]]*) extends When[R] {
-  final type W[T] = TimeoutWhen[T]
+case class TimeoutWhen[R](actions: Action[R, TimeoutWhen]*) extends When[R] {
+  final type This[X] = TimeoutWhen[X]
 
-  val patternString: String = "Timeout"
-
-  def withActions[T](actions: Seq[Action[T]]): TimeoutWhen[T] = TimeoutWhen(actions:_*)
+  def withActions[T](actions: Seq[Action[T, This]]): TimeoutWhen[T] = TimeoutWhen(actions:_*)
 
   def structurallyEquals(other: When[R]): Boolean = other match {
     case that: TimeoutWhen[R] => structurallyEqualActions(other)
     case _ => false
   }
+
+  val patternString: String = "Timeout"
 }

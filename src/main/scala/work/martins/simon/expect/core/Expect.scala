@@ -4,12 +4,15 @@ import java.nio.charset.Charset
 
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
-import work.martins.simon.expect.StringUtils._
 import work.martins.simon.expect.Settings
+import work.martins.simon.expect.StringUtils._
 
 import scala.concurrent._
 import scala.concurrent.duration.FiniteDuration
 
+/**
+  *@define type Expect
+  */
 class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings())
                (val expectBlocks: ExpectBlock[R]*) extends LazyLogging {
   def this(command: Seq[String], defaultValue: R, config: Config)(expects: ExpectBlock[R]*) = {
@@ -73,10 +76,83 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
     innerRun(IntermediateResult(output = "", defaultValue, Continue), expectBlocks)
   }
 
-  //TODO: make expect composable by implementing:
-  def map[T](f: R => T): Expect[T] = new Expect(command, f(defaultValue), settings)(expectBlocks.map(_.map(f)):_*)
+  /** Creates a new $type by applying a function to the returned result of this $type. */
+  def map[T](f: R => T): Expect[T] = {
+    new Expect(command, f(defaultValue), settings)(expectBlocks.map(_.map(f)):_*)
+  }
+  /** Creates a new $type by applying a function to the returned result of this $type, and returns the result
+    * of the function as the new $type. */
   def flatMap[T](f: R => Expect[T]): Expect[T] = {
-    new Expect[T](command, f(defaultValue).defaultValue, settings)(expectBlocks.map(_.flatMap(f)):_*)
+    new Expect(command, f(defaultValue).defaultValue, settings)(expectBlocks.map(_.flatMap(f)):_*)
+  }
+  /**
+    * Transform this $type result using the following strategy:
+    *  - if `mapPF` is defined for the result then the result is mapped using mapPF.
+    *  - otherwise, if `flatMapPF` is defined for the result then the result is flatMapped using flatMapPF.
+    *  - otherwise a NoSuchElementException is thrown where the result would be expected.
+    *
+    * This function is very useful when we need to map this $type for some values of its result type and flatMap
+    * this $type for some other values of its result type.
+    *
+    * To ensure you don't get NoSuchElementException you should take special care in ensuring
+    * domain(mapPF) ∪ domain(flatMapPF) == domain(R)
+    *
+    * @example {{{
+    * def listMount(dir: String): Expect[Either[String, Int]] = { ... }
+    *
+    * def removeMount(dir: String): Expect[Either[String, Int]] = { ... }
+    *
+    * def makeMount(dir: String, destination: String): Expect[Either[String, String] = {
+    *   val e = new Expect(s"someMountCommand", Left("UnknownError"): Either[String, String])(
+    *     new ExpectBlock(
+    *       new StringWhen("you can't do that")(
+    *         Returning(Left("insufficientPermission"))
+    *       ),
+    *       new StringWhen("file already exists")(
+    *         ReturningExpect{
+    *           listMount(directory).fullCollect({
+    *             case Left("not a mount point") =>
+    *               //The existing file is not a mount point we must return error.
+    *               Left("file already exists")
+    *             case Left(s) =>
+    *               //The listMount failed so we must return its error
+    *               Left(s)
+    *             case Right(v) if v.contains(destination)
+    *               //The existing file is already a mount to the destination we want
+    *               Right("success")
+    *           }, {
+    *             case Right(v) =>
+    *              //The existing file is already a mount but to another destination
+    *              //We must remove the existing mount in order to be able to make the
+    *              //mount to the pretended destination
+    *              removeMount(directory).fullCollect({
+    *                case Left(l) => Left(l)
+    *                case Right(s) if s != "success" => Right(s)
+    *              }, {
+    *                case Right("success") => makeMount(directory)
+    *              })
+    *           })
+    *         }
+    *       )
+    *     )
+    *   )
+    * }
+    * }}}
+    *
+    * @param mapPF the function that will be applied when a map is needed.
+    * @param flatMapPF the function that will be applied when a flatMap is needed.
+    * @tparam T the type of the returned $type.
+    * @return a new $type whose result is either mapped or flatMapped according to whether mapPF or
+    *         flatMapPF is defined for the given result.
+    */
+  def transform[T](mapPF: PartialFunction[R, T])(flatMapPF: PartialFunction[R, Expect[T]]): Expect[T] = {
+    def notDefined(r: R): T = throw new NoSuchElementException(s"Expect.fullCollect neither mapPF nor flatMapPF are defined at $r (the Expect default value)")
+
+    val newDefaultValue = mapPF.applyOrElse(defaultValue, { r: R =>
+      flatMapPF.andThen(_.defaultValue).applyOrElse(r, notDefined)
+    })
+
+    new Expect[T](command, newDefaultValue, settings)(expectBlocks.map(_.transform(mapPF)(flatMapPF)):_*)
   }
 
   override def toString: String =
@@ -108,11 +184,16 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
   }
 
   /**
-    * Returns whether the other expect has the same command, the same defaultValue, the same settings and
-    * the same expects structurally. The expects are structurally equal if there are the same number of expects and each
-    * expect has the same number of Whens with the same structure.
- *
-    * @param other the other Expect to campare this Expect to.
+    * @define type expect
+    * @define subtypes expect blocks
+    * Returns whether the other $type has the same
+    *  - command
+    *  - defaultvalue
+    *  - settings
+    *  - number of $subtypes and that each pair of $subtypes is structurally equal
+    * as this $type.
+    *
+    * @param other the other $type to campare this $type to.
     */
   def structurallyEquals(other: Expect[R]): Boolean = {
     command == other.command &&

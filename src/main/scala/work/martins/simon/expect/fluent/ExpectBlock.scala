@@ -4,6 +4,9 @@ import scala.util.matching.Regex
 import work.martins.simon.expect.{Timeout, EndOfFile, core}
 import work.martins.simon.expect.StringUtils._
 
+/**
+  * @define type ExpectBlock
+  */
 class ExpectBlock[R](val parent: Expect[R]) extends Runnable[R] with Expectable[R] with Whenable[R] {
   val settings = parent.settings
   protected val runnableParent: Runnable[R] = parent
@@ -24,6 +27,22 @@ class ExpectBlock[R](val parent: Expect[R]) extends Runnable[R] with Expectable[
   override def addWhens(f: ExpectBlock[R] => Unit): ExpectBlock[R] = {
     f(this)
     this
+  }
+
+  private[fluent] def map[T](parent: Expect[T], f: R => T): ExpectBlock[T] = {
+    val newExpectBlock = new ExpectBlock(parent)
+    newExpectBlock.whens = whens.map(_.map(newExpectBlock, f))
+    newExpectBlock
+  }
+  private[fluent] def flatMap[T](parent: Expect[T], f: R => core.Expect[T]): ExpectBlock[T] = {
+    val newExpectBlock = new ExpectBlock(parent)
+    newExpectBlock.whens = whens.map(_.flatMap(newExpectBlock, f))
+    newExpectBlock
+  }
+  private[fluent] def transform[T](parent: Expect[T])(mapPF: PartialFunction[R, T])(flatMapPF: PartialFunction[R, core.Expect[T]]): ExpectBlock[T] = {
+    val newExpectBlock = new ExpectBlock(parent)
+    newExpectBlock.whens = whens.map(_.transform(newExpectBlock)(mapPF)(flatMapPF))
+    newExpectBlock
   }
 
   /***

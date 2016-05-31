@@ -32,5 +32,5 @@ class When[R, FW <: FWhen[R]](builder: Expect[R], when: FW) extends AbstractDefi
 
   override def exit(): DSL[R] = addAction(_.exit())
 
-  def toCore: FW#CW = when.toCore
+  def toCore: FW#CW[R] = when.toCore
 }

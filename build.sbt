@@ -1,12 +1,13 @@
 organization := "work.martins.simon"
 name := "scala-expect"
 
+val javaVersion = "1.8"
 initialize := {
-  val required = "1.8"
   val current  = sys.props("java.specification.version")
-  assert(current == required, s"Unsupported JDK: java.specification.version $current != $required")
+  assert(current == javaVersion, s"Unsupported JDK: expected JDK $javaVersion installed, but instead got JDK $current.")
 }
-javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
+javacOptions ++= Seq("-source", javaVersion, "-target", javaVersion, "-Xlint")
+
 scalaVersion := "2.11.8"
 scalacOptions ++= Seq(
   "-deprecation", //Emit warning and location for usages of deprecated APIs.
@@ -24,7 +25,8 @@ scalacOptions ++= Seq(
 libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
   "ch.qos.logback" % "logback-classic" % "1.1.7",
-  "org.scalatest" %% "scalatest" % "2.2.4" % "test",
+  "org.scalatest" %% "scalatest" % "2.2.6" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.12.5" % "test",
   "com.typesafe" % "config" % "1.3.0"
 )
 

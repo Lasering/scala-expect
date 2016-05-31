@@ -5,18 +5,19 @@ import java.util.concurrent.TimeoutException
 
 import org.scalatest._
 import work.martins.simon.expect.TestUtils
+import work.martins.simon.expect.core.actions._
 
 class WhenSpec extends WordSpec with Matchers with TestUtils {
-  "An Expect " when {
+  "An Expect" when {
     "the stdOut does not match with any When" should {
       "run the actions in the TimeoutWhen if one exists" in {
         val e = new Expect("bc -i", defaultValue = "")(
           new ExpectBlock (
             new StringWhen("Is there anybody out there?") (
-              Returning(() => "Just nod if you can hear me.")
+              Returning("Just nod if you can hear me.")
             ),
             new TimeoutWhen(
-              Returning(() => "Is there anyone at home?")
+              Returning("Is there anyone at home?")
             )
           )
         )
@@ -26,7 +27,7 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
         val e = new Expect("bc -i", defaultValue = "")(
           new ExpectBlock (
             new StringWhen("Come on, now,") (
-              Returning(() => "I hear you're feeling down.")
+              Returning("I hear you're feeling down.")
             )
           )
         )
@@ -36,10 +37,12 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
         val e = new Expect("bc -i", defaultValue = "")(
           new ExpectBlock (
             new StringWhen("Is there anybody out there?") (
-              Returning(() => "Just nod if you can hear me.")
+              Returning("Just nod if you can hear me.")
             ),
             new TimeoutWhen(
-              Returning(() => throw new IllegalArgumentException())
+              Returning { (u: Unit) =>
+                throw new IllegalArgumentException()
+              }
             )
           )
         )
@@ -52,10 +55,10 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
         val e = new Expect("ls", defaultValue = "")(
           new ExpectBlock (
             new StringWhen("Well I can ease your pain") (
-              Returning(() => "Get you on your feet again.")
+              Returning("Get you on your feet again.")
             ),
             new EndOfFileWhen(
-              Returning(() => "Relax.")
+              Returning("Relax.")
             )
           )
         )
@@ -65,7 +68,7 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
         val e = new Expect("ls", defaultValue = "")(
           new ExpectBlock (
             new StringWhen("I'll need some information first.") (
-              Returning(() => "Just the basic facts.")
+              Returning("Just the basic facts.")
             )
           )
         )
@@ -75,10 +78,12 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
         val e = new Expect("ls", defaultValue = "")(
           new ExpectBlock (
             new StringWhen("Well I can ease your pain") (
-              Returning(() => "Get you on your feet again.")
+              Returning("Get you on your feet again.")
             ),
             new EndOfFileWhen(
-              Returning(() => throw new IllegalArgumentException())
+              Returning { (u: Unit) =>
+                throw new IllegalArgumentException()
+              }
             )
           )
         )
@@ -94,7 +99,7 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
               ReturningWithRegex(_.group(0))
             ),
             new StringWhen("bc")(
-              Returning(() => "Ohh no")
+              Returning("Ohh no")
             )
           )
         )

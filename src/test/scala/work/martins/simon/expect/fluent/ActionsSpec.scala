@@ -1,8 +1,8 @@
 package work.martins.simon.expect.fluent
 
-import org.scalatest.{WordSpec, Matchers}
+import org.scalatest.{Matchers, WordSpec}
 import work.martins.simon.expect.core
-import work.martins.simon.expect.core._
+import work.martins.simon.expect.core.actions._
 
 import scala.util.matching.Regex.Match
 
@@ -59,7 +59,7 @@ class ActionsSpec extends WordSpec with Matchers {
           new core.ExpectBlock(
             new core.StringWhen("1")(
               Sendln("string1"),
-              Returning(() => "string2"),
+              Returning("string2"),
               Exit()
             )
           ),
