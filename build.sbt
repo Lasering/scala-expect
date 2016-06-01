@@ -23,7 +23,7 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0",
   "ch.qos.logback" % "logback-classic" % "1.1.7",
   "org.scalatest" %% "scalatest" % "2.2.6" % "test",
   "org.scalacheck" %% "scalacheck" % "1.12.5" % "test",
@@ -45,6 +45,7 @@ scmInfo := Some(ScmInfo(homepage.value.get, s"git@github.com:Lasering/${name.val
 publishMavenStyle := true
 publishTo := Some(if (isSnapshot.value) Opts.resolver.sonatypeSnapshots else Opts.resolver.sonatypeStaging)
 publishArtifact in Test := false
+sonatypeProfileName := "work.martins"
 
 pomIncludeRepository := { _ => false }
 pomExtra :=
@@ -65,12 +66,10 @@ releaseProcess := Seq[ReleaseStep](
   ReleaseStep(action = Command.process("doc", _)),
   runTest,
   setReleaseVersion,
-  commitReleaseVersion,
   tagRelease,
-  ReleaseStep(action = Command.process("publishSigned", _)),
   ReleaseStep(action = Command.process("ghpagesPushSite", _)),
-  setNextVersion,
-  commitNextVersion,
+  ReleaseStep(action = Command.process("publishSigned", _)),
   ReleaseStep(action = Command.process("sonatypeRelease", _)),
-  pushChanges
+  pushChanges,
+  setNextVersion
 )
