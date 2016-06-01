@@ -61,7 +61,7 @@ e.run() //Returns 6 inside a Future[Int]
 ## Fluent
 #### [Documentation](../../wiki/Fluent)
 #### Advantages
-* Less verbose syntax (mainly less periods and parenthesis).
+* Less verbose syntax (mainly less commas and parenthesis).
 * Most errors will be caught at compile time.
 * Easy to add expect blocks/whens/actions based on a condition.
 * Easy to refactor the creation of expects.
