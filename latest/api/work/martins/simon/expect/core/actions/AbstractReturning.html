@@ -198,18 +198,18 @@ And equality on a function is not defined. So in other to extract some useful in
 two actions we created this function.</p></li></ol>
             </div></dl></div>
     </li><li name="work.martins.simon.expect.core.actions.AbstractReturning#transform" visbl="prt" data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="transform[T](mapPF:PartialFunction[WR,T])(flatMapPF:PartialFunction[WR,work.martins.simon.expect.core.Expect[T]]):work.martins.simon.expect.core.actions.AbstractReturning[_,T]"></a>
-      <a id="transform[T](PartialFunction[WR,T])(PartialFunction[WR,Expect[T]]):AbstractReturning[_,T]"></a>
+      <a id="transform[T](flatMapPF:PartialFunction[WR,work.martins.simon.expect.core.Expect[T]])(mapPF:PartialFunction[WR,T]):work.martins.simon.expect.core.actions.AbstractReturning[_,T]"></a>
+      <a id="transform[T](PartialFunction[WR,Expect[T]])(PartialFunction[WR,T]):AbstractReturning[_,T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">abstract </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">transform</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="mapPF">mapPF: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.PartialFunction" class="extype" target="_top">PartialFunction</a>[<span class="extype" name="work.martins.simon.expect.core.actions.AbstractReturning.WR">WR</span>, <span class="extype" name="work.martins.simon.expect.core.actions.AbstractReturning.transform.T">T</span>]</span>)</span><span class="params">(<span name="flatMapPF">flatMapPF: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.PartialFunction" class="extype" target="_top">PartialFunction</a>[<span class="extype" name="work.martins.simon.expect.core.actions.AbstractReturning.WR">WR</span>, <a href="../Expect.html" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.actions.AbstractReturning.transform.T">T</span>]]</span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.actions.AbstractReturning">AbstractReturning</a>[_, <span class="extype" name="work.martins.simon.expect.core.actions.AbstractReturning.transform.T">T</span>]</span>
+        <span class="name">transform</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="flatMapPF">flatMapPF: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.PartialFunction" class="extype" target="_top">PartialFunction</a>[<span class="extype" name="work.martins.simon.expect.core.actions.AbstractReturning.WR">WR</span>, <a href="../Expect.html" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.actions.AbstractReturning.transform.T">T</span>]]</span>)</span><span class="params">(<span name="mapPF">mapPF: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.PartialFunction" class="extype" target="_top">PartialFunction</a>[<span class="extype" name="work.martins.simon.expect.core.actions.AbstractReturning.WR">WR</span>, <span class="extype" name="work.martins.simon.expect.core.actions.AbstractReturning.transform.T">T</span>]</span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.actions.AbstractReturning">AbstractReturning</a>[_, <span class="extype" name="work.martins.simon.expect.core.actions.AbstractReturning.transform.T">T</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#work.martins.simon.expect.core.actions.AbstractReturning@transform[T](mapPF:PartialFunction[WR,T])(flatMapPF:PartialFunction[WR,work.martins.simon.expect.core.Expect[T]]):work.martins.simon.expect.core.actions.AbstractReturning[_,T]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#work.martins.simon.expect.core.actions.AbstractReturning@transform[T](flatMapPF:PartialFunction[WR,work.martins.simon.expect.core.Expect[T]])(mapPF:PartialFunction[WR,T]):work.martins.simon.expect.core.actions.AbstractReturning[_,T]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -623,18 +623,18 @@ two actions we created this function.</p></li></ol>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="work.martins.simon.expect.core.actions.Action#pfNotDefined" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="pfNotDefined[T](functionName:String)(r:R):T"></a>
-      <a id="pfNotDefined[T](String)(WR):T"></a>
+      <a id="pfNotDefined[T](r:R):T"></a>
+      <a id="pfNotDefined[T](WR):T"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">pfNotDefined</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="functionName">functionName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span name="r">r: <span class="extype" name="work.martins.simon.expect.core.actions.AbstractReturning.WR">WR</span></span>)</span><span class="result">: <span class="extype" name="work.martins.simon.expect.core.actions.Action.pfNotDefined.T">T</span></span>
+        <span class="name">pfNotDefined</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="r">r: <span class="extype" name="work.martins.simon.expect.core.actions.AbstractReturning.WR">WR</span></span>)</span><span class="result">: <span class="extype" name="work.martins.simon.expect.core.actions.Action.pfNotDefined.T">T</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#work.martins.simon.expect.core.actions.AbstractReturning@pfNotDefined[T](functionName:String)(r:R):T" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#work.martins.simon.expect.core.actions.AbstractReturning@pfNotDefined[T](r:R):T" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

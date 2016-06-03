@@ -549,18 +549,18 @@ If more than one returning action is added to a When only the last <code>result<
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="work.martins.simon.expect.core.actions.Action#pfNotDefined" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="pfNotDefined[T](functionName:String)(r:R):T"></a>
-      <a id="pfNotDefined[T](String)(R):T"></a>
+      <a id="pfNotDefined[T](r:R):T"></a>
+      <a id="pfNotDefined[T](R):T"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">pfNotDefined</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="functionName">functionName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span name="r">r: <span class="extype" name="work.martins.simon.expect.core.actions.ReturningWithRegex.R">R</span></span>)</span><span class="result">: <span class="extype" name="work.martins.simon.expect.core.actions.Action.pfNotDefined.T">T</span></span>
+        <span class="name">pfNotDefined</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="r">r: <span class="extype" name="work.martins.simon.expect.core.actions.ReturningWithRegex.R">R</span></span>)</span><span class="result">: <span class="extype" name="work.martins.simon.expect.core.actions.Action.pfNotDefined.T">T</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#work.martins.simon.expect.core.actions.ReturningWithRegex@pfNotDefined[T](functionName:String)(r:R):T" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#work.martins.simon.expect.core.actions.ReturningWithRegex@pfNotDefined[T](r:R):T" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -626,18 +626,18 @@ two actions we created this function.</p></li></ol>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="work.martins.simon.expect.core.actions.ReturningWithRegex#transform" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="transform[T](mapPF:PartialFunction[R,T])(flatMapPF:PartialFunction[R,work.martins.simon.expect.core.Expect[T]]):work.martins.simon.expect.core.actions.AbstractReturningWithRegex[_,T]"></a>
-      <a id="transform[T](PartialFunction[R,T])(PartialFunction[R,Expect[T]]):AbstractReturningWithRegex[_,T]"></a>
+      <a id="transform[T](flatMapPF:PartialFunction[R,work.martins.simon.expect.core.Expect[T]])(mapPF:PartialFunction[R,T]):work.martins.simon.expect.core.actions.AbstractReturningWithRegex[_,T]"></a>
+      <a id="transform[T](PartialFunction[R,Expect[T]])(PartialFunction[R,T]):AbstractReturningWithRegex[_,T]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">transform</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="mapPF">mapPF: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.PartialFunction" class="extype" target="_top">PartialFunction</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningWithRegex.R">R</span>, <span class="extype" name="work.martins.simon.expect.core.actions.ReturningWithRegex.transform.T">T</span>]</span>)</span><span class="params">(<span name="flatMapPF">flatMapPF: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.PartialFunction" class="extype" target="_top">PartialFunction</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningWithRegex.R">R</span>, <a href="../Expect.html" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningWithRegex.transform.T">T</span>]]</span>)</span><span class="result">: <a href="AbstractReturningWithRegex.html" class="extype" name="work.martins.simon.expect.core.actions.AbstractReturningWithRegex">AbstractReturningWithRegex</a>[_, <span class="extype" name="work.martins.simon.expect.core.actions.ReturningWithRegex.transform.T">T</span>]</span>
+        <span class="name">transform</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="flatMapPF">flatMapPF: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.PartialFunction" class="extype" target="_top">PartialFunction</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningWithRegex.R">R</span>, <a href="../Expect.html" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningWithRegex.transform.T">T</span>]]</span>)</span><span class="params">(<span name="mapPF">mapPF: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.PartialFunction" class="extype" target="_top">PartialFunction</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningWithRegex.R">R</span>, <span class="extype" name="work.martins.simon.expect.core.actions.ReturningWithRegex.transform.T">T</span>]</span>)</span><span class="result">: <a href="AbstractReturningWithRegex.html" class="extype" name="work.martins.simon.expect.core.actions.AbstractReturningWithRegex">AbstractReturningWithRegex</a>[_, <span class="extype" name="work.martins.simon.expect.core.actions.ReturningWithRegex.transform.T">T</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../../index.html#work.martins.simon.expect.core.actions.ReturningWithRegex@transform[T](mapPF:PartialFunction[R,T])(flatMapPF:PartialFunction[R,work.martins.simon.expect.core.Expect[T]]):work.martins.simon.expect.core.actions.AbstractReturningWithRegex[_,T]" title="Permalink" target="_top">
+      <a href="../../../../../../index.html#work.martins.simon.expect.core.actions.ReturningWithRegex@transform[T](flatMapPF:PartialFunction[R,work.martins.simon.expect.core.Expect[T]])(mapPF:PartialFunction[R,T]):work.martins.simon.expect.core.actions.AbstractReturningWithRegex[_,T]" title="Permalink" target="_top">
         <img src="../../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
