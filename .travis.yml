@@ -10,12 +10,14 @@ addons:
     - bc
 
 scala:
-  - 2.11.7
+  - 2.11.8
 jdk:
   - oraclejdk8
   
-after_script:
+script:
   - sbt coverage test
+
+after_success:
   - sbt coverageReport
   - sbt coverageAggregate
   - sbt codacyCoverage
