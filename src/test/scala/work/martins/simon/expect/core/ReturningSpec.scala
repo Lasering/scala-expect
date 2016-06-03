@@ -4,8 +4,6 @@ import org.scalatest.{FlatSpec, Matchers}
 import work.martins.simon.expect.TestUtils
 import work.martins.simon.expect.core.actions._
 
-import scala.util.matching.Regex.Match
-
 class ReturningSpec extends FlatSpec with Matchers with TestUtils {
   "An Expect" should "return the specified value" in {
     val e = new Expect("bc -i", defaultValue = "")(
@@ -93,9 +91,8 @@ class ReturningSpec extends FlatSpec with Matchers with TestUtils {
       ),
       ExpectBlock(
         RegexWhen("""\n(\d+)\n""".r)(
-          SendlnWithRegex { m: Match =>
+          SendlnWithRegex { m =>
             val previousAnswer = m.group(1)
-            println(s"Got $previousAnswer")
             s"$previousAnswer + 3"
           }
         )

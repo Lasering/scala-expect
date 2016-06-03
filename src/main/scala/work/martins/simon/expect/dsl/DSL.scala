@@ -20,6 +20,7 @@ trait DSL[R] {
   def when(pattern: Regex): When[R, RegexWhen[R]]
   def when(pattern: Timeout.type): When[R, TimeoutWhen[R]]
   def when(pattern: EndOfFile.type): When[R, EndOfFileWhen[R]]
+  //TODO: fix this as its intended purpose is not working correctly. Same for addActions
   def addWhen[W <: FWhen[R]](f: ExpectBlock[R] => When[R, W]): When[R, W]
   def addWhens(f: ExpectBlock[R] => DSL[R]): ExpectBlock[R]
 

@@ -10,7 +10,7 @@ trait AbstractReturningWithRegex[R, WR] extends Action[WR, RegexWhen] {
 
   protected[expect] override def map[T](f: WR => T): AbstractReturningWithRegex[_, T]
   protected[expect] override def flatMap[T](f: WR => Expect[T]): AbstractReturningWithRegex[_, T]
-  protected[expect] override def transform[T](mapPF: PartialFunction[WR, T])(flatMapPF: PartialFunction[WR, Expect[T]]): AbstractReturningWithRegex[_, T]
+  protected[expect] override def transform[T](flatMapPF: PartialFunction[WR, Expect[T]])(mapPF: PartialFunction[WR, T]): AbstractReturningWithRegex[_, T]
 }
 
 
@@ -32,7 +32,7 @@ case class ReturningWithRegex[R](result: Match => R) extends AbstractReturningWi
   protected[expect] def flatMap[T](f: R => Expect[T]): AbstractReturningWithRegex[_, T] = {
     ReturningExpectWithRegex(result andThen f)
   }
-  protected[expect] def transform[T](mapPF: PartialFunction[R, T])(flatMapPF: PartialFunction[R, Expect[T]]): AbstractReturningWithRegex[_, T] = {
+  protected[expect] def transform[T](flatMapPF: PartialFunction[R, Expect[T]])(mapPF: PartialFunction[R, T]): AbstractReturningWithRegex[_, T] = {
     val computeAction: R => AbstractReturningWithRegex[_, T] = {
       //FIXME: is there any way of implementing this without the double evaluation of pattern matchers and guards?
       //the double evaluation occurs in isDefinedAt and the apply
@@ -40,9 +40,9 @@ case class ReturningWithRegex[R](result: Match => R) extends AbstractReturningWi
       //We cannot invoke map/flatMap, because if we did the returning result would be ran twice in the ActionReturningAction:
       //Once inside the execute which invokes parent.result
       //And another when the action returned by the ActionReturningAction is ran
-      case r if mapPF.isDefinedAt(r) => this.copy(_ => mapPF(r))
       case r if flatMapPF.isDefinedAt(r) => ReturningExpectWithRegex(_ => flatMapPF(r))
-      case r => pfNotDefined[AbstractReturningWithRegex[_, T]]("transform")(r)
+      case r if mapPF.isDefinedAt(r) => this.copy(_ => mapPF(r))
+      case r => pfNotDefined[AbstractReturningWithRegex[_, T]](r)
     }
 
     new ActionReturningActionWithRegex(this, computeAction)
@@ -80,8 +80,8 @@ case class ReturningExpectWithRegex[R](result: Match => Expect[R]) extends Abstr
   protected[expect] def flatMap[T](f: R => Expect[T]): AbstractReturningWithRegex[_, T] = {
     this.copy(result.andThen(_.flatMap(f)))
   }
-  protected[expect] def transform[T](mapPF: PartialFunction[R, T])(flatMapPF: PartialFunction[R, Expect[T]]): AbstractReturningWithRegex[_, T] = {
-    this.copy(result.andThen(_.transform(mapPF)(flatMapPF)))
+  protected[expect] def transform[T](flatMapPF: PartialFunction[R, Expect[T]])(mapPF: PartialFunction[R, T]): AbstractReturningWithRegex[_, T] = {
+    this.copy(result.andThen(_.transform(flatMapPF)(mapPF)))
   }
 
   def structurallyEquals[WW[X] <: RegexWhen[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[ReturningExpectWithRegex[_]]
@@ -104,11 +104,11 @@ case class ActionReturningActionWithRegex[R, T](parent: ReturningWithRegex[R], r
   protected[expect] def flatMap[U](f: T => Expect[U]): AbstractReturningWithRegex[_, U] = {
     this.copy(parent, resultAction.andThen(_.flatMap(f)))
   }
-  protected[expect] def transform[U](mapPF: PartialFunction[T, U])(flatMapPF: PartialFunction[T, Expect[U]]): AbstractReturningWithRegex[_, U] = {
+  protected[expect] def transform[U](flatMapPF: PartialFunction[T, Expect[U]])(mapPF: PartialFunction[T, U]): AbstractReturningWithRegex[_, U] = {
     def toU(r: AbstractReturningWithRegex[_, T]): AbstractReturningWithRegex[_, U] = r match {
-      case r: ReturningWithRegex[T] => r.transform(mapPF)(flatMapPF) //stop case
-      case r: ReturningExpectWithRegex[T] => r.transform(mapPF)(flatMapPF) //stop case
-      case r => r.transform(mapPF)(flatMapPF) //recursive call
+      case r: ReturningWithRegex[T] => r.transform(flatMapPF)(mapPF) //stop case
+      case r: ReturningExpectWithRegex[T] => r.transform(flatMapPF)(mapPF) //stop case
+      case r => r.transform(flatMapPF)(mapPF) //recursive call
     }
     this.copy(parent, resultAction andThen toU)
   }

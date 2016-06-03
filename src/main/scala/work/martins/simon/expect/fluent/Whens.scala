@@ -112,9 +112,9 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
     newWhen.actions = actions.map(_.flatMap(f).asInstanceOf[Action[T, newWhen.CW]])
     newWhen
   }
-  private[fluent] def transform[T](parent: ExpectBlock[T])(mapPF: PartialFunction[R, T])(flatMapPF: PartialFunction[R, core.Expect[T]]): This[T] = {
+  private[fluent] def transform[T](parent: ExpectBlock[T])(flatMapPF: PartialFunction[R, core.Expect[T]])(mapPF: PartialFunction[R, T]): This[T] = {
     val newWhen = withParent(parent)
-    newWhen.actions = actions.map(_.transform(mapPF)(flatMapPF).asInstanceOf[Action[T, newWhen.CW]])
+    newWhen.actions = actions.map(_.transform(flatMapPF)(mapPF).asInstanceOf[Action[T, newWhen.CW]])
     newWhen
   }
 

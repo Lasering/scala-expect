@@ -25,7 +25,7 @@ case class Send[R](text: String) extends Action[R, When] {
 
   protected[expect] def map[T](f: R => T): Action[T, When] = this.asInstanceOf[Send[T]]
   protected[expect] def flatMap[T](f: R => Expect[T]): Action[T, When] = this.asInstanceOf[Send[T]]
-  protected[expect] def transform[T](mapPF: PartialFunction[R, T])(flatMapPF: PartialFunction[R, Expect[T]]): Action[T, When] = {
+  protected[expect] def transform[T](flatMapPF: PartialFunction[R, Expect[T]])(mapPF: PartialFunction[R, T]): Action[T, When] = {
     this.asInstanceOf[Send[T]]
   }
 

@@ -71,8 +71,8 @@ case class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
 
   private[core] def map[T](f: R => T): ExpectBlock[T] = new ExpectBlock(whens.map(_.map(f)):_*)
   private[core] def flatMap[T](f: R => Expect[T]): ExpectBlock[T] = new ExpectBlock(whens.map(_.flatMap(f)):_*)
-  private[core] def transform[T](mapPF: PartialFunction[R, T])(flatMapPF: PartialFunction[R, Expect[T]]): ExpectBlock[T] = {
-    new ExpectBlock(whens.map(_.transform(mapPF)(flatMapPF)):_*)
+  private[core] def transform[T](flatMapPF: PartialFunction[R, Expect[T]])(mapPF: PartialFunction[R, T]): ExpectBlock[T] = {
+    new ExpectBlock(whens.map(_.transform(flatMapPF)(mapPF)):_*)
   }
 
   override def toString: String =

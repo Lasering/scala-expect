@@ -10,7 +10,7 @@ import work.martins.simon.expect.core.actions._
 class WhenSpec extends WordSpec with Matchers with TestUtils {
   "An Expect" when {
     "the stdOut does not match with any When" should {
-      "run the actions in the TimeoutWhen if one exists" in {
+      "run the actions in the TimeoutWhen" in {
         val e = new Expect("bc -i", defaultValue = "")(
           ExpectBlock (
             StringWhen("Is there anybody out there?") (
@@ -51,7 +51,7 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
     }
 
     "eof is read from stdOut" should {
-      "run the actions in the EndOfFileWhen if one exists" in {
+      "run the actions in the EndOfFileWhen" in {
         val e = new Expect("ls", defaultValue = "")(
           ExpectBlock (
             StringWhen("Well I can ease your pain") (

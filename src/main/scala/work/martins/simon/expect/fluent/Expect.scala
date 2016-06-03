@@ -60,31 +60,31 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
   }
   /**
     * Transform this $type result using the following strategy:
-    *  - if `mapPF` is defined for the result then the result is mapped using mapPF.
-    *  - otherwise, if `flatMapPF` is defined for the result then the result is flatMapped using flatMapPF.
+    *  - if `flatMapPF` `isDefinedAt` for this expect result then the result is flatMapped using flatMapPF.
+    *  - otherwise, if `mapPF` `isDefinedAt` for this expect result then the result is mapped using mapPF.
     *  - otherwise a NoSuchElementException is thrown where the result would be expected.
     *
-    * This function is very useful when we need to map this $type for some values of its result type and flatMap
+    * This function is very useful when we need to flatMap this $type for some values of its result type and map
     * this $type for some other values of its result type.
     *
     * To ensure you don't get NoSuchElementException you should take special care in ensuring
-    * domain(mapPF) ∪ domain(flatMapPF) == domain(R)
+    * domain(flatMapPF) ∪ domain(mapPF) == domain(R)
     *
-    * @param mapPF the function that will be applied when a map is needed.
     * @param flatMapPF the function that will be applied when a flatMap is needed.
+    * @param mapPF the function that will be applied when a map is needed.
     * @tparam T the type of the returned $type.
-    * @return a new $type whose result is either mapped or flatMapped according to whether mapPF or
-    *         flatMapPF is defined for the given result.
+    * @return a new $type whose result is either flatMapped or mapped according to whether flatMapPF or
+    *         mapPF is defined for the given result.
     */
-  def transform[T](mapPF: PartialFunction[R, T])(flatMapPF: PartialFunction[R, core.Expect[T]]): Expect[T] = {
-    def notDefined(r: R): T = throw new NoSuchElementException(s"Expect.fullCollect neither mapPF nor flatMapPF are defined at $r (the Expect default value)")
+  def transform[T](flatMapPF: PartialFunction[R, core.Expect[T]])(mapPF: PartialFunction[R, T]): Expect[T] = {
+    def notDefined(r: R): T = throw new NoSuchElementException(s"Expect.transform neither mapPF nor flatMapPF are defined at $r (the Expect default value)")
 
-    val newDefaultValue = mapPF.applyOrElse(defaultValue, { r: R =>
-      flatMapPF.andThen(_.defaultValue).applyOrElse(r, notDefined)
+    val newDefaultValue = flatMapPF.andThen(_.defaultValue).applyOrElse(defaultValue, { r: R =>
+      mapPF.applyOrElse(r, notDefined)
     })
 
     val newExpect = new Expect[T](command, newDefaultValue, settings)
-    newExpect.expectBlocks = expectBlocks.map(_.transform(newExpect)(mapPF)(flatMapPF))
+    newExpect.expectBlocks = expectBlocks.map(_.transform(newExpect)(flatMapPF)(mapPF))
     newExpect
   }
 

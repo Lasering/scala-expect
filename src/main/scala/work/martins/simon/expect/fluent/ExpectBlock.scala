@@ -39,9 +39,9 @@ class ExpectBlock[R](val parent: Expect[R]) extends Runnable[R] with Expectable[
     newExpectBlock.whens = whens.map(_.flatMap(newExpectBlock, f))
     newExpectBlock
   }
-  private[fluent] def transform[T](parent: Expect[T])(mapPF: PartialFunction[R, T])(flatMapPF: PartialFunction[R, core.Expect[T]]): ExpectBlock[T] = {
+  private[fluent] def transform[T](parent: Expect[T])(flatMapPF: PartialFunction[R, core.Expect[T]])(mapPF: PartialFunction[R, T]): ExpectBlock[T] = {
     val newExpectBlock = new ExpectBlock(parent)
-    newExpectBlock.whens = whens.map(_.transform(newExpectBlock)(mapPF)(flatMapPF))
+    newExpectBlock.whens = whens.map(_.transform(newExpectBlock)(flatMapPF)(mapPF))
     newExpectBlock
   }
 

@@ -17,10 +17,10 @@ trait Action[R, -W[X] <: When[X]] {
 
   protected[expect] def map[T](f: R => T): Action[T, W]
   protected[expect] def flatMap[T](f: R => Expect[T]): Action[T, W]
-  protected[expect] def transform[T](mapPF: PartialFunction[R, T])(flatMapPF: PartialFunction[R, Expect[T]]): Action[T, W]
+  protected[expect] def transform[T](flatMapPF: PartialFunction[R, Expect[T]])(mapPF: PartialFunction[R, T]): Action[T, W]
 
-  protected def pfNotDefined[T](functionName: String)(r: R): T = {
-    throw new NoSuchElementException(s"Expect.$functionName partial function is not defined at $r (from ${this.getClass.getSimpleName})")
+  protected def pfNotDefined[T](r: R): T = {
+    throw new NoSuchElementException(s"Expect.transform neither flatMapPF nor mapPF are defined at $r (from ${this.getClass.getSimpleName})")
   }
 
   /**

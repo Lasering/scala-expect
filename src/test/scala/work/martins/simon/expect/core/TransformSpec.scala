@@ -35,9 +35,9 @@ class TransformSpec extends PropSpecLike with Matchers with TestUtils with Gener
       val (innerExpect, innerBuilder, _, _) = inner
 
       val transformedExpect = outerExpect.transform {
-        case outerExpect.defaultValue => newDefaultvalue
-      } {
         case `outerResult` => innerExpect
+      } {
+        case outerExpect.defaultValue => newDefaultvalue
       }
 
       //Ensure the actions were not executed in the transform
@@ -55,9 +55,9 @@ class TransformSpec extends PropSpecLike with Matchers with TestUtils with Gener
       val (innerExpect, innerBuilder, _, _) = inner
 
       val transformedExpect = outerExpect.transform {
-        case `outerResult` => newValue
-      } {
         case outerExpect.defaultValue => innerExpect
+      } {
+        case `outerResult` => newValue
       }
 
       //Ensure the actions were not executed in the transform
@@ -80,9 +80,9 @@ class TransformSpec extends PropSpecLike with Matchers with TestUtils with Gener
       val innerReturnings = numberOfReturningsToAnExit(innerExpect)
 
       val transformedExpect = outerExpect.transform {
-        case outerExpect.defaultValue => newDefaultvalue
-      }{
         case `outerResult` => innerExpect
+      }{
+        case outerExpect.defaultValue => newDefaultvalue
       }
 
       transformedExpect.whenReady { obtainedResult =>
