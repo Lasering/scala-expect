@@ -6,6 +6,7 @@ import org.scalacheck.Gen._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import work.martins.simon.expect.core.actions._
 
+import scala.annotation.tailrec
 import scala.util.matching.Regex
 
 trait Generators extends GeneratorDrivenPropertyChecks {
@@ -113,4 +114,19 @@ trait Generators extends GeneratorDrivenPropertyChecks {
     when <- genWhen("README", result, builder.append(addToBuilder), interactive = false)//ls is not interactive
     expect = new Expect("ls", defaultValue)(new ExpectBlock(when))
   } yield (expect, builder, addToBuilder, result)
+
+
+  def numberOfReturningsToAnExit[R](expect: Expect[R]): Int = {
+    expect.expectBlocks.flatMap(_.whens.map { when =>
+      @tailrec
+      def countReturnings(actions: Seq[Action[R, when.This]], count: Int): Int = actions match {
+        case Seq(_: Exit[R], _*) => count
+        case Seq((_: ReturningExpect[R] | _: ReturningExpectWithRegex[R]), _*) => count + 1
+        case Seq((_: Returning[R] | _: ReturningWithRegex[R]), tail@_*) => countReturnings(tail, count + 1)
+        case Seq(_, tail@_*) => countReturnings(tail, count)
+        case _/*Seq()*/ => count
+      }
+      countReturnings(when.actions, 0)
+    }).headOption.getOrElse(0)
+  }
 }

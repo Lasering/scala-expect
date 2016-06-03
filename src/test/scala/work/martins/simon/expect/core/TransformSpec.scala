@@ -4,26 +4,9 @@ import com.typesafe.scalalogging.LazyLogging
 import org.scalacheck.Arbitrary._
 import org.scalatest.{Matchers, PropSpecLike}
 import work.martins.simon.expect.TestUtils
-import work.martins.simon.expect.core.actions._
-
-import scala.annotation.tailrec
 
 
 class TransformSpec extends PropSpecLike with Matchers with TestUtils with Generators with LazyLogging {
-  def numberOfReturningsToAnExit[R](expect: Expect[R]): Int = {
-    expect.expectBlocks.flatMap(_.whens.map { when =>
-      @tailrec
-      def countReturnings(actions: Seq[Action[R, when.This]], count: Int): Int = actions match {
-        case Seq(_: Exit[R], _*) => count
-        case Seq((_: ReturningExpect[R] | _: ReturningExpectWithRegex[R]), _*) => count + 1
-        case Seq((_: Returning[R] | _: ReturningWithRegex[R]), tail@_*) => countReturnings(tail, count + 1)
-        case Seq(_, tail@_*) => countReturnings(tail, count)
-        case _/*Seq()*/ => count
-      }
-      countReturnings(when.actions, 0)
-    }).headOption.getOrElse(0)
-  }
-
   def numberOfDigits(s: String): Int = (s * 2).count(_.isDigit)
 
   implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 100, workers = 8, maxDiscarded = 1000)
@@ -114,4 +97,8 @@ class TransformSpec extends PropSpecLike with Matchers with TestUtils with Gener
       }
     }
   }
+
+  //TODO: Transform: flatMapping the default value, mapping the result - must return the correct result
+
+  //TODO: a double transform
 }

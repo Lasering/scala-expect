@@ -3,25 +3,8 @@ package work.martins.simon.expect.core
 import org.scalacheck.Arbitrary._
 import org.scalatest.{Matchers, PropSpecLike}
 import work.martins.simon.expect.TestUtils
-import work.martins.simon.expect.core.actions._
-
-import scala.annotation.tailrec
 
 class MapAndFlatMapSpec extends PropSpecLike with Matchers with TestUtils with Generators {
-  def numberOfReturningsToAnExit[R](expect: Expect[R]): Int = {
-    expect.expectBlocks.flatMap(_.whens.map { when =>
-      @tailrec
-      def countReturnings(actions: Seq[Action[R, when.This]], count: Int): Int = actions match {
-        case Seq(_: Exit[R], _*) => count
-        case Seq((_: ReturningExpect[R] | _: ReturningExpectWithRegex[R]), _*) => count + 1
-        case Seq((_: Returning[R] | _: ReturningWithRegex[R]), tail@_*) => countReturnings(tail, count + 1)
-        case Seq(_, tail@_*) => countReturnings(tail, count)
-        case _/*Seq()*/ => count
-      }
-      countReturnings(when.actions, 0)
-    }).headOption.getOrElse(0)
-  }
-
   def numberOfDigits(s: String): Int = (s * 2).count(_.isDigit)
 
   property("Mapping: must not cause the actions to be executed and must return the mapped result") {
