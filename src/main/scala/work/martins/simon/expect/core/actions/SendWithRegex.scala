@@ -26,8 +26,12 @@ case class SendWithRegex[R](text: Match => String) extends Action[R, RegexWhen] 
   //These methods just perform a cast because the type argument R is just used here,
   //so there isn't the need to allocate need objects.
 
-  protected[expect] def map[T](f: R => T): Action[T, RegexWhen] = this.asInstanceOf[SendWithRegex[T]]
-  protected[expect] def flatMap[T](f: R => Expect[T]): Action[T, RegexWhen] = this.asInstanceOf[SendWithRegex[T]]
+  protected[expect] def map[T](f: R => T): Action[T, RegexWhen] = {
+    this.asInstanceOf[SendWithRegex[T]]
+  }
+  protected[expect] def flatMap[T](f: R => Expect[T]): Action[T, RegexWhen] = {
+    this.asInstanceOf[SendWithRegex[T]]
+  }
   protected[expect] def transform[T](flatMapPF: PartialFunction[R, Expect[T]])(mapPF: PartialFunction[R, T]): Action[T, RegexWhen] = {
     this.asInstanceOf[SendWithRegex[T]]
   }
