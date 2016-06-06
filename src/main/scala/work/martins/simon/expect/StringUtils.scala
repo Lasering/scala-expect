@@ -11,6 +11,6 @@ object StringUtils {
 
   implicit class IndentableString(s: String) {
     def indent(level: Int = 1, text: String = "\t"): String = s.replaceAll("(?m)^", text * level)
-    def unindent(level: Int = 1, text: String = "\t"): String = s.replaceAll(s"(?m)^${text * level}", "")
+    //def unindent(level: Int = 1, text: String = "\t"): String = s.replaceAll(s"(?m)^${text * level}", "")
   }
 }

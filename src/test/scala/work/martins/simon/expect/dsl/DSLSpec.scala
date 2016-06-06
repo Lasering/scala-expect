@@ -1,6 +1,7 @@
 package work.martins.simon.expect.dsl
 
 import org.scalatest.{Matchers, WordSpec}
+import work.martins.simon.expect.{EndOfFile, Timeout}
 
 class DSLSpec extends WordSpec with Matchers {
   "An Expect" when {
@@ -9,10 +10,8 @@ class DSLSpec extends WordSpec with Matchers {
         intercept[IllegalArgumentException] {
           new Expect("ls", defaultValue = ()) {
             expect {
-              expect {
-                when(""){
-                  send("")
-                }
+              expect("") {
+                send("")
               }
             }
           }
@@ -20,10 +19,10 @@ class DSLSpec extends WordSpec with Matchers {
       }
       "work if the expect block is added directly to the body of the expect" in {
         noException should be thrownBy {
-          new Expect("ls", defaultValue = ()) {
+          new Expect("ls", defaultValue = "") {
             expect {
-              when("") {
-                send("")
+              when("".r) {
+                send(m => "")
               }
             }
           }
@@ -33,48 +32,44 @@ class DSLSpec extends WordSpec with Matchers {
     "a when is added" should {
       "fail if the when is added directly to the body of the expect" in {
         intercept[IllegalArgumentException] {
-          new Expect("ls", defaultValue = ()) {
+          new Expect("ls", defaultValue = "") {
             when("") {
-              send("")
+              sendln("")
             }
           }
         }
       }
       "fail if the when is added directly to the body of the expect with an expect block before" in {
         intercept[IllegalArgumentException] {
-          new Expect("ls", defaultValue = ()) {
-            expect {
-              when(""){
-                send("")
-              }
+          new Expect("ls", defaultValue = "") {
+            expect(EndOfFile){
+              returning("")
             }
-            when("") {
-              send("")
+            when("".r) {
+              sendln(m => "")
             }
           }
         }
       }
       "fail if the when is added directly to the body of the expect with an expect block after" in {
         intercept[IllegalArgumentException] {
-          new Expect("ls", defaultValue = ()) {
-            when("") {
-              send("")
+          new Expect("ls", defaultValue = "") {
+            when(EndOfFile) {
+              returning("")
             }
-            expect {
-              when("") {
-                send("")
-              }
+            expect(Timeout) {
+              exit()
             }
           }
         }
       }
       "fail if the when is added inside another when" in {
         intercept[IllegalArgumentException] {
-          new Expect("ls", defaultValue = ()) {
+          new Expect("ls", defaultValue = "") {
             expect {
-              when("") {
+              when(Timeout) {
                 when("") {
-                  send("")
+                  returningExpect(new Expect("ls", ""))
                 }
               }
             }
@@ -83,10 +78,11 @@ class DSLSpec extends WordSpec with Matchers {
       }
       "work if the when is added inside an expect" in {
         noException should be thrownBy {
-          new Expect("ls", defaultValue = ()) {
+          new Expect("ls", defaultValue = "") {
             expect {
-              when("") {
-                send("")
+              when("".r) {
+                returning(m => "")
+                returningExpect(m => new Expect("ls", ""))
               }
             }
           }

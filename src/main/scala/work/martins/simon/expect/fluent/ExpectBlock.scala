@@ -29,22 +29,6 @@ class ExpectBlock[R](val parent: Expect[R]) extends Runnable[R] with Expectable[
     this
   }
 
-  private[fluent] def map[T](parent: Expect[T], f: R => T): ExpectBlock[T] = {
-    val newExpectBlock = new ExpectBlock(parent)
-    newExpectBlock.whens = whens.map(_.map(newExpectBlock, f))
-    newExpectBlock
-  }
-  private[fluent] def flatMap[T](parent: Expect[T], f: R => core.Expect[T]): ExpectBlock[T] = {
-    val newExpectBlock = new ExpectBlock(parent)
-    newExpectBlock.whens = whens.map(_.flatMap(newExpectBlock, f))
-    newExpectBlock
-  }
-  private[fluent] def transform[T](parent: Expect[T])(flatMapPF: PartialFunction[R, core.Expect[T]])(mapPF: PartialFunction[R, T]): ExpectBlock[T] = {
-    val newExpectBlock = new ExpectBlock(parent)
-    newExpectBlock.whens = whens.map(_.transform(newExpectBlock)(flatMapPF)(mapPF))
-    newExpectBlock
-  }
-
   /***
     * @return the core.ExpectBlock equivalent of this fluent.ExpectBlock.
     */

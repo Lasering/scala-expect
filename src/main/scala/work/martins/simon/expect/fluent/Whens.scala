@@ -102,25 +102,6 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
    */
   def exit(): This[R] = newAction(Exit())
 
-  private[fluent] def map[T](parent: ExpectBlock[T], f: R => T): This[T] = {
-    val newWhen = withParent(parent)
-    newWhen.actions = actions.map(_.map(f).asInstanceOf[Action[T, newWhen.CW]])
-    newWhen
-  }
-  private[fluent] def flatMap[T](parent: ExpectBlock[T], f: R => core.Expect[T]): This[T] = {
-    val newWhen = withParent(parent)
-    newWhen.actions = actions.map(_.flatMap(f).asInstanceOf[Action[T, newWhen.CW]])
-    newWhen
-  }
-  private[fluent] def transform[T](parent: ExpectBlock[T])(flatMapPF: PartialFunction[R, core.Expect[T]])(mapPF: PartialFunction[R, T]): This[T] = {
-    val newWhen = withParent(parent)
-    newWhen.actions = actions.map(_.transform(flatMapPF)(mapPF).asInstanceOf[Action[T, newWhen.CW]])
-    newWhen
-  }
-
-  /** Create a new $type with the specified parent. */
-  def withParent[T](parent: ExpectBlock[T]): This[T]
-
   /**
    * @return the core.When equivalent of this fluent.When.
    */
@@ -135,8 +116,6 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
 case class StringWhen[R](parent: ExpectBlock[R], pattern: String) extends When[R]{
   type CW[X] = core.StringWhen[X]
   type This[X] = StringWhen[X]
-
-  def withParent[T](parent: ExpectBlock[T]): StringWhen[T] = this.copy(parent)
 
   def toCore: core.StringWhen[R] = new core.StringWhen[R](pattern)(actions:_*)
 
@@ -181,8 +160,6 @@ case class RegexWhen[R](parent: ExpectBlock[R], pattern: Regex) extends When[R] 
   def returningExpect(result: Match => core.Expect[R]): RegexWhen[R] = newAction(ReturningExpectWithRegex(result))
 
 
-  def withParent[T](parent: ExpectBlock[T]): RegexWhen[T] = this.copy(parent)
-
   def toCore: core.RegexWhen[R] = new core.RegexWhen[R](pattern)(actions:_*)
 
   override def toString: String = toString(escape(pattern.regex) + ".r")
@@ -199,8 +176,6 @@ case class TimeoutWhen[R](parent: ExpectBlock[R]) extends When[R] {
   type CW[X] = core.TimeoutWhen[X]
   type This[X] = TimeoutWhen[X]
 
-  def withParent[T](parent: ExpectBlock[T]): TimeoutWhen[T] = this.copy(parent)
-
   def toCore: core.TimeoutWhen[R] = new core.TimeoutWhen[R](actions:_*)
 
   override def toString: String = toString("EndOfFile")
@@ -213,8 +188,6 @@ case class TimeoutWhen[R](parent: ExpectBlock[R]) extends When[R] {
 case class EndOfFileWhen[R](parent: ExpectBlock[R]) extends When[R] {
   type CW[X] = core.EndOfFileWhen[X]
   type This[X] = EndOfFileWhen[X]
-
-  def withParent[T](parent: ExpectBlock[T]): EndOfFileWhen[T] = this.copy(parent)
 
   def toCore: core.EndOfFileWhen[R] = new core.EndOfFileWhen[R](actions:_*)
 

@@ -1,7 +1,7 @@
 package work.martins.simon.expect.fluent
 
 import org.scalatest.{FreeSpec, Matchers}
-import work.martins.simon.expect.core
+import work.martins.simon.expect.{EndOfFile, Timeout, core}
 
 //The execution of a fluent.Expect is delegated to core.Expect
 //This means fluent.Expect does not know how to execute Expects.
@@ -9,136 +9,103 @@ import work.martins.simon.expect.core
 //There is, however, the need to test that the core.Expect generated from a fluent.Expect is the correct one.
 
 class ExpectAndWhenSpec extends FreeSpec with Matchers {
-  "An Expect should generate the correct core.Expect when" - {
-    "multiple expect blocks are added" - {
+  "An Expect" - {
+    "should generate the correct core.Expect when" - {
       val coreExpect = new core.Expect("ls", defaultValue = ())(
         core.ExpectBlock(
-          core.StringWhen("1")()
+          core.StringWhen("1")(),
+          core.RegexWhen("2".r)(),
+          core.EndOfFileWhen(),
+          core.TimeoutWhen()
         ),
         core.ExpectBlock(
-          core.StringWhen("2")()
+          core.StringWhen("1")(),
+          core.RegexWhen("2".r)(),
+          core.EndOfFileWhen()
         ),
         core.ExpectBlock(
-          core.StringWhen("3")()
+          core.EndOfFileWhen(),
+          core.TimeoutWhen()
+        ),
+        core.ExpectBlock(
+          core.TimeoutWhen()
         )
       )
-
-      def addTwoExpectBlock(e: Expect[Unit]): Unit = e.expect("2")
 
       "using the verbose way" in {
         val fe = new Expect("ls", defaultValue = ())
         fe.expect
           .when("1")
+          .when("2".r)
+          .when(EndOfFile)
+          .when(Timeout)
         fe.expect
-          .when("2")
+          .when("1")
+          .when("2".r)
+          .when(EndOfFile)
         fe.expect
-          .when("3")
+          .when(EndOfFile)
+          .when(Timeout)
+        fe.expect
+          .when(Timeout)
+
         fe.toCore shouldEqual coreExpect
       }
-      "using shortcuts" in {
+
+      def addOneWhen(e: ExpectBlock[Unit]): StringWhen[Unit] = e.when("1")
+
+      "using shortcuts and addWhen" in {
         val fe = new Expect("ls", defaultValue = ())
-        fe.expect("1")
-        fe.expect("2")
-        fe.expect("3")
+        fe.expect
+          .addWhen(addOneWhen)
+          .when("2".r)
+          .when(EndOfFile)
+          .when(Timeout)
+        fe.expect
+          .addWhen(addOneWhen)
+          .when("2".r)
+          .when(EndOfFile)
+        //This is very confusing. Not recommended.
+        fe.expect(EndOfFile)
+          .when(Timeout)
+        fe.expect(Timeout)
+
         fe.toCore shouldEqual coreExpect
       }
-      "using addExpectBlock" in {
-        val fe = new Expect("ls", defaultValue = ())
-        fe.addExpectBlock { e =>
-          e.expect("1")
+      "using addExpectBlock and addWhens" in {
+        def addItBlock(e: Expect[Unit]): Unit = {
+          e.expect
+            .addWhen(addOneWhen)
+            .when("2".r)
+            .addWhens(addSomeWhens)
         }
-        fe.addExpectBlock(addTwoExpectBlock)
-        fe.addExpectBlock(_.expect("3"))
-        fe.toCore shouldEqual coreExpect
-      }
-      "mixing all the alternatives" in {
-        val fe = new Expect("ls", defaultValue = ())
-        fe.expect("1")
-        fe.addExpectBlock(addTwoExpectBlock)
-        fe.expect
-          .when("3")
 
-        fe.toCore shouldEqual coreExpect
-      }
-    }
-    "multiple whens are added" - {
-      val coreExpect = new core.Expect("ls", defaultValue = ())(
-        core.ExpectBlock(
-          core.StringWhen("1")(),
-          core.StringWhen("2")(),
-          core.StringWhen("3")()
-        ),
-        core.ExpectBlock(
-          core.StringWhen("1")(),
-          core.StringWhen("2")()
-        ),
-        core.ExpectBlock(
-          core.StringWhen("3")()
-        )
-      )
+        def addSomeWhens(eb: ExpectBlock[Unit]): Unit = {
+          eb
+            .when(EndOfFile)
+            .when(Timeout)
+        }
 
-      def addIWhen(i: Int)(e: ExpectBlock[Unit]): StringWhen[Unit] = e.when(s"$i")
-
-      "using the verbose way" in {
         val fe = new Expect("ls", defaultValue = ())
+        fe.addExpectBlock(addItBlock)
+        //Although this is possible it is not recommended because its harder to read.
+        //The addExpectBlock should be used to refactor out common expect blocks
+        //and therefor should be used like the previous line.
+        fe.addExpectBlock { e =>
+          e.expect
+            .addWhen(addOneWhen)
+            .when("2".r)
+            .when(EndOfFile)
+        }
         fe.expect
-          .when("1")
-          .when("2")
-          .when("3")
-        fe.expect
-          .when("1")
-          .when("2")
-        fe.expect
-          .when("3")
-        fe.toCore shouldEqual coreExpect
-      }
-      "using addWhen" in {
-        val fe = new Expect("ls", defaultValue = ())
-        fe.expect
-          .addWhen(addIWhen(1))
-          .when("2")
-          .when("3")
-        fe.expect
-          .when("1")
-          .addWhen(addIWhen(2))
-        fe.expect
-          .when("3")
-        fe.toCore shouldEqual coreExpect
-      }
-      "using addWhens" in {
-        val fe = new Expect("ls", defaultValue = ())
+          .addWhens(addSomeWhens)
+        //Just like addExpectBlock this syntax is discouraged.
+        //In this case it is even more discouraged because we are just adding one when.
+        //The more suited alternative would be using addWhen(functionThatAddsIt)
         fe.expect
           .addWhens{ eb =>
-            eb.when("1")
-            eb.when("2")
-            eb.when("3")
+            eb.when(Timeout)
           }
-        fe.expect
-          .addWhens{ eb =>
-            eb.when("1")
-            eb.when("2")
-          }
-        //This should be avoided because we are just adding a single when.
-        //However given the more relaxed type of f there is legitimate uses to do something like this.
-        //But these uses would most probably use a function and won't use a lambda directly.
-        fe.expect
-          .addWhens(_.when("3"))
-
-        fe.toCore shouldEqual coreExpect
-      }
-      "mixing all the alternatives" in {
-        val fe = new Expect("ls", defaultValue = ())
-        fe.expect
-          .when("1")
-          .when("2")
-          .when("3")
-        fe.expect
-          .addWhens{ eb =>
-            eb.when("1")
-            eb.when("2")
-          }
-        fe.expect
-          .addWhen(addIWhen(3))
 
         fe.toCore shouldEqual coreExpect
       }

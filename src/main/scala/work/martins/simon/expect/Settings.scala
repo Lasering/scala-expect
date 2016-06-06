@@ -44,7 +44,6 @@ class Settings(config: Config = ConfigFactory.load()) {
   val bufferSize: Int = getBytes("buffer-size").toInt
   val redirectStdErrToStdOut: Boolean = getBoolean("redirect-std-err-to-std-out")
 
-  override def toString: String = scalaExpectConfig.root.render
   override def equals(other: Any): Boolean = other match {
     case that: Settings =>timeout == that.timeout &&
         charset == that.charset &&

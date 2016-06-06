@@ -9,7 +9,7 @@ import work.martins.simon.expect.TestUtils
 class TransformSpec extends PropSpecLike with Matchers with TestUtils with Generators with LazyLogging {
   def numberOfDigits(s: String): Int = (s * 2).count(_.isDigit)
 
-  implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 100, workers = 8, maxDiscarded = 1000)
+  //implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 100, workers = 8, maxDiscarded = 1000)
 
   property("Transform: mapping the default value, flatMapping the result - must not cause the actions to be executed") {
     forAll(genSingleExpectBlockWhenMultipleActionExpect[String],

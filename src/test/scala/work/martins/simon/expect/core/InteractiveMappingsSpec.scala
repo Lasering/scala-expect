@@ -19,6 +19,10 @@ class InteractiveMappingsSpec extends WordSpec with Matchers with TestUtils {
             val previousAnswer = m.group(1)
             s"$previousAnswer + 3"
           }
+        ),
+        //Cheap way to test map, flatMap and transform on EndOfFileWhen
+        EndOfFileWhen(
+          Exit()
         )
       ),
       ExpectBlock(
@@ -27,6 +31,10 @@ class InteractiveMappingsSpec extends WordSpec with Matchers with TestUtils {
             builderAction
             m.group(1).toInt
           },
+          Exit()
+        ),
+        //Cheap way to test map, flatMap and transform on TimeoutWhen
+        TimeoutWhen(
           Exit()
         )
       )
@@ -112,11 +120,11 @@ class InteractiveMappingsSpec extends WordSpec with Matchers with TestUtils {
       "not cause the actions to be executed and must return the transformed result" in {
         val builder = new StringBuilder("")
         val addToBuilder = "some string"
-        val newValue: Seq[Int] = 1 to 10
+        val newValue = 1 to 10
 
         val e = constructExpect(builder.append(addToBuilder))
 
-        val transformedExpect: Expect[Seq[Int]] = e.transform {
+        val transformedExpect = e.transform {
           case e.defaultValue => flatMap(6)
         } {
           case 6 => newValue
@@ -134,6 +142,36 @@ class InteractiveMappingsSpec extends WordSpec with Matchers with TestUtils {
       }
     }
 
-    //TODO: a double transform
+    "being doubly transformed" should {
+      "not cause the actions to be executed and must return the transformed result" in {
+        val builder = new StringBuilder("")
+        val addToBuilder = "some string"
+
+        val newValue = 1 to 10
+
+        val e = constructExpect(builder.append(addToBuilder))
+
+        val transformedExpect = e.transform {
+          case e.defaultValue => flatMap(6)
+        } {
+          case 6 => newValue
+        }.transform {
+          case `newValue` => flatMap(6)
+        } {
+          case Seq(6, 6, 6, 6, 6, 6) => newValue
+        }
+
+        //Ensure the actions were not executed in the map
+        builder.result() shouldBe empty
+
+        //Ensure the defaultValue was mapped
+        transformedExpect.defaultValue shouldBe newValue
+
+        transformedExpect.whenReady { obtainedResult =>
+          builder.result() shouldBe (addToBuilder * 2)
+          obtainedResult shouldBe mapFunction(6)
+        }
+      }
+    }
   }
 }

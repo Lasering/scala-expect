@@ -44,51 +44,6 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
     this
   }
 
-
-  /** Creates a new $type by applying a function to the returned result of this $type. */
-  def map[T](f: R => T): Expect[T] = {
-    val newExpect = new Expect(command, f(defaultValue), settings)
-    newExpect.expectBlocks = expectBlocks.map(_.map(newExpect, f))
-    newExpect
-  }
-  /** Creates a new $type by applying a function to the returned result of this $type, and returns the result
-    * of the function as the new $type. */
-  def flatMap[T](f: R => core.Expect[T]): Expect[T] = {
-    val newExpect = new Expect(command, f(defaultValue).defaultValue, settings)
-    newExpect.expectBlocks = expectBlocks.map(_.flatMap(newExpect, f))
-    newExpect
-  }
-  /**
-    * Transform this $type result using the following strategy:
-    *  - if `flatMapPF` `isDefinedAt` for this expect result then the result is flatMapped using flatMapPF.
-    *  - otherwise, if `mapPF` `isDefinedAt` for this expect result then the result is mapped using mapPF.
-    *  - otherwise a NoSuchElementException is thrown where the result would be expected.
-    *
-    * This function is very useful when we need to flatMap this $type for some values of its result type and map
-    * this $type for some other values of its result type.
-    *
-    * To ensure you don't get NoSuchElementException you should take special care in ensuring
-    * domain(flatMapPF) ∪ domain(mapPF) == domain(R)
-    *
-    * @param flatMapPF the function that will be applied when a flatMap is needed.
-    * @param mapPF the function that will be applied when a map is needed.
-    * @tparam T the type of the returned $type.
-    * @return a new $type whose result is either flatMapped or mapped according to whether flatMapPF or
-    *         mapPF is defined for the given result.
-    */
-  def transform[T](flatMapPF: PartialFunction[R, core.Expect[T]])(mapPF: PartialFunction[R, T]): Expect[T] = {
-    def notDefined(r: R): T = throw new NoSuchElementException(s"Expect.transform neither mapPF nor flatMapPF are defined at $r (the Expect default value)")
-
-    val newDefaultValue = flatMapPF.andThen(_.defaultValue).applyOrElse(defaultValue, { r: R =>
-      mapPF.applyOrElse(r, notDefined)
-    })
-
-    val newExpect = new Expect[T](command, newDefaultValue, settings)
-    newExpect.expectBlocks = expectBlocks.map(_.transform(newExpect)(flatMapPF)(mapPF))
-    newExpect
-  }
-
-
   /**
     * @return the core.Expect equivalent of this fluent.Expect.
     */
