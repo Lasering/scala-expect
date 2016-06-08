@@ -94,8 +94,9 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
     * This function is very useful when we need to flatMap this $type for some values of its result type and map
     * this $type for some other values of its result type.
     *
-    * To ensure you don't get NoSuchElementException you should take special care in ensuring
-    * domain(flatMapPF) ∪ domain(mapPF) == domain(R)
+    * To ensure you don't get NoSuchElementException you should take special care in ensuring:
+    * {{{ domain(flatMapPF) ∪ domain(mapPF) == domain(R) }}}
+    * Remember that in the domain of R the `defaultValue` is also included.
     *
     * @example {{{
     * def countFilesInFolder(folder: String): Expect[Either[String, Int]] = {

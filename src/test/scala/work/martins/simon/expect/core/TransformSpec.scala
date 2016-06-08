@@ -11,6 +11,19 @@ class TransformSpec extends PropSpecLike with Matchers with TestUtils with Gener
 
   //implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 100, workers = 8, maxDiscarded = 1000)
 
+  property("Transform when the defaultValue is not in domain a NoSuchElementException should be thrown in the transform") {
+    forAll(genSingleExpectBlockWhenMultipleActionExpect[String]) { case (expect, _, _, _) =>
+
+      val thrown = the [NoSuchElementException] thrownBy expect.transform {
+        PartialFunction.empty[String, Expect[String]]
+      } {
+        PartialFunction.empty[String, String]
+      }
+
+      thrown.getMessage should include ("default value")
+    }
+  }
+
   property("Transform: mapping the default value, flatMapping the result - must not cause the actions to be executed") {
     forAll(genSingleExpectBlockWhenMultipleActionExpect[String],
            genSingleExpectBlockWhenMultipleActionExpect[Int], arbitrary[Int]) { case (outer, inner, newDefaultvalue) =>

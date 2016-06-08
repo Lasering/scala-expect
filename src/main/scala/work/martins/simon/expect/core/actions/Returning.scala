@@ -3,12 +3,10 @@ package work.martins.simon.expect.core.actions
 import work.martins.simon.expect.core._
 import scala.language.higherKinds
 
-sealed trait AbstractReturning[R, WR] extends Action[WR, When] {
-  def result: Unit => R
-
-  protected[expect] override def map[T](f: WR => T): AbstractReturning[_, T]
-  protected[expect] override def flatMap[T](f: WR => Expect[T]): AbstractReturning[_, T]
-  protected[expect] override def transform[T](flatMapPF: PartialFunction[WR, Expect[T]])(mapPF: PartialFunction[WR, T]): AbstractReturning[_, T]
+sealed trait AbstractReturning[WR] extends Action[WR, When] {
+  protected[expect] override def map[T](f: WR => T): AbstractReturning[T]
+  protected[expect] override def flatMap[T](f: WR => Expect[T]): AbstractReturning[T]
+  protected[expect] override def transform[T](flatMapPF: WR =/> Expect[T])(mapPF: WR =/> T): AbstractReturning[T]
 }
 
 object Returning {
@@ -19,19 +17,19 @@ object Returning {
   * $returningAction
   * $moreThanOne
   **/
-case class Returning[R](result: Unit => R) extends AbstractReturning[R, R] {
+case class Returning[R](result: Unit => R) extends AbstractReturning[R] {
   def execute(when: When[R], process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
     intermediateResult.copy(value = result(()))
   }
 
-  protected[expect] def map[T](f: R => T): AbstractReturning[_, T] = {
+  protected[expect] def map[T](f: R => T): AbstractReturning[T] = {
     this.copy(result andThen f)
   }
-  protected[expect] def flatMap[T](f: R => Expect[T]): AbstractReturning[_, T] = {
+  protected[expect] def flatMap[T](f: R => Expect[T]): AbstractReturning[T] = {
     ReturningExpect(result andThen f)
   }
-  protected[expect] def transform[T](flatMapPF: PartialFunction[R, Expect[T]])(mapPF: PartialFunction[R, T]): AbstractReturning[_, T] = {
-    val computeAction: R => AbstractReturning[_, T] = {
+  protected[expect] def transform[T](flatMapPF: R =/> Expect[T])(mapPF: R =/> T): AbstractReturning[T] = {
+    val computeAction: R => AbstractReturning[T] = {
       //FIXME: is there any way of implementing this without the double evaluation of pattern matchers and guards?
       //the double evaluation occurs in isDefinedAt and the apply
 
@@ -41,7 +39,7 @@ case class Returning[R](result: Unit => R) extends AbstractReturning[R, R] {
 
       case r if flatMapPF.isDefinedAt(r) => ReturningExpect(_ => flatMapPF(r))
       case r if mapPF.isDefinedAt(r) => this.copy(_ => mapPF(r))
-      case r => pfNotDefined[AbstractReturning[_, T]](r)
+      case r => pfNotDefined[AbstractReturning[T]](r)
     }
     new ActionReturningAction(this, computeAction)
   }
@@ -68,44 +66,42 @@ object ReturningExpect {
   *
   * Any action or expect block added after this will not be executed.
   */
-case class ReturningExpect[R](result: Unit => Expect[R]) extends AbstractReturning[Expect[R], R] {
+case class ReturningExpect[R](result: Unit => Expect[R]) extends AbstractReturning[R] {
   def execute(when: When[R], process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
     val newExpect = result(())
     intermediateResult.copy(executionAction = ChangeToNewExpect(newExpect))
   }
 
-  protected[expect] def map[T](f: R => T): AbstractReturning[_, T] = {
+  protected[expect] def map[T](f: R => T): AbstractReturning[T] = {
     this.copy(result.andThen(_.map(f)))
   }
-  protected[expect] def flatMap[T](f: R => Expect[T]): AbstractReturning[_, T] = {
+  protected[expect] def flatMap[T](f: R => Expect[T]): AbstractReturning[T] = {
     this.copy(result.andThen(_.flatMap(f)))
   }
-  protected[expect] def transform[T](flatMapPF: PartialFunction[R, Expect[T]])(mapPF: PartialFunction[R, T]): AbstractReturning[_, T] = {
+  protected[expect] def transform[T](flatMapPF: R =/> Expect[T])(mapPF: R =/> T): AbstractReturning[T] = {
     this.copy(result.andThen(_.transform(flatMapPF)(mapPF)))
   }
 
   def structurallyEquals[WW[X] <: When[X]](other: Action[R, WW]): Boolean = this.isInstanceOf[ReturningExpect[_]]
 }
 
-case class ActionReturningAction[R, T](parent: Returning[R], resultAction: R => AbstractReturning[_, T]) extends AbstractReturning[Nothing, T] {
-  def result: Unit => Nothing = _ => throw new IllegalArgumentException("no can do")
-
+case class ActionReturningAction[R, T](parent: Returning[R], resultAction: R => AbstractReturning[T]) extends AbstractReturning[T] {
   def execute(when: When[T], process: RichProcess, intermediateResult: IntermediateResult[T]): IntermediateResult[T] = {
     val parentResult: R = parent.result(())
     resultAction(parentResult).execute(when, process, intermediateResult)
   }
 
-  protected[expect] def map[U](f: T => U): AbstractReturning[_, U] = {
+  protected[expect] def map[U](f: T => U): AbstractReturning[U] = {
     this.copy(parent, resultAction.andThen(_.map(f)))
   }
-  protected[expect] def flatMap[U](f: T => Expect[U]): AbstractReturning[_, U] = {
+  protected[expect] def flatMap[U](f: T => Expect[U]): AbstractReturning[U] = {
     this.copy(parent, resultAction.andThen(_.flatMap(f)))
   }
-  protected[expect] def transform[U](flatMapPF: PartialFunction[T, Expect[U]])(mapPF: PartialFunction[T, U]): AbstractReturning[_, U] = {
-    def toU(r: AbstractReturning[_, T]): AbstractReturning[_, U] = r match {
+  protected[expect] def transform[U](flatMapPF: T =/> Expect[U])(mapPF: T =/> U): AbstractReturning[U] = {
+    def toU(r: AbstractReturning[T]): AbstractReturning[U] = r match {
       case r: Returning[T] => r.transform(flatMapPF)(mapPF) //stop case
       case r: ReturningExpect[T] => r.transform(flatMapPF)(mapPF) //stop case
-      case r => r.transform(flatMapPF)(mapPF) //recursive call
+      case ara => ara.transform(flatMapPF)(mapPF) //recursive call
     }
     this.copy(parent, resultAction andThen toU)
   }

@@ -15,5 +15,6 @@ trait TestUtils extends ScalaFutures { test =>
     def failedFutureValue: Throwable = expect.run().failed.futureValue(patienceConfig)
     def futureValue: T = expect.run().futureValue(patienceConfig)
     def whenReady[U](f: T => U): U = test.whenReady(expect.run())(f)(patienceConfig)
+    def whenReadyFailed[U](f: Throwable => U): U = test.whenReady(expect.run().failed)(f)(patienceConfig)
   }
 }

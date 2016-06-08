@@ -4,7 +4,7 @@ import work.martins.simon.expect.{Timeout, EndOfFile}
 
 import scala.util.matching.Regex
 
-trait Whenable[R] {
+trait Whenable[R] extends Expectable[R] {
   protected val whenableParent: Whenable[R]
 
   /**

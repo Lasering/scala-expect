@@ -5,14 +5,11 @@ import scala.util.matching.Regex.Match
 import scala.language.higherKinds
 
 
-trait AbstractReturningWithRegex[R, WR] extends Action[WR, RegexWhen] {
-  def result: Match => R
-
-  protected[expect] override def map[T](f: WR => T): AbstractReturningWithRegex[_, T]
-  protected[expect] override def flatMap[T](f: WR => Expect[T]): AbstractReturningWithRegex[_, T]
-  protected[expect] override def transform[T](flatMapPF: PartialFunction[WR, Expect[T]])(mapPF: PartialFunction[WR, T]): AbstractReturningWithRegex[_, T]
+sealed trait AbstractReturningWithRegex[WR] extends Action[WR, RegexWhen] {
+  protected[expect] override def map[T](f: WR => T): AbstractReturningWithRegex[T]
+  protected[expect] override def flatMap[T](f: WR => Expect[T]): AbstractReturningWithRegex[T]
+  protected[expect] override def transform[T](flatMapPF: WR =/> Expect[T])(mapPF: WR =/> T): AbstractReturningWithRegex[T]
 }
-
 
 /**
   * $returningAction
@@ -20,20 +17,20 @@ trait AbstractReturningWithRegex[R, WR] extends Action[WR, RegexWhen] {
   * $regexWhen
   * $moreThanOne
   */
-case class ReturningWithRegex[R](result: Match => R) extends AbstractReturningWithRegex[R, R] {
+case class ReturningWithRegex[R](result: Match => R) extends AbstractReturningWithRegex[R] {
   def execute(when: RegexWhen[R], process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
     val regexMatch = when.regexMatch(intermediateResult.output)
     intermediateResult.copy(value = result(regexMatch))
   }
 
-  protected[expect] def map[T](f: R => T): AbstractReturningWithRegex[_, T] = {
+  protected[expect] def map[T](f: R => T): AbstractReturningWithRegex[T] = {
     this.copy(result andThen f)
   }
-  protected[expect] def flatMap[T](f: R => Expect[T]): AbstractReturningWithRegex[_, T] = {
+  protected[expect] def flatMap[T](f: R => Expect[T]): AbstractReturningWithRegex[T] = {
     ReturningExpectWithRegex(result andThen f)
   }
-  protected[expect] def transform[T](flatMapPF: PartialFunction[R, Expect[T]])(mapPF: PartialFunction[R, T]): AbstractReturningWithRegex[_, T] = {
-    val computeAction: R => AbstractReturningWithRegex[_, T] = {
+  protected[expect] def transform[T](flatMapPF: R =/> Expect[T])(mapPF: R =/> T): AbstractReturningWithRegex[T] = {
+    val computeAction: R => AbstractReturningWithRegex[T] = {
       //FIXME: is there any way of implementing this without the double evaluation of pattern matchers and guards?
       //the double evaluation occurs in isDefinedAt and the apply
 
@@ -42,7 +39,7 @@ case class ReturningWithRegex[R](result: Match => R) extends AbstractReturningWi
       //And another when the action returned by the ActionReturningAction is ran
       case r if flatMapPF.isDefinedAt(r) => ReturningExpectWithRegex(_ => flatMapPF(r))
       case r if mapPF.isDefinedAt(r) => this.copy(_ => mapPF(r))
-      case r => pfNotDefined[AbstractReturningWithRegex[_, T]](r)
+      case r => pfNotDefined[AbstractReturningWithRegex[T]](r)
     }
 
     new ActionReturningActionWithRegex(this, computeAction)
@@ -67,20 +64,20 @@ case class ReturningWithRegex[R](result: Match => R) extends AbstractReturningWi
   * $regexWhen
   * Any action or expect block added after this will not be executed.
   */
-case class ReturningExpectWithRegex[R](result: Match => Expect[R]) extends AbstractReturningWithRegex[Expect[R], R] {
+case class ReturningExpectWithRegex[R](result: Match => Expect[R]) extends AbstractReturningWithRegex[R] {
   def execute(when: RegexWhen[R], process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
     val regexMatch = when.regexMatch(intermediateResult.output)
     val expect = result(regexMatch)
     intermediateResult.copy(executionAction = ChangeToNewExpect(expect))
   }
 
-  protected[expect] def map[T](f: R => T): AbstractReturningWithRegex[_, T] = {
+  protected[expect] def map[T](f: R => T): AbstractReturningWithRegex[T] = {
     this.copy(result.andThen(_.map(f)))
   }
-  protected[expect] def flatMap[T](f: R => Expect[T]): AbstractReturningWithRegex[_, T] = {
+  protected[expect] def flatMap[T](f: R => Expect[T]): AbstractReturningWithRegex[T] = {
     this.copy(result.andThen(_.flatMap(f)))
   }
-  protected[expect] def transform[T](flatMapPF: PartialFunction[R, Expect[T]])(mapPF: PartialFunction[R, T]): AbstractReturningWithRegex[_, T] = {
+  protected[expect] def transform[T](flatMapPF: R =/> Expect[T])(mapPF: R =/> T): AbstractReturningWithRegex[T] = {
     this.copy(result.andThen(_.transform(flatMapPF)(mapPF)))
   }
 
@@ -88,9 +85,8 @@ case class ReturningExpectWithRegex[R](result: Match => Expect[R]) extends Abstr
 }
 
 
-case class ActionReturningActionWithRegex[R, T](parent: ReturningWithRegex[R], resultAction: R => AbstractReturningWithRegex[_, T])
-  extends AbstractReturningWithRegex[Nothing, T] {
-  def result: Match => Nothing = _ => throw new IllegalArgumentException("no can do")
+case class ActionReturningActionWithRegex[R, T](parent: ReturningWithRegex[R], resultAction: R => AbstractReturningWithRegex[T])
+  extends AbstractReturningWithRegex[T] {
 
   def execute(when: RegexWhen[T], process: RichProcess, intermediateResult: IntermediateResult[T]): IntermediateResult[T] = {
     val regexMatch = when.regexMatch(intermediateResult.output)
@@ -98,17 +94,17 @@ case class ActionReturningActionWithRegex[R, T](parent: ReturningWithRegex[R], r
     resultAction(parentResult).execute(when, process, intermediateResult)
   }
 
-  protected[expect] def map[U](f: T => U): AbstractReturningWithRegex[_, U] = {
+  protected[expect] def map[U](f: T => U): AbstractReturningWithRegex[U] = {
     this.copy(parent, resultAction.andThen(_.map(f)))
   }
-  protected[expect] def flatMap[U](f: T => Expect[U]): AbstractReturningWithRegex[_, U] = {
+  protected[expect] def flatMap[U](f: T => Expect[U]): AbstractReturningWithRegex[U] = {
     this.copy(parent, resultAction.andThen(_.flatMap(f)))
   }
-  protected[expect] def transform[U](flatMapPF: PartialFunction[T, Expect[U]])(mapPF: PartialFunction[T, U]): AbstractReturningWithRegex[_, U] = {
-    def toU(r: AbstractReturningWithRegex[_, T]): AbstractReturningWithRegex[_, U] = r match {
+  protected[expect] def transform[U](flatMapPF: T =/> Expect[U])(mapPF: T =/> U): AbstractReturningWithRegex[U] = {
+    def toU(r: AbstractReturningWithRegex[T]): AbstractReturningWithRegex[U] = r match {
       case r: ReturningWithRegex[T] => r.transform(flatMapPF)(mapPF) //stop case
       case r: ReturningExpectWithRegex[T] => r.transform(flatMapPF)(mapPF) //stop case
-      case r => r.transform(flatMapPF)(mapPF) //recursive call
+      case ara => ara.transform(flatMapPF)(mapPF) //recursive call
     }
     this.copy(parent, resultAction andThen toU)
   }

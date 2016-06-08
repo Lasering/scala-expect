@@ -9,7 +9,11 @@ class InteractiveMappingsSpec extends WordSpec with Matchers with TestUtils {
     new Expect("bc -i", defaultValue = 5)(
       ExpectBlock(
         StringWhen("For details type `warranty'.")(
-          Sendln("1 + 2")
+          Sendln("1 + 2"),
+          Returning {
+            builderAction
+            1
+          }
         )
       ),
       ExpectBlock(
@@ -31,11 +35,17 @@ class InteractiveMappingsSpec extends WordSpec with Matchers with TestUtils {
             builderAction
             m.group(1).toInt
           },
-          Exit()
+          ReturningExpectWithRegex { m =>
+            builderAction
+            new Expect("ls", 2)()
+          }
         ),
         //Cheap way to test map, flatMap and transform on TimeoutWhen
         TimeoutWhen(
-          Exit()
+          ReturningExpect {
+            builderAction
+            new Expect("ls", 3)()
+          }
         )
       )
     )
@@ -63,8 +73,8 @@ class InteractiveMappingsSpec extends WordSpec with Matchers with TestUtils {
         mappedExpect.defaultValue shouldBe mapFunction(e.defaultValue)
 
         mappedExpect.whenReady { obtainedResult =>
-          builder.result() shouldBe (addToBuilder * 2)
-          obtainedResult shouldBe mapFunction(6)
+          builder.result() shouldBe (addToBuilder * 4)
+          obtainedResult shouldBe mapFunction(2) //The final returning will be the ReturningExpectWithRegex
         }
       }
     }
@@ -84,8 +94,34 @@ class InteractiveMappingsSpec extends WordSpec with Matchers with TestUtils {
         flatMappedExpect.defaultValue shouldBe mapFunction(e.defaultValue)
 
         flatMappedExpect.whenReady { obtainedResult =>
-          builder.result() shouldBe (addToBuilder * 2)
-          obtainedResult shouldBe mapFunction(6)
+          builder.result() shouldBe addToBuilder
+          obtainedResult shouldBe mapFunction(1) //The final returning will be Returning
+        }
+      }
+    }
+
+    "being transformed: mapPF and flatMapPF are just defined for the default value" should {
+      "not cause the actions to be executed and must return NoSuchElementException" in {
+        val builder = new StringBuilder("")
+        val addToBuilder = "some string"
+        val newDefaultValue = -5
+
+        val e = constructExpect(builder.append(addToBuilder))
+
+        val transformedExpect: Expect[Int] = e.transform {
+          PartialFunction.empty[Int, Expect[Int]]
+        } {
+          case e.defaultValue => newDefaultValue
+        }
+
+        //Ensure the actions were not executed in the transform
+        builder.result() shouldBe empty
+        //Ensure the defaultValue was mapped
+        transformedExpect.defaultValue shouldBe newDefaultValue
+
+        transformedExpect.whenReadyFailed { obtainedResult =>
+          builder.result() shouldBe addToBuilder
+          obtainedResult shouldBe a [NoSuchElementException]
         }
       }
     }
@@ -99,18 +135,18 @@ class InteractiveMappingsSpec extends WordSpec with Matchers with TestUtils {
         val e = constructExpect(builder.append(addToBuilder))
 
         val transformedExpect: Expect[Seq[Int]] = e.transform {
-          case 6 => flatMap(4)
+          case 1 => flatMap(4)
         } {
           case e.defaultValue => newDefaultvalue
         }
 
-        //Ensure the actions were not executed in the map
+        //Ensure the actions were not executed in the transform
         builder.result() shouldBe empty
         //Ensure the defaultValue was mapped
         transformedExpect.defaultValue shouldBe newDefaultvalue
 
         transformedExpect.whenReady { obtainedResult =>
-          builder.result() shouldBe (addToBuilder * 2)
+          builder.result() shouldBe addToBuilder
           obtainedResult shouldBe mapFunction(4)
         }
       }
@@ -127,16 +163,16 @@ class InteractiveMappingsSpec extends WordSpec with Matchers with TestUtils {
         val transformedExpect = e.transform {
           case e.defaultValue => flatMap(6)
         } {
-          case 6 => newValue
+          case 1 | 6 | 2 => newValue
         }
 
-        //Ensure the actions were not executed in the map
+        //Ensure the actions were not executed in the transform
         builder.result() shouldBe empty
         //Ensure the defaultValue was mapped
         transformedExpect.defaultValue shouldBe mapFunction(6)
 
         transformedExpect.whenReady { obtainedResult =>
-          builder.result() shouldBe (addToBuilder * 2)
+          builder.result() shouldBe (addToBuilder * 4)
           obtainedResult shouldBe newValue
         }
       }
@@ -146,7 +182,6 @@ class InteractiveMappingsSpec extends WordSpec with Matchers with TestUtils {
       "not cause the actions to be executed and must return the transformed result" in {
         val builder = new StringBuilder("")
         val addToBuilder = "some string"
-
         val newValue = 1 to 10
 
         val e = constructExpect(builder.append(addToBuilder))
@@ -154,7 +189,7 @@ class InteractiveMappingsSpec extends WordSpec with Matchers with TestUtils {
         val transformedExpect = e.transform {
           case e.defaultValue => flatMap(6)
         } {
-          case 6 => newValue
+          case 1 => newValue
         }.transform {
           case `newValue` => flatMap(6)
         } {
@@ -168,7 +203,7 @@ class InteractiveMappingsSpec extends WordSpec with Matchers with TestUtils {
         transformedExpect.defaultValue shouldBe newValue
 
         transformedExpect.whenReady { obtainedResult =>
-          builder.result() shouldBe (addToBuilder * 2)
+          builder.result() shouldBe addToBuilder
           obtainedResult shouldBe mapFunction(6)
         }
       }

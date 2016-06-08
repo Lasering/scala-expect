@@ -61,10 +61,14 @@ e.run() //Returns 6 inside a Future[Int]
 ## Fluent
 #### [Documentation](../../wiki/Fluent)
 #### Advantages
-* Less verbose syntax (mainly less commas and parenthesis).
+* Less verbose syntax:
+  * StringWhen, RegexWhen, etc is just `when`.
+  * Returning, ReturningWithRegex, etc is just `returning`.
+  * Less commas and parenthesis.
 * Most errors will be caught at compile time.
 * Easy to add expect blocks/whens/actions based on a condition.
 * Easy to refactor the creation of expects.
+* Can be called from Java easily.
 
 #### Disadvantages
 * Some overhead since the fluent expect is just a builder for a core expect.

@@ -20,9 +20,7 @@ case class Exit[R]() extends Action[R, When] {
 
   protected[expect] def map[T](f: R => T): Action[T, When] = this.asInstanceOf[Exit[T]]
   protected[expect] def flatMap[T](f: R => Expect[T]): Action[T, When] = this.asInstanceOf[Exit[T]]
-  protected[expect] def transform[T](flatMapPF: PartialFunction[R, Expect[T]])(mapPF: PartialFunction[R, T]): Action[T, When] = {
-    this.asInstanceOf[Exit[T]]
-  }
+  protected[expect] def transform[T](flatMapPF: R =/> Expect[T])(mapPF: R =/> T): Action[T, When] = this.asInstanceOf[Exit[T]]
 
   def structurallyEquals[WW[X] <: When[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[Exit[_]]
 }

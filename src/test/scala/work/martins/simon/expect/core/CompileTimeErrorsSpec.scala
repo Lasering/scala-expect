@@ -47,15 +47,15 @@ class CompileTimeErrorsSpec extends FlatSpec with Matchers with TestUtils {
     EndOfFileWhen(actions:_*)
     TimeoutWhen(actions:_*)
 
-    """    val actions: Seq[Action[String, When]] = Seq(
-      |      Send(""),
-      |      Returning(""),
-      |      ReturningExpect(new Expect("ls", "")()),
-      |      Exit()
-      |    )
-      |    StringWhen("")(actions:_*)
-      |    RegexWhen(".*".r)(actions:_*)
-      |    EndOfFileWhen(actions:_*)
-      |    TimeoutWhen(actions:_*)""".stripMargin should compile
+    """val actions: Seq[Action[String, When]] = Seq(
+         Send(""),
+         Returning(""),
+         ReturningExpect(new Expect("ls", "")()),
+         Exit()
+       )
+       StringWhen("")(actions:_*)
+       RegexWhen(".*".r)(actions:_*)
+       EndOfFileWhen(actions:_*)
+       TimeoutWhen(actions:_*)""" should compile
   }
 }

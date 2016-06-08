@@ -17,7 +17,8 @@ trait Action[R, -W[X] <: When[X]] {
 
   protected[expect] def map[T](f: R => T): Action[T, W]
   protected[expect] def flatMap[T](f: R => Expect[T]): Action[T, W]
-  protected[expect] def transform[T](flatMapPF: PartialFunction[R, Expect[T]])(mapPF: PartialFunction[R, T]): Action[T, W]
+  type =/>[-A, +B] = PartialFunction[A, B]
+  protected[expect] def transform[T](flatMapPF: R =/> Expect[T])(mapPF: R =/> T): Action[T, W]
 
   protected def pfNotDefined[T](r: R): T = {
     throw new NoSuchElementException(s"Expect.transform neither flatMapPF nor mapPF are defined at $r (from ${this.getClass.getSimpleName})")

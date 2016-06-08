@@ -1,20 +1,13 @@
 package work.martins.simon.expect.fluent
 
-import java.nio.charset.Charset
-
 import com.typesafe.config.Config
 import work.martins.simon.expect.StringUtils._
 import work.martins.simon.expect.{Settings, core}
 
-import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ExecutionContext, Future}
-
 /**
   * @define type Expect
   */
-class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings())
-  extends Runnable[R] with Expectable[R] {
-
+class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings()) extends Expectable[R] {
   def this(command: Seq[String], defaultValue: R, config: Config) = {
     this(command, defaultValue, new Settings(config))
   }
@@ -29,7 +22,6 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
   }
 
   require(command.nonEmpty, "Expect must have a command to run.")
-  import settings._
 
   //We decided to set expectableParent to 'this' to make it obvious that this is the root of all Expectables.
   protected val expectableParent: Expectable[R] = this
@@ -49,16 +41,9 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
     */
   def toCore: core.Expect[R] = new core.Expect[R](command, defaultValue, settings)(expectBlocks.map(_.toCore):_*)
 
-  //We decided to set runnableParent to 'this' to make it obvious that this is the root of all Runnables.
-  protected val runnableParent: Runnable[R] = this
-  override def run(timeout: FiniteDuration = timeout, charset: Charset = charset,
-                   bufferSize: Int = bufferSize, redirectStdErrToStdOut: Boolean = redirectStdErrToStdOut)
-                  (implicit ex: ExecutionContext): Future[R] = {
-    toCore.run(timeout, charset, bufferSize, redirectStdErrToStdOut)(ex)
-  }
-
   override def toString: String =
     s"""Expect:
+        |\tHashCode: ${hashCode()}
         |\tCommand: $command
         |\tDefaultValue: $defaultValue
         |${expectBlocks.mkString("\n").indent()}

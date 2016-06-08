@@ -2,6 +2,7 @@ package work.martins.simon.expect.core
 
 import java.io.IOException
 
+import com.typesafe.config.ConfigFactory
 import org.scalatest.{FlatSpec, Matchers}
 import work.martins.simon.expect.TestUtils
 
@@ -9,9 +10,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class EmptySpec extends FlatSpec with Matchers with TestUtils {
   "An Expect without a command" should "throw IllegalArgumentException" in {
-    intercept[IllegalArgumentException] {
-      new Expect("", defaultValue = ())()
-    }
+    an [IllegalArgumentException] should be thrownBy new Expect("", defaultValue = ())()
   }
 
   "An Expect with a command not available in the system" should "throw IOException" in {
@@ -22,7 +21,7 @@ class EmptySpec extends FlatSpec with Matchers with TestUtils {
 
   "An Expect without expect blocks" should "return the default value" in {
     val defaultValue = "some nice default value"
-    new Expect("ls", defaultValue)().futureValue shouldBe defaultValue
+    new Expect("ls", defaultValue, ConfigFactory.load())().futureValue shouldBe defaultValue
   }
 
   "An Expect with an empty expect block" should "fail with IllegalArgumentException" in {
@@ -33,7 +32,7 @@ class EmptySpec extends FlatSpec with Matchers with TestUtils {
 
   "An Expect with an empty when" should "return the default value" in {
     val defaultValue = "some nice default value"
-    val e = new Expect("echo ola", defaultValue)(
+    val e = new Expect(Seq("echo", "ola"), defaultValue, ConfigFactory.load())(
       ExpectBlock(
         StringWhen("ola")()
       )

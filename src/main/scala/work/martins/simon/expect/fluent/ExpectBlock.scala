@@ -7,13 +7,13 @@ import work.martins.simon.expect.StringUtils._
 /**
   * @define type ExpectBlock
   */
-class ExpectBlock[R](val parent: Expect[R]) extends Runnable[R] with Expectable[R] with Whenable[R] {
+class ExpectBlock[R](val parent: Expect[R]) extends Whenable[R] {
   val settings = parent.settings
-  protected val runnableParent: Runnable[R] = parent
-  protected val expectableParent: Expectable[R] = parent
+
+  protected val whenableParent: Whenable[R] = this
 
   //We decided to set whenableParent to 'this' to make it obvious that this is the root of all Whenables.
-  protected val whenableParent: Whenable[R] = this
+  protected override val expectableParent: Expectable[R] = parent
   private var whens = Seq.empty[When[R]]
   protected def newWhen[W <: When[R]](when: W): W = {
     whens :+= when
@@ -28,6 +28,8 @@ class ExpectBlock[R](val parent: Expect[R]) extends Runnable[R] with Expectable[
     f(this)
     this
   }
+
+  protected[expect] def containsWhens(): Boolean = whens.nonEmpty
 
   /***
     * @return the core.ExpectBlock equivalent of this fluent.ExpectBlock.

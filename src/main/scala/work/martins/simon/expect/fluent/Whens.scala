@@ -11,7 +11,7 @@ import scala.language.higherKinds
 /**
   * @define type When
   */
-trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
+trait When[R] extends Whenable[R] {
   /** The concrete core.When type constructor which this fluent.When is a builder for. */
   type CW[X] <: core.When[X]
 
@@ -21,9 +21,6 @@ trait When[R] extends Runnable[R] with Expectable[R] with Whenable[R] {
 
   def parent: ExpectBlock[R]
 
-  val settings = parent.settings
-
-  protected val runnableParent: Runnable[R] = parent
   protected val expectableParent: Expectable[R] = parent
   protected val whenableParent: Whenable[R] = parent
 
@@ -172,29 +169,30 @@ case class RegexWhen[R](parent: ExpectBlock[R], pattern: Regex) extends When[R] 
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
-case class TimeoutWhen[R](parent: ExpectBlock[R]) extends When[R] {
-  type CW[X] = core.TimeoutWhen[X]
-  type This[X] = TimeoutWhen[X]
-
-  def toCore: core.TimeoutWhen[R] = new core.TimeoutWhen[R](actions:_*)
-
-  override def toString: String = toString("EndOfFile")
-  override def equals(other: Any): Boolean = other match {
-    case that: TimeoutWhen[R] => actions == that.actions
-    case _ => false
-  }
-  override def hashCode(): Int = actions.hashCode()
-}
 case class EndOfFileWhen[R](parent: ExpectBlock[R]) extends When[R] {
   type CW[X] = core.EndOfFileWhen[X]
   type This[X] = EndOfFileWhen[X]
 
   def toCore: core.EndOfFileWhen[R] = new core.EndOfFileWhen[R](actions:_*)
 
-  override def toString: String = toString("Timeout")
+  override def toString: String = toString("EndOfFile")
   override def equals(other: Any): Boolean = other match {
     case that: EndOfFileWhen[R] => actions == that.actions
     case _ => false
   }
   override def hashCode(): Int = actions.hashCode()
 }
+case class TimeoutWhen[R](parent: ExpectBlock[R]) extends When[R] {
+  type CW[X] = core.TimeoutWhen[X]
+  type This[X] = TimeoutWhen[X]
+
+  def toCore: core.TimeoutWhen[R] = new core.TimeoutWhen[R](actions:_*)
+
+  override def toString: String = toString("Timeout")
+  override def equals(other: Any): Boolean = other match {
+    case that: TimeoutWhen[R] => actions == that.actions
+    case _ => false
+  }
+  override def hashCode(): Int = actions.hashCode()
+}
+
