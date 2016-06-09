@@ -36,7 +36,6 @@ case class Returning[R](result: Unit => R) extends AbstractReturning[R] {
       //We cannot invoke map/flatMap, because if we did the returning result would be ran twice in the ActionReturningAction:
       //Once inside the execute which invokes parent.result
       //And another when the action returned by the ActionReturningAction is ran
-
       case r if flatMapPF.isDefinedAt(r) => ReturningExpect(_ => flatMapPF(r))
       case r if mapPF.isDefinedAt(r) => this.copy(_ => mapPF(r))
       case r => pfNotDefined[AbstractReturning[T]](r)
@@ -44,7 +43,7 @@ case class Returning[R](result: Unit => R) extends AbstractReturning[R] {
     new ActionReturningAction(this, computeAction)
   }
 
-  def structurallyEquals[WW[X] <: When[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[Returning[_]]
+  def structurallyEquals[WW[X] <: When[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[Returning[R]]
 }
 
 
@@ -82,7 +81,7 @@ case class ReturningExpect[R](result: Unit => Expect[R]) extends AbstractReturni
     this.copy(result.andThen(_.transform(flatMapPF)(mapPF)))
   }
 
-  def structurallyEquals[WW[X] <: When[X]](other: Action[R, WW]): Boolean = this.isInstanceOf[ReturningExpect[_]]
+  def structurallyEquals[WW[X] <: When[X]](other: Action[R, WW]): Boolean = this.isInstanceOf[ReturningExpect[R]]
 }
 
 case class ActionReturningAction[R, T](parent: Returning[R], resultAction: R => AbstractReturning[T]) extends AbstractReturning[T] {
@@ -98,13 +97,8 @@ case class ActionReturningAction[R, T](parent: Returning[R], resultAction: R => 
     this.copy(parent, resultAction.andThen(_.flatMap(f)))
   }
   protected[expect] def transform[U](flatMapPF: T =/> Expect[U])(mapPF: T =/> U): AbstractReturning[U] = {
-    def toU(r: AbstractReturning[T]): AbstractReturning[U] = r match {
-      case r: Returning[T] => r.transform(flatMapPF)(mapPF) //stop case
-      case r: ReturningExpect[T] => r.transform(flatMapPF)(mapPF) //stop case
-      case ara => ara.transform(flatMapPF)(mapPF) //recursive call
-    }
-    this.copy(parent, resultAction andThen toU)
+    this.copy(parent, resultAction.andThen(_.transform(flatMapPF)(mapPF)))
   }
 
-  def structurallyEquals[WW[X] <: When[X]](other: Action[T, WW]): Boolean = other.isInstanceOf[ActionReturningAction[_, _]]
+  def structurallyEquals[WW[X] <: When[X]](other: Action[T, WW]): Boolean = other.isInstanceOf[ActionReturningAction[R, T]]
 }

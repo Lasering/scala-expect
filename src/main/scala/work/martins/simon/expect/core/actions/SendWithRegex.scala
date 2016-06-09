@@ -30,5 +30,5 @@ case class SendWithRegex[R](text: Match => String) extends Action[R, RegexWhen] 
   protected[expect] def flatMap[T](f: R => Expect[T]): Action[T, RegexWhen] = this.asInstanceOf[SendWithRegex[T]]
   protected[expect] def transform[T](flatMapPF: R =/> Expect[T])(mapPF: R =/> T): Action[T, RegexWhen] = this.asInstanceOf[SendWithRegex[T]]
 
-  def structurallyEquals[WW[X] <: RegexWhen[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[SendWithRegex[_]]
+  def structurallyEquals[WW[X] <: RegexWhen[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[SendWithRegex[R]]
 }

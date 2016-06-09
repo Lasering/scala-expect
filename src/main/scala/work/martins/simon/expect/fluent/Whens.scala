@@ -31,11 +31,11 @@ trait When[R] extends Whenable[R] {
   }
 
   /**
-   * Send `text` to the stdIn of the underlying process.
-   * Send will only occur when Expect is run.
+    * Send `text` to the stdIn of the underlying process.
+    * Send will only occur when Expect is run.
     *
     * @return this When.
-   */
+    */
   def send(text: String): This[R] = newAction(Send(text))
   /**
    * Sends `text` terminated with `System.lineSeparator()` to the stdIn of the underlying process.
@@ -131,19 +131,19 @@ case class RegexWhen[R](parent: ExpectBlock[R], pattern: Regex) extends When[R] 
   type This[X] = RegexWhen[X]
 
   /**
-   * Send the result of invoking `text` with the `Match` of the regex used, to the stdIn of the underlying process.
-   * Send will only occur when Expect is run.
+    * Send the result of invoking `text` with the `Match` of the regex used, to the stdIn of the underlying process.
+    * Send will only occur when Expect is run.
     *
-   * @return this When.
-   */
+    * @return this When.
+    */
   def send(text: Match => String): RegexWhen[R] = newAction(SendWithRegex(text))
   /**
-   * Send the result of invoking `text` with the `Match` of the regex used with a `System.lineSeparator()` appended
-   * to the end, to the stdIn of the underlying process.
-   * Send will only occur when Expect is run.
- *
-   * @return this When.
-   */
+    * Send the result of invoking `text` with the `Match` of the regex used with a `System.lineSeparator()` appended
+    * to the end, to the stdIn of the underlying process.
+    * Send will only occur when Expect is run.
+    *
+    * @return this When.
+    */
   def sendln(text: Match => String): RegexWhen[R] = newAction(SendlnWithRegex(text))
   /**
    * Returns the result of invoking `result` with the `Match` of the regex used, when this Expect is run.

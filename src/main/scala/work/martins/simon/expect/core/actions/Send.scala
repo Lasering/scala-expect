@@ -27,7 +27,7 @@ case class Send[R](text: String) extends Action[R, When] {
   protected[expect] def flatMap[T](f: R => Expect[T]): Action[T, When] = this.asInstanceOf[Send[T]]
   protected[expect] def transform[T](flatMapPF: R =/> Expect[T])(mapPF: R =/> T): Action[T, When] = this.asInstanceOf[Send[T]]
 
-  def structurallyEquals[WW[X] <: When[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[Send[_]]
+  def structurallyEquals[WW[X] <: When[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[Send[R]]
 
   override def toString: String = s"Send(${escape(text)})"
 }

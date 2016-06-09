@@ -96,11 +96,11 @@ case class RichProcess(command: Seq[String], timeout: FiniteDuration, charset: C
   }
 
   /**
-   * Writes to the underlying `OutputStream` the bytes obtained from decoding `text` using `charset`.
-   * Followed by a flush of the `OutputStream`.
+    * Writes to the underlying `OutputStream` the bytes obtained from decoding `text` using `charset`.
+    * Followed by a flush of the `OutputStream`.
     *
     * @param text the text to write to the `OutputStream`.
-   */
+    */
   def print(text: String): Unit = {
     stdIn.write(text.getBytes(charset))
     stdIn.flush()

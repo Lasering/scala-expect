@@ -3,6 +3,7 @@ package work.martins.simon.expect
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{Matchers, WordSpec}
 import work.martins.simon.expect.core.actions._
+import work.martins.simon.expect.dsl.dslToCoreExpect
 
 class BuilderSpec extends WordSpec with Matchers {
   def dslSendAndExit(e: dsl.Expect[String]): Unit = {
@@ -162,6 +163,11 @@ class BuilderSpec extends WordSpec with Matchers {
         when("""(\d+) \w+""".r){}
       }
       expect(""){}
+    },
+    new dsl.Expect("ls", defaultValue = "") {
+      expect("".r){
+        returning("text")
+      }
     }
   )
 
@@ -292,8 +298,31 @@ class BuilderSpec extends WordSpec with Matchers {
       }
       "not generate a structurally equal core.Expect if the expects are different" in {
         wrongExpects.map(_.structurallyEquals(coreExpect)) should contain only false
-
         wrongExpects.map(_.fluentExpect.structurallyEquals(coreExpect)) should contain only false
+
+        //Test structurally equals on ActionReturningAction
+        val ara: core.Expect[String] = new dsl.Expect("ls", "") {
+          expect("".r){
+            returning("text")
+          }
+        }.transform{
+          case "" => new core.Expect("ls", "")()
+        }{
+          case "text" => "diferentText"
+        }
+        //Test structurally equals on ActionReturningActionWithRegex
+        val araWithRegex: core.Expect[String] = new dsl.Expect("ls", "") {
+          expect("".r){
+            returning(m => "text")
+          }
+        }.transform{
+          case "" => new core.Expect("ls", "")()
+        }{
+          case "text" => "I see what you did here"
+        }
+
+        wrongExpects.map(ara.structurallyEquals(_)) should contain only false
+        wrongExpects.map(araWithRegex.structurallyEquals(_)) should contain only false
       }
     }
   }

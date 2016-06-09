@@ -23,6 +23,44 @@ class EmptySpec extends FlatSpec with Matchers with TestUtils {
     val defaultValue = "some nice default value"
     new Expect("ls", defaultValue, ConfigFactory.load())().futureValue shouldBe defaultValue
   }
+  it should "map just the default value" in {
+    val defaultValue = "some nice default value"
+    val e = new Expect("ls", defaultValue)().map(_ * 2)
+    e.futureValue shouldBe (defaultValue * 2)
+  }
+  it should "flatMap just the default value" in {
+    val defaultValue = "some nice default value"
+    val e = new Expect("ls", defaultValue)().flatMap(_ => new Expect("ls", defaultValue.split(" ").headOption)())
+    e.futureValue  shouldBe defaultValue.split(" ").headOption
+  }
+  it should "transform just the default value" in {
+    val defaultValue = "some nice default value"
+    val e = new Expect("ls", defaultValue)()
+
+    val e2 = e.transform {
+      case e.defaultValue => new Expect("ls", defaultValue.split(" ").headOption)()
+    } {
+      case _ => None
+    }
+    e2.futureValue should not be None
+
+    val e3 = e.transform {
+      case t if t != e.defaultValue => new Expect("ls", None: Option[String])()
+    } {
+      case _ => defaultValue.split(" ").headOption
+    }
+    e3.futureValue should not be None
+  }
+
+  "Transforming when the defaultValue is not in domain" should "throw a NoSuchElementException" in {
+    val e = new Expect("ls", "some nice default value")()
+    val thrown = the [NoSuchElementException] thrownBy e.transform {
+      PartialFunction.empty[String, Expect[String]]
+    } {
+      PartialFunction.empty[String, String]
+    }
+    thrown.getMessage should include ("default value")
+  }
 
   "An Expect with an empty expect block" should "fail with IllegalArgumentException" in {
     intercept[IllegalArgumentException] {
