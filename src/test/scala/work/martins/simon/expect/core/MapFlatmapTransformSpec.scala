@@ -1,36 +1,33 @@
 package work.martins.simon.expect.core
 
-import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfterEach, FlatSpec}
 import work.martins.simon.expect.TestUtils
 import work.martins.simon.expect.core.actions._
 
 import scala.util.Random
 
-class MapFlatmapTransformSpec extends FlatSpec with Matchers with TestUtils with BeforeAndAfterEach {
-  val addedValue = "this is it"
+class MapFlatmapTransformSpec extends FlatSpec with TestUtils with BeforeAndAfterEach {
   val builders = Seq.fill(5)(new StringBuilder(""))
   val returnedResults = 1 to 5
   val defaultValue = returnedResults.sum //This ensures defaultValue and result are never the same
 
-  private def constructExpect(when: When[Int]) = new Expect("ls", defaultValue)(ExpectBlock(when))
-
   val expects = Seq(
-    constructExpect(StringWhen("README")(
+    constructExpect(defaultValue, StringWhen("README")(
       Returning {
-        builders.head.append(addedValue)
-        returnedResults.head
+        builders(0).append(addedValue)
+        returnedResults(0)
       }
-    )), constructExpect(RegexWhen("LICENSE".r)(
+    )), constructExpect(defaultValue, RegexWhen("LICENSE".r)(
       ReturningWithRegex { m =>
         builders(1).append(addedValue)
         returnedResults(1)
       }
-    )), constructExpect(RegexWhen("build".r) (
+    )), constructExpect(defaultValue, RegexWhen("build".r) (
       ReturningExpectWithRegex { m =>
         builders(2).append(addedValue)
         new Expect("ls", returnedResults(2))()
       }
-    )), constructExpect(EndOfFileWhen(
+    )), constructExpect(defaultValue, EndOfFileWhen(
       ReturningExpect {
         builders(3).append(addedValue)
         new Expect("ls", returnedResults(3))()
@@ -73,25 +70,6 @@ class MapFlatmapTransformSpec extends FlatSpec with Matchers with TestUtils with
 
   override protected def beforeEach(): Unit = builders.foreach(_.clear())
 
-  def testActionsAndResult[R](expect: Expect[R], builder: StringBuilder, expectedResult: R): Unit = {
-    //Ensure the actions were not executed in the mapping
-    builder.result() shouldBe empty
-    expect.whenReady { obtainedResult =>
-      //Ensure the actions were executed
-      builder.result() shouldBe addedValue
-      obtainedResult shouldBe expectedResult
-    }
-  }
-  def testActionsAndFailedResult[R](expect: Expect[R], builder: StringBuilder): Unit = {
-    //Ensure the actions were not executed in the mapping
-    builder.result() shouldBe empty
-    expect.whenReadyFailed { obtainedResult =>
-      //Ensure the actions were executed
-      builder.result() shouldBe addedValue
-      obtainedResult shouldBe a [NoSuchElementException]
-    }
-  }
-
   "Mapping an expect" should "should return the mapped result" in {
     for(((builder, result), expect) <- builders.zip(returnedResults).zip(expects)) {
       testActionsAndResult(expect.map(mapFunction), builder, mapFunction(result))
@@ -111,17 +89,14 @@ class MapFlatmapTransformSpec extends FlatSpec with Matchers with TestUtils with
       } {
         PartialFunction.empty[Int, String]
       }
-
       testActionsAndFailedResult(transformedExpect1, builder)
 
       builder.clear()
-
       val transformedExpect2 = expect.transform {
         PartialFunction.empty[Int, Expect[String]]
       } {
         case expect.defaultValue => mapFunction(expect.defaultValue).mkString
       }
-
       testActionsAndFailedResult(transformedExpect2, builder)
     }
   }

@@ -138,8 +138,8 @@ class HashCodeEqualsToStringSpec extends FlatSpec with Matchers with TestUtils {
           when match {
             case StringWhen(pattern) => whenToString should include (pattern)
             case RegexWhen(pattern) => whenToString should include (escape(pattern.regex)) //This one is a little cheat
-            case w: EndOfFileWhen[_] => whenToString should include ("EndOfFile")
-            case w: TimeoutWhen[_] => whenToString should include ("Timeout")
+            case EndOfFileWhen(_*) => whenToString should include ("EndOfFile")
+            case TimeoutWhen(_*) => whenToString should include ("Timeout")
           }
 
           for (action <- when.actions) {

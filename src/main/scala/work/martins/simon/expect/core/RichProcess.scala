@@ -9,14 +9,14 @@ import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
 
 /**
- * Launches a `java.lang.Process` with methods to read and print from its stdout and stdin respectively.
+  * Launches a `java.lang.Process` with methods to read and print from its stdout and stdin respectively.
   *
   * @param command the command to launch and its arguments.
- * @param timeout how much time to wait when performing a read.
- * @param charset the charset used for encoding and decoding the Strings.
- * @param bufferSize how many bytes to read.
- * @param redirectStdErrToStdOut whether to redirect stdErr to stdOut.
- */
+  * @param timeout how much time to wait when performing a read.
+  * @param charset the charset used for encoding and decoding the Strings.
+  * @param bufferSize how many bytes to read.
+  * @param redirectStdErrToStdOut whether to redirect stdErr to stdOut.
+  */
 case class RichProcess(command: Seq[String], timeout: FiniteDuration, charset: Charset, bufferSize: Int,
                        redirectStdErrToStdOut: Boolean) {
 
@@ -66,24 +66,25 @@ case class RichProcess(command: Seq[String], timeout: FiniteDuration, charset: C
   private var deadline = timeout.fromNow
 
   /**
-   * Resets the underlying deadline used when performing a `read`.
-   * The new deadline is `timeout.fromNow`.
-   */
+    * Resets the underlying deadline used when performing a `read`.
+    * The new deadline is `timeout.fromNow`.
+    */
   def resetDeadline(): Unit = deadline = timeout.fromNow
+
   /**
-   * @return whether the current deadline has any time left.
-   */
+    * @return whether the current deadline has any time left.
+    */
   def deadLineHasTimeLeft(): Boolean = deadline.hasTimeLeft()
 
   /**
-   * Tries to read `bufferSize` bytes from the process stdOut.
-   * If no bytes are read within `timeout` a `TimeoutException` will be thrown.
-   * If the end of file is reached an `EOFException` is thrown.
-   * Otherwise, a String encoded with `charset` is created from the read bytes.
-   * This method awaits for the result of a future, aka, is blocking.
+    * Tries to read `bufferSize` bytes from the process stdOut.
+    * If no bytes are read within `timeout` a `TimeoutException` will be thrown.
+    * If the end of file is reached an `EOFException` is thrown.
+    * Otherwise, a String encoded with `charset` is created from the read bytes.
+    * This method awaits for the result of a future, aka, is blocking.
     *
-   * @return a String created from the read bytes encoded with `charset`.
-   */
+    * @return a String created from the read bytes encoded with `charset`.
+    */
   def read(): String = {
     val data = blocking {
       blockingQueue.poll(deadline.timeLeft.toMillis, TimeUnit.MILLISECONDS)
@@ -107,9 +108,9 @@ case class RichProcess(command: Seq[String], timeout: FiniteDuration, charset: C
   }
 
   /**
-   * If the underlying process is still alive it's destroy method is invoked and
-   * the input and output streams are closed.
-   */
+    * If the underlying process is still alive it's destroy method is invoked and
+    * the input and output streams are closed.
+    */
   def destroy(): Unit = if (process.isAlive) {
     process.destroy()
     Try {

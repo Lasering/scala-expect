@@ -1,85 +1,34 @@
 package work.martins.simon.expect.core
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfterEach, FlatSpec}
 import work.martins.simon.expect.TestUtils
 import work.martins.simon.expect.core.actions._
 
-class ReturningSpec extends FlatSpec with Matchers with TestUtils {
-  "An Expect" should "return the specified value" in {
-    val e = new Expect("bc -i", defaultValue = "")(
-      ExpectBlock (
-        StringWhen("bc") (
-          Returning("ReturnedValue")
-        )
-      )
-    )
-    e.futureValue shouldBe "ReturnedValue"
-  }
+class ReturningSpec extends FlatSpec with TestUtils with BeforeAndAfterEach {
+  val builder = new StringBuilder("")
+  val expectedValue = "ReturnedValue"
 
-  it should "only invoke the returning function when the corresponding When is executed" in {
-    var test = 5
-    val e = new Expect("bc -i", defaultValue = "")(
-      ExpectBlock (
-        StringWhen("bc") (
-          Returning {
-            test += 1
-            "ReturnedValue"
-          }
-        )
-      )
-    )
-    test shouldBe 5
-    e.whenReady { s =>
-      test shouldBe 6
-      s shouldBe "ReturnedValue"
-    }
-  }
+  override protected def beforeEach(): Unit = builder.clear()
 
-  it should "only return the last returning action but still execute the other actions" in {
-    var test = 5
-    val e = new Expect("bc -i", defaultValue = "")(
-      ExpectBlock (
-        RegexWhen("""bc (\d+\.\d+\.\d+)""".r) (
-          ReturningWithRegex{ m =>
-            test += 1
-            m.group(1)
-          },
-          Returning{
-            test += 1
-            "5"
-          }
-        )
-      )
-    )
-
-    test shouldBe 5
-    e.whenReady { s =>
-      test shouldBe 7
-      s shouldBe "5"
-    }
-  }
-
-  it should "not execute any action after an exit action" in {
-    var test = 5
-    val e = new Expect("bc -i", defaultValue = "")(
-      ExpectBlock(
-        RegexWhen("""bc (\d+\.\d+\.\d+)""".r) (
-          ReturningWithRegex(_.group(1)),
-          Exit(),
-          Returning {
-            test += 1
-            "ThisValue"
-          }
-        )
-      )
-    )
-
-    test shouldBe 5
-
-    e.whenReady { s =>
-      test shouldBe 5
-      s should not be "ThisValue"
-    }
+  "An Expect" should "only return the last returning action before an exit but still execute the previous actions" in {
+    //should "not execute any action after an exit action"
+    //should "only return the last returning action but still execute the previous actions"
+    val expect = constructExpect(StringWhen("LICENSE") (
+      Returning {
+        appendToBuilder(builder)
+        "a"
+      },
+      Returning {
+        appendToBuilder(builder)
+        "b"
+      },
+      Exit(),
+      Returning {
+        appendToBuilder(builder)
+        "c"
+      }
+    ))
+    testActionsAndResult(expect, builder, "b", numberOfAppends = 2)
   }
 
   it should "be able to interact with the spawned program" in {
@@ -107,18 +56,12 @@ class ReturningSpec extends FlatSpec with Matchers with TestUtils {
   }
 
   it should "fail if an exception is thrown inside an action" in {
-    val e = new Expect("bc -i", defaultValue = 5)(
-      ExpectBlock(
-        StringWhen("For details type `warranty'.")(
-          Sendln("1 + 2"),
-          Returning { (u: Unit) =>
-            throw new IllegalArgumentException()
-          }
-        )
-      )
-    )
-    e.failedFutureValue shouldBe a [IllegalArgumentException]
+    val expect = constructExpect("", RegexWhen("(LICENSE)".r) (
+      Returning[String] { (u: Unit) =>
+        appendToBuilder(builder)
+        throw new NoSuchElementException()
+      }
+    ))
+    testActionsAndFailedResult(expect, builder)
   }
-
-  //Test returning with expect
 }
