@@ -28,10 +28,12 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img alt="Class" src="../../../../../lib/class_big.png" />
+        <a href="RichProcess$.html" title="See companion object"><img alt="Class/Object" src="../../../../../lib/class_to_object_big.png" /></a>
         <p id="owner"><a href="../../../../package.html" class="extype" name="work">work</a>.<a href="../../../package.html" class="extype" name="work.martins">martins</a>.<a href="../../package.html" class="extype" name="work.martins.simon">simon</a>.<a href="../package.html" class="extype" name="work.martins.simon.expect">expect</a>.<a href="package.html" class="extype" name="work.martins.simon.expect.core">core</a></p>
-        <h1>RichProcess</h1><h3><span class="morelinks"><div>Related Doc:
-            <a href="package.html" class="extype" name="work.martins.simon.expect.core">package core</a>
+        <h1><a href="RichProcess$.html" title="See companion object">RichProcess</a></h1><h3><span class="morelinks"><div>
+            Related Docs:
+            <a href="RichProcess$.html" title="See companion object">object RichProcess</a>
+            | <a href="package.html" class="extype" name="work.martins.simon.expect.core">package core</a>
           </div></span></h3><span class="permalink">
       <a href="../../../../../index.html#work.martins.simon.expect.core.RichProcess" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
@@ -42,20 +44,20 @@
       <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">case class</span>
+        <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">RichProcess</span><span class="params">(<span name="command">command: <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="timeout">timeout: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.concurrent.duration.FiniteDuration" class="extype" target="_top">FiniteDuration</a></span>, <span name="charset">charset: <span class="extype" name="java.nio.charset.Charset">Charset</span></span>, <span name="bufferSize">bufferSize: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Int" class="extype" target="_top">Int</a></span>, <span name="redirectStdErrToStdOut">redirectStdErrToStdOut: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <span class="name">RichProcess</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       </h4>
       
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Launches a <code>java.lang.Process</code> with methods to read and print from its stdout and stdin respectively.
-</p></div><dl class="paramcmts block"><dt class="param">command</dt><dd class="cmt"><p>the command to launch and its arguments.</p></dd><dt class="param">timeout</dt><dd class="cmt"><p>how much time to wait when performing a read.</p></dd><dt class="param">charset</dt><dd class="cmt"><p>the charset used for encoding and decoding the Strings.</p></dd><dt class="param">bufferSize</dt><dd class="cmt"><p>how many bytes to read.</p></dd><dt class="param">redirectStdErrToStdOut</dt><dd class="cmt"><p>whether to redirect stdErr to stdOut.</p></dd></dl><div class="toggleContainer block">
+</p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Serializable" class="extype" target="_top">Serializable</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Product" class="extype" target="_top">Product</a>, <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Equals" class="extype" target="_top">Equals</a>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div><div class="toggleContainer block diagram-container" id="inheritance-diagram-container">
                 <span class="toggle diagram-link">Type Hierarchy</span>
-                <div class="diagram" id="inheritance-diagram"><svg class="class-diagram" id="graph1" viewBox="0.00 0.00 199.50 118.00" height="118pt" width="200pt" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"><g transform="scale(1 1) rotate(0) translate(4 114)" class="graph" id="graph0"><polygon points="-4,4 -4,-114 195.5,-114 195.5,4 -4,4" stroke="none" fill="white"></polygon><g class="cluster" id="clust1"></g><g class="cluster" id="clust2"></g><!-- node0 --><g class="node this class" id="graph1_0"><g id="a_this class|graph1_0"><a xlink:title="work.martins.simon.expect.core.RichProcess (this class)" xlink:href="#inheritance-diagram"><polygon points="141,-49 41,-49 41,-24 141,-24 141,-49" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../lib/class_diagram.png" y="-43.5" x="51" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-33.5" x="72" text-anchor="start">RichProcess</text></a></g></g><!-- node1 --><g class="node trait" id="graph1_1"><g id="a_trait|graph1_1"><a xlink:title="scala.Product"><polygon points="78,-110 0,-110 0,-85 78,-85 78,-110" stroke="#37657d" fill="#498aad"></polygon><image xlink:href="../../../../../lib/trait_diagram.png" y="-104.5" x="10" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-94.5" x="31" text-anchor="start">Product</text></a></g></g><!-- node1&#45;&gt;node0 --><g class="edge inheritance" id="graph1_1_0"><g id="a_inheritance|graph1_1_0"><a xlink:title="RichProcess is a subtype of Product"><path d="M52.6354,-81.0291C61.438,-71.0415 72.7055,-58.2572 80.7478,-49.1323" stroke="#d4d4d4" fill="none"></path><polygon points="51.2667,-79.9353 49.2735,-84.8435 53.8924,-82.2495 51.2667,-79.9353" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node2 --><g class="node trait" id="graph1_2"><g id="a_trait|graph1_2"><a xlink:title="scala.Serializable"><polygon points="191.5,-110 96.5,-110 96.5,-85 191.5,-85 191.5,-110" stroke="#37657d" fill="#498aad"></polygon><image xlink:href="../../../../../lib/trait_diagram.png" y="-104.5" x="107" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-94.5" x="128" text-anchor="start">Serializable</text></a></g></g><!-- node2&#45;&gt;node0 --><g class="edge inheritance" id="graph1_2_0"><g id="a_inheritance|graph1_2_0"><a xlink:title="RichProcess is a subtype of Serializable"><path d="M130.102,-81.0291C121.13,-71.0415 109.646,-58.2572 101.449,-49.1323" stroke="#d4d4d4" fill="none"></path><polygon points="128.886,-82.2933 133.529,-84.8435 131.489,-79.9544 128.886,-82.2933" stroke="#d4d4d4" fill="none"></polygon></a></g></g></g></svg></div>
+                <div class="diagram" id="inheritance-diagram"><svg class="class-diagram" id="graph1" viewBox="0.00 0.00 156.00 118.00" height="118pt" width="156pt" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"><g transform="scale(1 1) rotate(0) translate(4 114)" class="graph" id="graph0"><polygon points="-4,4 -4,-114 152,-114 152,4 -4,4" stroke="none" fill="white"></polygon><g class="cluster" id="clust1"></g><g class="cluster" id="clust2"></g><!-- node0 --><g class="node this class" id="graph1_0"><g id="a_this class|graph1_0"><a xlink:title="work.martins.simon.expect.core.RichProcess (this class)" xlink:href="#inheritance-diagram"><polygon points="124,-49 24,-49 24,-24 124,-24 124,-49" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../lib/class_diagram.png" y="-43.5" x="34" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-33.5" x="55" text-anchor="start">RichProcess</text></a></g></g><!-- node1 --><g class="node class" id="graph1_1"><g id="a_class|graph1_1"><a xlink:title="scala.AnyRef"><polygon points="112,-110 36,-110 36,-85 112,-85 112,-110" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../../../../lib/class_diagram.png" y="-104.5" x="46" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-94.5" x="67" text-anchor="start">AnyRef</text></a></g></g><!-- node1&#45;&gt;node0 --><g class="edge inheritance" id="graph1_1_0"><g id="a_inheritance|graph1_1_0"><a xlink:title="RichProcess is a subtype of AnyRef"><path d="M74,-79.6874C74,-69.9173 74,-57.8534 74,-49.1323" stroke="#d4d4d4" fill="none"></path><polygon points="72.2501,-79.8435 74,-84.8435 75.7501,-79.8435 72.2501,-79.8435" stroke="#d4d4d4" fill="none"></polygon></a></g></g></g></svg></div>
               </div></div>
         
 
@@ -73,7 +75,7 @@
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="work.martins.simon.expect.core.RichProcess"><span>RichProcess</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="work.martins.simon.expect.core.RichProcess"><span>RichProcess</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
                 <span class="filtertype">Implicitly<br />
@@ -236,7 +238,7 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="work.martins.simon.expect.core.RichProcess#blockingQueue" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="work.martins.simon.expect.core.RichProcess#blockingQueue" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="blockingQueue:java.util.concurrent.LinkedBlockingDeque[Either[java.io.EOFException,String]]"></a>
       <a id="blockingQueue:LinkedBlockingDeque[Either[EOFException,String]]"></a>
       <h4 class="signature">
@@ -252,7 +254,7 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li name="work.martins.simon.expect.core.RichProcess#bufferSize" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="bufferSize:Int"></a>
       <a id="bufferSize:Int"></a>
@@ -344,6 +346,23 @@
       </a>
     </span>
       <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>whether the current deadline has any time left.</p></dd></dl></div>
+    </li><li name="work.martins.simon.expect.core.RichProcess#deadline" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="deadline:scala.concurrent.duration.Deadline"></a>
+      <a id="deadline:Deadline"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">var</span>
+      </span>
+      <span class="symbol">
+        <span class="name">deadline</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.concurrent.duration.Deadline" class="extype" target="_top">Deadline</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#work.martins.simon.expect.core.RichProcess@deadline:scala.concurrent.duration.Deadline" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li name="work.martins.simon.expect.core.RichProcess#destroy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="destroy():Unit"></a>
       <a id="destroy():Unit"></a>
@@ -463,6 +482,23 @@ the input and output streams are closed.</p>
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#work.martins.simon.expect.core.RichProcess@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
@@ -523,6 +559,23 @@ the input and output streams are closed.</p>
       </span>
       </h4><span class="permalink">
       <a href="../../../../../index.html#work.martins.simon.expect.core.RichProcess@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Int" class="extype" target="_top">Int</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#work.martins.simon.expect.core.RichProcess@hashCode():Int" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -614,7 +667,7 @@ the input and output streams are closed.</p>
       <p class="shortcomment cmt">Writes to the underlying <code>OutputStream</code> the bytes obtained from decoding <code>text</code> using <code>charset</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Writes to the underlying <code>OutputStream</code> the bytes obtained from decoding <code>text</code> using <code>charset</code>.
 Followed by a flush of the <code>OutputStream</code>.
 </p></div><dl class="paramcmts block"><dt class="param">text</dt><dd class="cmt"><p>the text to write to the <code>OutputStream</code>.</p></dd></dl></div>
-    </li><li name="work.martins.simon.expect.core.RichProcess#process" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="work.martins.simon.expect.core.RichProcess#process" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="process:Process"></a>
       <a id="process:Process"></a>
       <h4 class="signature">
@@ -630,8 +683,8 @@ Followed by a flush of the <code>OutputStream</code>.
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
-    </li><li name="work.martins.simon.expect.core.RichProcess#processBuilder" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
+    </li><li name="work.martins.simon.expect.core.RichProcess#processBuilder" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="processBuilder:ProcessBuilder"></a>
       <a id="processBuilder:ProcessBuilder"></a>
       <h4 class="signature">
@@ -647,7 +700,7 @@ Followed by a flush of the <code>OutputStream</code>.
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li name="work.martins.simon.expect.core.RichProcess#read" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="read():String"></a>
       <a id="read():String"></a>
@@ -706,7 +759,7 @@ This method awaits for the result of a future, aka, is blocking.
       <p class="shortcomment cmt">Resets the underlying deadline used when performing a <code>read</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Resets the underlying deadline used when performing a <code>read</code>.
 The new deadline is <code>timeout.fromNow</code>.
 </p></div></div>
-    </li><li name="work.martins.simon.expect.core.RichProcess#spawnDaemonThread" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="work.martins.simon.expect.core.RichProcess#spawnDaemonThread" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="spawnDaemonThread(f:Thread=&gt;Unit):Thread"></a>
       <a id="spawnDaemonThread((Thread)⇒Unit):Thread"></a>
       <h4 class="signature">
@@ -722,8 +775,8 @@ The new deadline is <code>timeout.fromNow</code>.
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
-    </li><li name="work.martins.simon.expect.core.RichProcess#stdIn" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
+    </li><li name="work.martins.simon.expect.core.RichProcess#stdIn" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="stdIn:java.io.BufferedOutputStream"></a>
       <a id="stdIn:BufferedOutputStream"></a>
       <h4 class="signature">
@@ -739,8 +792,8 @@ The new deadline is <code>timeout.fromNow</code>.
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
-    </li><li name="work.martins.simon.expect.core.RichProcess#stdOut" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
+    </li><li name="work.martins.simon.expect.core.RichProcess#stdOut" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="stdOut:java.io.BufferedInputStream"></a>
       <a id="stdOut:BufferedInputStream"></a>
       <h4 class="signature">
@@ -756,8 +809,8 @@ The new deadline is <code>timeout.fromNow</code>.
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
-    </li><li name="work.martins.simon.expect.core.RichProcess#stdOutThread" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
+    </li><li name="work.martins.simon.expect.core.RichProcess#stdOutThread" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="stdOutThread:Thread"></a>
       <a id="stdOutThread:Thread"></a>
       <h4 class="signature">
@@ -773,7 +826,7 @@ The new deadline is <code>timeout.fromNow</code>.
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>
@@ -808,6 +861,23 @@ The new deadline is <code>timeout.fromNow</code>.
       </a>
     </span>
       <p class="shortcomment cmt">how much time to wait when performing a read.</p>
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#work.martins.simon.expect.core.RichProcess@toString():String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>
@@ -877,6 +947,23 @@ The new deadline is <code>timeout.fromNow</code>.
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="work.martins.simon.expect.core.RichProcess#withCommand" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="withCommand(newCommand:Seq[String]):work.martins.simon.expect.core.RichProcess"></a>
+      <a id="withCommand(Seq[String]):RichProcess"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">withCommand</span><span class="params">(<span name="newCommand">newCommand: <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.RichProcess">RichProcess</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#work.martins.simon.expect.core.RichProcess@withCommand(newCommand:Seq[String]):work.martins.simon.expect.core.RichProcess" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.Predef.ArrowAssoc#→" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="→[B](y:B):(A,B)"></a>
       <a id="→[B](B):(RichProcess,B)"></a>
@@ -907,15 +994,7 @@ The new deadline is <code>timeout.fromNow</code>.
         </div>
 
         <div id="inheritedMembers">
-        <div class="parent" name="scala.Serializable">
-              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></h3>
-            </div><div class="parent" name="java.io.Serializable">
-              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
-            </div><div class="parent" name="scala.Product">
-              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Product" class="extype" target="_top">Product</a></h3>
-            </div><div class="parent" name="scala.Equals">
-              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Equals" class="extype" target="_top">Equals</a></h3>
-            </div><div class="parent" name="scala.AnyRef">
+        <div class="parent" name="scala.AnyRef">
               <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
             </div><div class="parent" name="scala.Any">
               <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>

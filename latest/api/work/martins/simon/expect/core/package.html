@@ -125,7 +125,7 @@
       <a id="Expect[R]:Expect[R]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">final </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
@@ -142,7 +142,7 @@
       <a id="ExpectBlock[R]:ExpectBlock[R]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">final </span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
@@ -159,7 +159,7 @@
       <a id="IntermediateResult[R]:IntermediateResult[R]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">final </span>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
@@ -188,24 +188,23 @@
       </a>
     </span>
       
-    </li><li name="work.martins.simon.expect.core.RichProcess" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="RichProcessextendsProductwithSerializable"></a>
+    </li><li name="work.martins.simon.expect.core.RichProcess" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RichProcessextendsAnyRef"></a>
       <a id="RichProcess:RichProcess"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">case class</span>
+        <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="RichProcess.html"><span class="name">RichProcess</span></a><span class="params">(<span name="command">command: <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="timeout">timeout: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.concurrent.duration.FiniteDuration" class="extype" target="_top">FiniteDuration</a></span>, <span name="charset">charset: <span class="extype" name="java.nio.charset.Charset">Charset</span></span>, <span name="bufferSize">bufferSize: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Int" class="extype" target="_top">Int</a></span>, <span name="redirectStdErrToStdOut">redirectStdErrToStdOut: <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Boolean" class="extype" target="_top">Boolean</a></span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.11.8/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
+        <a href="RichProcess.html"><span class="name">RichProcess</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#work.martins.simon.expect.core.package@RichProcessextendsProductwithSerializable" title="Permalink" target="_top">
+      <a href="../../../../../index.html#work.martins.simon.expect.core.package@RichProcessextendsAnyRef" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Launches a <code>java.lang.Process</code> with methods to read and print from its stdout and stdin respectively.</p><div class="fullcomment"><div class="comment cmt"><p>Launches a <code>java.lang.Process</code> with methods to read and print from its stdout and stdin respectively.
-</p></div><dl class="paramcmts block"><dt class="param">command</dt><dd class="cmt"><p>the command to launch and its arguments.</p></dd><dt class="param">timeout</dt><dd class="cmt"><p>how much time to wait when performing a read.</p></dd><dt class="param">charset</dt><dd class="cmt"><p>the charset used for encoding and decoding the Strings.</p></dd><dt class="param">bufferSize</dt><dd class="cmt"><p>how many bytes to read.</p></dd><dt class="param">redirectStdErrToStdOut</dt><dd class="cmt"><p>whether to redirect stdErr to stdOut.</p></dd></dl></div>
+      <p class="shortcomment cmt">Launches a <code>java.lang.Process</code> with methods to read and print from its stdout and stdin respectively.</p>
     </li><li name="work.martins.simon.expect.core.StringWhen" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="StringWhen[R]extendsWhen[R]withProductwithSerializable"></a>
       <a id="StringWhen[R]:StringWhen[R]"></a>
@@ -277,6 +276,23 @@
       </span>
       </h4><span class="permalink">
       <a href="../../../../../index.html#work.martins.simon.expect.core.package@Continue" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="work.martins.simon.expect.core.RichProcess" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RichProcess"></a>
+      <a id="RichProcess:RichProcess"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="RichProcess$.html"><span class="name">RichProcess</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#work.martins.simon.expect.core.package@RichProcess" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
