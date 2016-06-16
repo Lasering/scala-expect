@@ -10,7 +10,7 @@ import scala.language.higherKinds
   *
   * Any action or expect block added after this will not be executed.
   */
-case class Exit[R]() extends Action[R, When] {
+final case class Exit[R]() extends Action[R, When] {
   def execute(when: When[R], process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
     intermediateResult.copy(executionAction = Terminate)
   }

@@ -16,7 +16,7 @@ object SendlnWithRegex {
   *
   * @param text the text to send.
   */
-case class SendWithRegex[R](text: Match => String) extends Action[R, RegexWhen] {
+final case class SendWithRegex[R](text: Match => String) extends Action[R, RegexWhen] {
   def execute(when: RegexWhen[R], process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
     val regexMatch = when.regexMatch(intermediateResult.output)
     process.print(text(regexMatch))

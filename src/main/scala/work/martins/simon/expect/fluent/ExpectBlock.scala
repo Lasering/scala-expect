@@ -7,7 +7,7 @@ import work.martins.simon.expect.StringUtils._
 /**
   * @define type ExpectBlock
   */
-class ExpectBlock[R](val parent: Expect[R]) extends Whenable[R] {
+final class ExpectBlock[R](val parent: Expect[R]) extends Whenable[R] {
   val settings = parent.settings
 
   protected val whenableParent: Whenable[R] = this

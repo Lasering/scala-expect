@@ -4,9 +4,21 @@ import java.io.{BufferedInputStream, BufferedOutputStream, EOFException, IOExcep
 import java.nio.charset.Charset
 import java.util.concurrent.{LinkedBlockingDeque, TimeUnit, TimeoutException}
 
+import work.martins.simon.expect.Settings
+
 import scala.concurrent.blocking
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
+
+object RichProcess {
+  def apply(command: Seq[String], settings: Settings): RichProcess = {
+    new RichProcess(command, settings.timeout, settings.charset, settings.bufferSize, settings.redirectStdErrToStdOut)
+  }
+  def apply(command: Seq[String], timeout: FiniteDuration, charset: Charset,
+            bufferSize: Int, redirectStdErrToStdOut: Boolean): RichProcess = {
+    new RichProcess(command, timeout, charset, bufferSize, redirectStdErrToStdOut)
+  }
+}
 
 /**
   * Launches a `java.lang.Process` with methods to read and print from its stdout and stdin respectively.
@@ -17,26 +29,26 @@ import scala.util.Try
   * @param bufferSize how many bytes to read.
   * @param redirectStdErrToStdOut whether to redirect stdErr to stdOut.
   */
-case class RichProcess(command: Seq[String], timeout: FiniteDuration, charset: Charset, bufferSize: Int,
-                       redirectStdErrToStdOut: Boolean) {
+class RichProcess(val command: Seq[String], val timeout: FiniteDuration, val charset: Charset,
+                  val bufferSize: Int, val redirectStdErrToStdOut: Boolean) {
 
-  val processBuilder = new ProcessBuilder(command:_*)
+  protected val processBuilder = new ProcessBuilder(command:_*)
   processBuilder.redirectErrorStream(redirectStdErrToStdOut)
-  val process = processBuilder.start()
+  protected val process = processBuilder.start()
 
-  val stdOut = new BufferedInputStream(process.getInputStream)
-  val stdIn = new BufferedOutputStream(process.getOutputStream)
+  protected val stdOut = new BufferedInputStream(process.getInputStream)
+  protected val stdIn = new BufferedOutputStream(process.getOutputStream)
 
-  val blockingQueue = new LinkedBlockingDeque[Either[EOFException, String]]()
+  protected val blockingQueue = new LinkedBlockingDeque[Either[EOFException, String]]()
 
-  def spawnDaemonThread(f: Thread => Unit): Thread = {
+  protected def spawnDaemonThread(f: Thread => Unit): Thread = {
     val thread = new Thread() { override def run() = { f(this) } }
     thread.setDaemon(true)
     thread.start()
     thread
   }
 
-  val stdOutThread = spawnDaemonThread { thread =>
+  protected val stdOutThread = spawnDaemonThread { thread =>
     val array = Array.ofDim[Byte](bufferSize)
 
     var readEOF = false
@@ -63,7 +75,7 @@ case class RichProcess(command: Seq[String], timeout: FiniteDuration, charset: C
     thread.interrupt()
   }
 
-  private var deadline = timeout.fromNow
+  protected var deadline = timeout.fromNow
 
   /**
     * Resets the underlying deadline used when performing a `read`.
@@ -118,5 +130,9 @@ case class RichProcess(command: Seq[String], timeout: FiniteDuration, charset: C
       stdOut.close()
       stdIn.close()
     }
+  }
+
+  def withCommand(newCommand: Seq[String]): RichProcess = {
+    new RichProcess(newCommand, timeout, charset, bufferSize, redirectStdErrToStdOut)
   }
 }

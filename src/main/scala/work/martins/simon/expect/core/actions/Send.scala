@@ -14,7 +14,7 @@ object Sendln {
   *
   * @param text the text to send.
   */
-case class Send[R](text: String) extends Action[R, When] {
+final case class Send[R](text: String) extends Action[R, When] {
   def execute(when: When[R], process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
     process.print(text)
     intermediateResult

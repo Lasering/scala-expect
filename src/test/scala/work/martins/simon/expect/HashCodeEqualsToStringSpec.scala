@@ -124,6 +124,14 @@ class HashCodeEqualsToStringSpec extends FlatSpec with Matchers with TestUtils {
       expectCoreToString should include (expect.command.toString)
       expectCoreToString should include (expect.defaultValue.toString)
 
+      val settings = expect.settings
+      val settingsToString = settings.toString
+      settingsToString should include ("settings")
+      settingsToString should include (settings.timeout.toString)
+      settingsToString should include (settings.charset.toString)
+      settingsToString should include (settings.bufferSize.toString)
+      settingsToString should include (settings.redirectStdErrToStdOut.toString)
+
       for (block <- expect.toCore.expectBlocks) {
         expectToString should include (block.toString.indent())
 

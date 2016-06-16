@@ -13,7 +13,7 @@ import scala.concurrent.duration.FiniteDuration
 /**
   *@define type Expect
   */
-class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings())
+final class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings())
                (val expectBlocks: ExpectBlock[R]*) extends LazyLogging {
   def this(command: Seq[String], defaultValue: R, config: Config)(expects: ExpectBlock[R]*) = {
     this(command, defaultValue, new Settings(config))(expects: _*)
@@ -33,12 +33,15 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
 
   require(command.nonEmpty, "Expect must have a command to run.")
 
-  import settings._
-
-  def run(timeout: FiniteDuration = timeout, charset: Charset = charset,
-          bufferSize: Int = bufferSize, redirectStdErrToStdOut: Boolean = redirectStdErrToStdOut)
+  def run(timeout: FiniteDuration = settings.timeout, charset: Charset = settings.charset,
+          bufferSize: Int = settings.bufferSize, redirectStdErrToStdOut: Boolean = settings.redirectStdErrToStdOut)
          (implicit ex: ExecutionContext): Future[R] = {
-    val richProcess = RichProcess(command, timeout, charset, bufferSize, redirectStdErrToStdOut)
+    run(RichProcess(command, timeout, charset, bufferSize, redirectStdErrToStdOut))
+  }
+  def run(settings: Settings)(implicit ex: ExecutionContext): Future[R] = {
+    run(RichProcess(command, settings))
+  }
+  def run(richProcess: RichProcess)(implicit ex: ExecutionContext): Future[R] = {
     val expectID = s"[ID:${hashCode()}]"
     logger.info(s"""$expectID Launched: "${command.mkString(" ")}"""")
 
@@ -61,7 +64,7 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
               successful(innerResult)
             case ChangeToNewExpect(newExpect) =>
               richProcess.destroy()
-              newExpect.asInstanceOf[Expect[R]].run(richProcess.timeout, richProcess.charset, richProcess.bufferSize)
+              newExpect.asInstanceOf[Expect[R]].run(richProcess.withCommand(newExpect.command))
           }
         }
         //If we get an exception while running the head expect block we want to make sure the rich process is destroyed.

@@ -21,7 +21,9 @@ class EmptySpec extends FlatSpec with Matchers with TestUtils {
 
   "An Expect without expect blocks" should "return the default value" in {
     val defaultValue = "some nice default value"
-    new Expect("ls", defaultValue, ConfigFactory.load())().futureValue shouldBe defaultValue
+    val expect = new Expect("ls", defaultValue, ConfigFactory.load())()
+    //This is one a cheat to cover the overloaded run method
+    expect.run(expect.settings).futureValue shouldBe defaultValue
   }
   it should "map just the default value" in {
     val defaultValue = "some nice default value"

@@ -11,7 +11,7 @@ import scala.language.higherKinds
 /**
   * @define type When
   */
-trait When[R] extends Whenable[R] {
+sealed trait When[R] extends Whenable[R] {
   /** The concrete core.When type constructor which this fluent.When is a builder for. */
   type CW[X] <: core.When[X]
 

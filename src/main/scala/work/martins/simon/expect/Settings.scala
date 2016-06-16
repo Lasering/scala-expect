@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit
 
 import com.typesafe.config.{Config, ConfigFactory}
 
-import scala.concurrent.duration.{DurationLong, FiniteDuration}
+import scala.concurrent.duration.DurationLong
 
 /**
   * This class holds all the settings that parameterize expect.
@@ -30,7 +30,7 @@ import scala.concurrent.duration.{DurationLong, FiniteDuration}
   *    }}}
   * @param config
   */
-class Settings(config: Config = ConfigFactory.load()) {
+final class Settings(config: Config = ConfigFactory.load()) {
   val scalaExpectConfig: Config = {
     val reference = ConfigFactory.defaultReference()
     val finalConfig = config.withFallback(reference)
@@ -39,10 +39,14 @@ class Settings(config: Config = ConfigFactory.load()) {
   }
   import scalaExpectConfig._
 
-  val timeout: FiniteDuration = getDuration("timeout", TimeUnit.SECONDS).seconds
-  val charset: Charset = Charset.forName(getString("charset"))
-  val bufferSize: Int = getBytes("buffer-size").toInt
-  val redirectStdErrToStdOut: Boolean = getBoolean("redirect-std-err-to-std-out")
+  /** How much time to wait when performing a read. */
+  val timeout = getDuration("timeout", TimeUnit.SECONDS).seconds
+  /** The charset used for encoding and decoding the read text and the to be printed text. */
+  val charset = Charset.forName(getString("charset"))
+  /** How many bytes to read in each read operation. */
+  val bufferSize = getBytes("buffer-size").toInt
+  /** Whether to redirect stdErr to stdOut. */
+  val redirectStdErrToStdOut = getBoolean("redirect-std-err-to-std-out")
 
   override def equals(other: Any): Boolean = other match {
     case that: Settings =>timeout == that.timeout &&
@@ -55,4 +59,14 @@ class Settings(config: Config = ConfigFactory.load()) {
     val state: Seq[Any] = Seq(timeout, charset, bufferSize, redirectStdErrToStdOut)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
+  override def toString: String =
+    s"""Scala-expect settings:
+       |\tTimeout: $timeout
+       |
+       |\tCharset: $charset
+       |
+       |\tBuffer size: $bufferSize bytes (${getString("buffer-size")})
+       |
+       |\tRedirect StdErr to StdOut: $redirectStdErrToStdOut
+     """.stripMargin
 }

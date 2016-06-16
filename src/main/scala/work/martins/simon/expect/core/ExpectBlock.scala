@@ -9,7 +9,7 @@ import scala.concurrent.{ExecutionContext, Future, TimeoutException}
 /**
   * @define type ExpectBlock
   */
-case class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
+final case class ExpectBlock[R](whens: When[R]*) extends LazyLogging {
   require(whens.nonEmpty, "ExpectBlock must have at least a When.")
 
   /**
