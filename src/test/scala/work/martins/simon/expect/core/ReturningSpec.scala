@@ -1,10 +1,10 @@
 package work.martins.simon.expect.core
 
-import org.scalatest.{BeforeAndAfterEach, FlatSpec}
+import org.scalatest.{AsyncFlatSpec, BeforeAndAfterEach}
 import work.martins.simon.expect.TestUtils
 import work.martins.simon.expect.core.actions._
 
-class ReturningSpec extends FlatSpec with TestUtils with BeforeAndAfterEach {
+class ReturningSpec extends AsyncFlatSpec with TestUtils with BeforeAndAfterEach {
   val builder = new StringBuilder("")
   val expectedValue = "ReturnedValue"
 
@@ -12,7 +12,6 @@ class ReturningSpec extends FlatSpec with TestUtils with BeforeAndAfterEach {
 
   "An Expect" should "only return the last returning action before an exit but still execute the previous actions" in {
     //should "not execute any action after an exit action"
-    //should "only return the last returning action but still execute the previous actions"
     val expect = constructExpect(StringWhen("LICENSE") (
       Returning {
         appendToBuilder(builder)
@@ -52,7 +51,9 @@ class ReturningSpec extends FlatSpec with TestUtils with BeforeAndAfterEach {
         )
       )
     )
-    e.futureValue shouldBe 6
+    e.run() map {
+      _ shouldBe 6
+    }
   }
 
   it should "fail if an exception is thrown inside an action" in {

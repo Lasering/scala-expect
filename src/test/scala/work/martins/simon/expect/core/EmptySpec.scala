@@ -3,18 +3,18 @@ package work.martins.simon.expect.core
 import java.io.IOException
 
 import com.typesafe.config.ConfigFactory
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{AsyncFlatSpec, Matchers}
 import work.martins.simon.expect.TestUtils
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
-class EmptySpec extends FlatSpec with Matchers with TestUtils {
+class EmptySpec extends AsyncFlatSpec with Matchers with TestUtils {
   "An Expect without a command" should "throw IllegalArgumentException" in {
-    an [IllegalArgumentException] should be thrownBy new Expect("", defaultValue = ())()
+    assertThrows[IllegalArgumentException] {
+      new Expect("", defaultValue = ())()
+    }
   }
 
   "An Expect with a command not available in the system" should "throw IOException" in {
-    intercept[IOException] {
+    assertThrows[IOException] {
       new Expect("ã", defaultValue = ())().run()
     }
   }
@@ -28,14 +28,18 @@ class EmptySpec extends FlatSpec with Matchers with TestUtils {
   it should "map just the default value" in {
     val defaultValue = "some nice default value"
     val e = new Expect("ls", defaultValue)().map(_ * 2)
-    e.futureValue shouldBe (defaultValue * 2)
+    e.run() map {
+      _ shouldBe (defaultValue * 2)
+    }
   }
   it should "flatMap just the default value" in {
     val defaultValue = "some nice default value"
     val e = new Expect("ls", defaultValue)().flatMap(_ => new Expect("ls", defaultValue.split(" ").headOption)())
-    e.futureValue  shouldBe defaultValue.split(" ").headOption
+    e.run() map {
+      _ shouldBe defaultValue.split(" ").headOption
+    }
   }
-  it should "transform just the default value" in {
+  it should "transform just the default value (flatmap)" in {
     val defaultValue = "some nice default value"
     val e = new Expect("ls", defaultValue)()
 
@@ -44,14 +48,22 @@ class EmptySpec extends FlatSpec with Matchers with TestUtils {
     } {
       case _ => None
     }
-    e2.futureValue should not be None
-
-    val e3 = e.transform {
+    e2.run() map {
+      _ should not be None
+    }
+  }
+  it should "transform just the default value (map)" in {
+    val defaultValue = "some nice default value"
+    val e = new Expect("ls", defaultValue)()
+    
+    val e2 = e.transform {
       case t if t != e.defaultValue => new Expect("ls", None: Option[String])()
     } {
       case _ => defaultValue.split(" ").headOption
     }
-    e3.futureValue should not be None
+    e2.run() map {
+      _ should not be None
+    }
   }
 
   "Transforming when the defaultValue is not in domain" should "throw a NoSuchElementException" in {
@@ -65,8 +77,8 @@ class EmptySpec extends FlatSpec with Matchers with TestUtils {
   }
 
   "An Expect with an empty expect block" should "fail with IllegalArgumentException" in {
-    intercept[IllegalArgumentException] {
-      new Expect("ls", defaultValue = ())(new ExpectBlock())
+    assertThrows[IllegalArgumentException] {
+      new Expect("ls", defaultValue = ())(ExpectBlock())
     }
   }
 
@@ -77,6 +89,8 @@ class EmptySpec extends FlatSpec with Matchers with TestUtils {
         StringWhen("ola")()
       )
     )
-    e.futureValue shouldBe defaultValue
+    e.run() map {
+      _ shouldBe defaultValue
+    }
   }
 }

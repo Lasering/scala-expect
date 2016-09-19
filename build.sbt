@@ -8,7 +8,7 @@ initialize := {
 }
 javacOptions ++= Seq("-source", javaVersion, "-target", javaVersion, "-Xlint")
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.0-RC1"
 scalacOptions ++= Seq(
   "-deprecation", //Emit warning and location for usages of deprecated APIs.
   "-encoding", "UTF-8",
@@ -17,16 +17,15 @@ scalacOptions ++= Seq(
   "-unchecked", //Enable detailed unchecked (erasure) warnings
   "-Xfatal-warnings", //Fail the compilation if there are any warnings.
   "-Xlint", //Enable recommended additional warnings.
-  "-Yinline-warnings", //Emit inlining warnings.
+  //"-Yinline-warnings", //Emit inlining warnings.
   "-Yno-adapted-args", //Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
   "-Ywarn-dead-code" //Warn when dead code is identified.
 )
 
 libraryDependencies ++= Seq(
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
   "ch.qos.logback" % "logback-classic" % "1.1.7",
-  "org.scalatest" %% "scalatest" % "2.2.6" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.12.5" % "test",
+  "org.scalatest" %% "scalatest" % "3.0.0" % Test,
   "com.typesafe" % "config" % "1.3.0"
 )
 

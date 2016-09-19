@@ -8,7 +8,7 @@ import work.martins.simon.expect.fluent.{Expect, ExpectBlock, When}
 import scala.collection.immutable.HashSet
 import scala.util.Random
 
-class HashCodeEqualsToStringSpec extends FlatSpec with Matchers with TestUtils {
+class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
   def addSendAndExit[R](when: When[R]): Unit = {
     when
       .send("text")

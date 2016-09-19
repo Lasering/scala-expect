@@ -7,7 +7,7 @@ import org.scalatest._
 import work.martins.simon.expect.TestUtils
 import work.martins.simon.expect.core.actions._
 
-class WhenSpec extends WordSpec with Matchers with TestUtils {
+class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
   "An Expect" when {
     "the stdOut does not match with any When" should {
       "run the actions in the TimeoutWhen" in {
@@ -21,7 +21,9 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
             )
           )
         )
-        e.futureValue shouldBe "Is there anyone at home?"
+        e.run() map {
+          _ shouldBe "Is there anyone at home?"
+        }
       }
       "fail with TimeoutException if no TimeoutWhen exists" in {
         val e = new Expect("bc -i", defaultValue = "")(
@@ -31,7 +33,9 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
             )
           )
         )
-        e.failedFutureValue shouldBe a [TimeoutException]
+        e.run().failed map {
+          _ shouldBe a[TimeoutException]
+        }
       }
       "fail if an exception is thrown inside the TimeoutWhen" in {
         val e = new Expect("bc -i", defaultValue = "")(
@@ -46,7 +50,9 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
             )
           )
         )
-        e.failedFutureValue shouldBe a [IllegalArgumentException]
+        e.run().failed map {
+          _ shouldBe a[IllegalArgumentException]
+        }
       }
     }
 
@@ -62,7 +68,9 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
             )
           )
         )
-        e.futureValue shouldBe "Relax."
+        e.run() map {
+          _ shouldBe "Relax."
+        }
       }
       "fail with EOFException if no EndOfFileWhen exists" in {
         val e = new Expect("ls", defaultValue = "")(
@@ -72,7 +80,9 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
             )
           )
         )
-        e.failedFutureValue shouldBe a [EOFException]
+        e.run().failed map {
+          _ shouldBe a[EOFException]
+        }
       }
       "fail if an exception is thrown inside the EndOfFileWhen" in {
         val e = new Expect("ls", defaultValue = "")(
@@ -87,7 +97,9 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
             )
           )
         )
-        e.failedFutureValue shouldBe a [IllegalArgumentException]
+        e.run().failed map {
+          _ shouldBe a[IllegalArgumentException]
+        }
       }
     }
 
@@ -103,8 +115,10 @@ class WhenSpec extends WordSpec with Matchers with TestUtils {
             )
           )
         )
-
-        e.futureValue should not be "Ohh no"
+  
+        e.run() map {
+          _ should not be "Ohh no"
+        }
       }
     }
   }

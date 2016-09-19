@@ -30,7 +30,7 @@ import scala.concurrent.duration.DurationLong
   *    }}}
   * @param config
   */
-final class Settings(config: Config = ConfigFactory.load()) {
+class Settings(config: Config = ConfigFactory.load()) {
   val scalaExpectConfig: Config = {
     val reference = ConfigFactory.defaultReference()
     val finalConfig = config.withFallback(reference)

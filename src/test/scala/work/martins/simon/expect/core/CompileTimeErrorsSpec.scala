@@ -1,10 +1,9 @@
 package work.martins.simon.expect.core
 
 import org.scalatest.{FlatSpec, Matchers}
-import work.martins.simon.expect.TestUtils
 import work.martins.simon.expect.core.actions._
 
-class CompileTimeErrorsSpec extends FlatSpec with Matchers with TestUtils {
+class CompileTimeErrorsSpec extends FlatSpec with Matchers {
   "A StringWhen" should "not type check if it contains a SendWithRegex" in {
     //StringWhen("text")(SendWithRegex(m => m.group(1)))
     """StringWhen("text")(SendWithRegex(m => m.group(1)))""" shouldNot typeCheck

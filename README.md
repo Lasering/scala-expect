@@ -32,7 +32,6 @@ libraryDependencies += "work.martins.simon" %% "scala-expect" % "4.1.0"
 ```scala
 import work.martins.simon.core._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.matching.Regex.Match
 
 val e = new Expect("bc -i", defaultValue = 5)(
   ExpectBlock(
@@ -42,7 +41,7 @@ val e = new Expect("bc -i", defaultValue = 5)(
   ),
   ExpectBlock(
     RegexWhen("""\n(\d+)\n""".r)(
-      SendlnWithRegex { m: Match =>
+      SendlnWithRegex { m =>
         val previousAnswer = m.group(1)
         println(s"Got $previousAnswer")
         s"$previousAnswer + 3"
@@ -79,7 +78,6 @@ e.run() //Returns 6 inside a Future[Int]
 ```scala
 import work.martins.simon.fluent._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.matching.Regex.Match
 
 val e = new Expect("bc -i", defaultValue = 5) {
   expect
@@ -87,7 +85,7 @@ val e = new Expect("bc -i", defaultValue = 5) {
       .sendln("1 + 2")
   expect
     .when("""\n(\d+)\n""".r)
-      .sendln { m: Match =>
+      .sendln { m =>
         val previousAnswer = m.group(1)
         println(s"Got $previousAnswer")
         s"$previousAnswer + 3"
@@ -116,7 +114,6 @@ e.run() //Returns 6 inside a Future[Int]
 ```scala
 import work.martins.simon.dsl._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.matching.Regex.Match
 
 val e = new Expect("bc -i", defaultValue = 5) {
   expect {
@@ -126,7 +123,7 @@ val e = new Expect("bc -i", defaultValue = 5) {
   }
   expect {
     when("""\n(\d+)\n""".r) {
-      sendln { m: Match =>
+      sendln { m =>
         val previousAnswer = m.group(1)
         println(s"Got $previousAnswer")
         s"$previousAnswer + 3"

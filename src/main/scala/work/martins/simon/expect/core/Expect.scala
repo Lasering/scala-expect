@@ -47,7 +47,6 @@ final class Expect[R](val command: Seq[String], val defaultValue: R, val setting
 
     def successful(intermediateResult: IntermediateResult[R]): Future[R] = {
       logger.info(s"$expectID Finished returning: ${intermediateResult.value}")
-      richProcess.destroy()
       Future.successful(intermediateResult.value)
     }
 
@@ -68,7 +67,7 @@ final class Expect[R](val command: Seq[String], val defaultValue: R, val setting
           }
         }
         //If we get an exception while running the head expect block we want to make sure the rich process is destroyed.
-        result onFailure { case _ => richProcess.destroy() }
+        result onComplete (_ ⇒ richProcess.destroy())
         result
       } getOrElse {
         //No more expect blocks. We just return the current intermediateResult
