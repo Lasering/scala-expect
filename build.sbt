@@ -1,14 +1,13 @@
 organization := "work.martins.simon"
 name := "scala-expect"
 
-val javaVersion = "1.8"
-initialize := {
-  val current  = sys.props("java.specification.version")
-  assert(current == javaVersion, s"Unsupported JDK: expected JDK $javaVersion installed, but instead got JDK $current.")
-}
-javacOptions ++= Seq("-source", javaVersion, "-target", javaVersion, "-Xlint")
+javacOptions ++= Seq(
+  "-Xlint",
+  "-encoding", "UTF-8",
+  "-Dfile.encoding=utf-8"
+)
 
-scalaVersion := "2.12.0-RC1"
+scalaVersion := "2.12.0"
 scalacOptions ++= Seq(
   "-deprecation", //Emit warning and location for usages of deprecated APIs.
   "-encoding", "UTF-8",
@@ -25,8 +24,8 @@ scalacOptions ++= Seq(
 libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
   "ch.qos.logback" % "logback-classic" % "1.1.7",
-  "org.scalatest" %% "scalatest" % "3.0.0" % Test,
-  "com.typesafe" % "config" % "1.3.0"
+  "org.scalatest" %% "scalatest" % "3.0.1" % Test,
+  "com.typesafe" % "config" % "1.3.1"
 )
 
 autoAPIMappings := true
@@ -56,20 +55,18 @@ pomExtra :=
     </developer>
   </developers>
 
-coverageScalacPluginVersion := "1.3.0-RC1"
-
 import ReleaseTransformations._
 releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies,
   inquireVersions,
   runClean,
-  ReleaseStep(action = Command.process("doc", _)),
+  releaseStepCommand("doc"),
   runTest,
   setReleaseVersion,
   tagRelease,
-  ReleaseStep(action = Command.process("ghpagesPushSite", _)),
-  ReleaseStep(action = Command.process("publishSigned", _)),
-  ReleaseStep(action = Command.process("sonatypeRelease", _)),
+  releaseStepCommand("ghpagesPushSite"),
+  releaseStepCommand("publishSigned"),
+  releaseStepCommand("sonatypeRelease"),
   pushChanges,
   setNextVersion
 )
