@@ -1,11 +1,11 @@
 # Scala Expect
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/work.martins.simon/scala-expect_2.11/badge.svg?maxAge=604800)](https://maven-badges.herokuapp.com/maven-central/work.martins.simon/scala-expect_2.11)
-[![Dependency Status](https://www.versioneye.com/java/work.martins.simon:scala-expect_2.11/badge.svg?style=plastic&maxAge=604800)](https://www.versioneye.com/java/work.martins.simon:scala-expect_2.11/)
-[![Reference Status](https://www.versioneye.com/java/work.martins.simon:scala-expect_2.11/reference_badge.svg?style=plastic&maxAge=604800)](https://www.versioneye.com/java/work.martins.simon:scala-expect_2.11/references)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/work.martins.simon/scala-expect_2.12/badge.svg?maxAge=604800)](https://maven-badges.herokuapp.com/maven-central/work.martins.simon/scala-expect_2.12)
+[![Dependency Status](https://www.versioneye.com/java/work.martins.simon:scala-expect_2.12/badge.svg?style=plastic&maxAge=604800)](https://www.versioneye.com/java/work.martins.simon:scala-expect_2.12/)
+[![Reference Status](https://www.versioneye.com/java/work.martins.simon:scala-expect_2.12/reference_badge.svg?style=plastic&maxAge=604800)](https://www.versioneye.com/java/work.martins.simon:scala-expect_2.12/references)
 [![Build Status](https://travis-ci.org/Lasering/scala-expect.svg?branch=master&style=plastic&maxAge=604800)](https://travis-ci.org/Lasering/scala-expect)
 [![Codacy Badge](https://api.codacy.com/project/badge/coverage/74ba0150f4034c8294e66f6b97a2f69f)](https://www.codacy.com/app/IST-DSI/scala-expect)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/74ba0150f4034c8294e66f6b97a2f69f)](https://www.codacy.com/app/IST-DSI/scala-expect)
-[![Scaladoc](http://javadoc-badge.appspot.com/work.martins.simon/scala-expect_2.11.svg?label=scaladoc&style=plastic&maxAge=604800)](https://Lasering.github.io/scala-expect/latest/api/)
+[![Scaladoc](http://javadoc-badge.appspot.com/work.martins.simon/scala-expect_2.12.svg?label=scaladoc&style=plastic&maxAge=604800)](https://lasering.github.io/scala-expect/latest/api/work/martins/simon/expect/index.html)
 [![license](http://img.shields.io/:license-MIT-blue.svg)](LICENSE)
 
 A Scala implementation of a very small subset of the widely known TCL expect.
@@ -14,7 +14,7 @@ Scala Expect comes with three different flavors: `core`, `fluent` and `dsl`.
 
 ## Install
 ```scala
-libraryDependencies += "work.martins.simon" %% "scala-expect" % "4.1.0"
+libraryDependencies += "work.martins.simon" %% "scala-expect" % "6.0.0"
 ```
 
 ## Core
