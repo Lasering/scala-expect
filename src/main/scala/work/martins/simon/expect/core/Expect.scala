@@ -67,7 +67,7 @@ final class Expect[R](val command: Seq[String], val defaultValue: R, val setting
           }
         }
         //If we get an exception while running the head expect block we want to make sure the rich process is destroyed.
-        result onComplete (_ ⇒ richProcess.destroy())
+        result onComplete (_ => richProcess.destroy())
         result
       } getOrElse {
         //No more expect blocks. We just return the current intermediateResult
@@ -77,7 +77,7 @@ final class Expect[R](val command: Seq[String], val defaultValue: R, val setting
 
     innerRun(IntermediateResult(output = "", defaultValue, Continue), expectBlocks)
   }
-
+  
   /** Creates a new $type by applying a function to the returned result of this $type. */
   def map[T](f: R => T): Expect[T] = {
     new Expect(command, f(defaultValue), settings)(expectBlocks.map(_.map(f)):_*)
@@ -150,7 +150,11 @@ final class Expect[R](val command: Seq[String], val defaultValue: R, val setting
 
     new Expect[T](command, newDefaultValue, settings)(expectBlocks.map(_.transform(flatMapPF)(mapPF)):_*)
   }
-
+  
+  def collect[T](pf: PartialFunction[R, T]): Expect[T] = map { r =>
+    pf.applyOrElse(r, (r: R) => throw new NoSuchElementException(s"Expect.collect partial function is not defined at: $r"))
+  }
+  
   override def toString: String =
     s"""Expect:
        |\tHashCode: ${hashCode()}
@@ -167,8 +171,8 @@ final class Expect[R](val command: Seq[String], val defaultValue: R, val setting
     * because equality is not defined for functions.
     *
     * The method `structurallyEqual` can be used to test that two expects contain the same structure.
- *
-    * @param other the other Expect to campare this Expect to.
+    *
+    * @param other the other Expect to compare this Expect to.
     */
   override def equals(other: Any): Boolean = other match {
     case that: Expect[R] =>
@@ -180,14 +184,12 @@ final class Expect[R](val command: Seq[String], val defaultValue: R, val setting
   }
 
   /**
-    * @define type expect
     * @define subtypes expect blocks
     * Returns whether the other $type has the same
     *  - command
     *  - defaultvalue
     *  - settings
-    *  - number of $subtypes and that each pair of $subtypes is structurally equal
-    * as this $type.
+    *  - number of $subtypes and that each pair of $subtypes is structurally equal as this $type.
     *
     * @param other the other $type to campare this $type to.
     */

@@ -32,9 +32,10 @@ object RichProcess {
 class RichProcess(val command: Seq[String], val timeout: FiniteDuration, val charset: Charset,
                   val bufferSize: Int, val redirectStdErrToStdOut: Boolean) {
 
-  protected val processBuilder = new ProcessBuilder(command:_*)
-  processBuilder.redirectErrorStream(redirectStdErrToStdOut)
-  protected val process = processBuilder.start()
+  protected val process: Process = new ProcessBuilder()
+    .redirectErrorStream(redirectStdErrToStdOut)
+    .command(command:_*)
+    .start()
 
   protected val stdOut = new BufferedInputStream(process.getInputStream)
   protected val stdIn = new BufferedOutputStream(process.getOutputStream)
@@ -59,10 +60,7 @@ class RichProcess(val command: Seq[String], val timeout: FiniteDuration, val cha
             readEOF = true
             Left(new EOFException())
           case n =>
-            val s = new String(array, 0, n, charset)
-            //Re-zeros the array to ensure we don't garble the next output
-            (0 until n).foreach(array(_) = 0)
-            Right(s)
+            Right(new String(array, 0, n, charset))
         }
         blockingQueue.put(either)
       }

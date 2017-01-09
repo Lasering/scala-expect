@@ -7,7 +7,7 @@ javacOptions ++= Seq(
   "-Dfile.encoding=utf-8"
 )
 
-scalaVersion := "2.12.0"
+scalaVersion := "2.12.1"
 scalacOptions ++= Seq(
   "-deprecation", //Emit warning and location for usages of deprecated APIs.
   "-encoding", "UTF-8",
