@@ -89,9 +89,6 @@ final class Expect[R](val command: Seq[String], val defaultValue: R, val setting
     * @group Transformations
     */
   def map[T](f: R => T): Expect[T] = {
-    // We could implement map using transform:
-    //  transform(PartialFunction.empty[R, Expect[T]]){ case r => f(r) }
-    // But it would be more inefficient since an ActionReturningAction would be created when it wasn't necessary.
     new Expect(command, f(defaultValue), settings)(expectBlocks.map(_.map(f)):_*)
   }
   /** Creates a new $type by applying a function to the returned result of this $type, and returns the result
@@ -99,9 +96,6 @@ final class Expect[R](val command: Seq[String], val defaultValue: R, val setting
     * @group Transformations
     */
   def flatMap[T](f: R => Expect[T]): Expect[T] = {
-    // We could implement flatMap using transform:
-    //  transform{ case r => f(r) }(PartialFunction.empty[R, T])
-    // But it would be more inefficient since an ActionReturningAction would be created when it wasn't necessary.
     new Expect(command, f(defaultValue).defaultValue, settings)(expectBlocks.map(_.flatMap(f)):_*)
   }
   /**
@@ -133,7 +127,7 @@ final class Expect[R](val command: Seq[String], val defaultValue: R, val setting
     * }
     *
     * def ensureFolderIsEmpty(folder: String): Expect[Either[String, Unit]] = {
-    *   countFilesInFolder(folder).transform {
+    *   countFilesInFolder(folder).transform({
     *     case Right(numberOfFiles) =>
     *       Expect(s"rm -r $$folder", Left("unknownError"): Either[String, Unit])(
     *         ExpectBlock(
@@ -145,10 +139,10 @@ final class Expect[R](val command: Seq[String], val defaultValue: R, val setting
     *           )
     *         )
     *       )
-    *   }{
+    *   }, {
     *     case Left(l) => Left(l)
     *     case Right(numberOfFiles) if numberOfFiles == 0 => Right(())
-    *   }
+    *   })
     * }
     * }}}
     *
@@ -159,14 +153,14 @@ final class Expect[R](val command: Seq[String], val defaultValue: R, val setting
     *         mapPF is defined for the given result.
     * @group Transformations
     */
-  def transform[T](flatMapPF: PartialFunction[R, Expect[T]])(mapPF: PartialFunction[R, T]): Expect[T] = {
+  def transform[T](flatMapPF: PartialFunction[R, Expect[T]], mapPF: PartialFunction[R, T]): Expect[T] = {
     def notDefined(r: R): T = throw new NoSuchElementException(s"Expect.transform neither flatMapPF nor mapPF are defined at $r (the Expect default value)")
 
     val newDefaultValue = flatMapPF.andThen(_.defaultValue).applyOrElse(defaultValue, { r: R =>
       mapPF.applyOrElse(r, notDefined)
     })
 
-    new Expect[T](command, newDefaultValue, settings)(expectBlocks.map(_.transform(flatMapPF)(mapPF)):_*)
+    new Expect[T](command, newDefaultValue, settings)(expectBlocks.map(_.transform(flatMapPF, mapPF)):_*)
   }
   /**
     * @group Transformations

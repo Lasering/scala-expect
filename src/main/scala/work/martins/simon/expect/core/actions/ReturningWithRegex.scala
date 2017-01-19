@@ -9,7 +9,7 @@ import work.martins.simon.expect.core.{RegexWhen, _}
 sealed trait AbstractReturningWithRegex[WR] extends Action[WR, RegexWhen] {
   protected[expect] override def map[T](f: WR => T): AbstractReturningWithRegex[T]
   protected[expect] override def flatMap[T](f: WR => Expect[T]): AbstractReturningWithRegex[T]
-  protected[expect] override def transform[T](flatMapPF: WR =/> Expect[T])(mapPF: WR =/> T): AbstractReturningWithRegex[T]
+  protected[expect] override def transform[T](flatMapPF: WR =/> Expect[T], mapPF: WR =/> T): AbstractReturningWithRegex[T]
 }
 
 /**
@@ -30,11 +30,8 @@ case class ReturningWithRegex[R](result: Match => R) extends AbstractReturningWi
   protected[expect] def flatMap[T](f: R => Expect[T]): AbstractReturningWithRegex[T] = {
     ReturningExpectWithRegex(result andThen f)
   }
-  protected[expect] def transform[T](flatMapPF: R =/> Expect[T])(mapPF: R =/> T): AbstractReturningWithRegex[T] = {
+  protected[expect] def transform[T](flatMapPF: R =/> Expect[T], mapPF: R =/> T): AbstractReturningWithRegex[T] = {
     val computeAction: R => AbstractReturningWithRegex[T] = {
-      //FIXME: is there any way of implementing this without the double evaluation of pattern matchers and guards?
-      //the double evaluation occurs in isDefinedAt and the apply
-
       //We cannot invoke map/flatMap, because if we did the returning result would be ran twice in the ActionReturningAction:
       //Once inside the execute which invokes parent.result
       //And another when the action returned by the ActionReturningAction is ran
@@ -42,7 +39,7 @@ case class ReturningWithRegex[R](result: Match => R) extends AbstractReturningWi
       case r if mapPF.isDefinedAt(r) => this.copy(_ => mapPF(r))
       case r => pfNotDefined[AbstractReturningWithRegex[T]](r)
     }
-    new ActionReturningActionWithRegex(this, computeAction)
+    ActionReturningActionWithRegex(this, computeAction)
   }
 
   def structurallyEquals[WW[X] <: RegexWhen[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[ReturningWithRegex[R]]
@@ -77,8 +74,8 @@ case class ReturningExpectWithRegex[R](result: Match => Expect[R]) extends Abstr
   protected[expect] def flatMap[T](f: R => Expect[T]): AbstractReturningWithRegex[T] = {
     this.copy(result.andThen(_.flatMap(f)))
   }
-  protected[expect] def transform[T](flatMapPF: R =/> Expect[T])(mapPF: R =/> T): AbstractReturningWithRegex[T] = {
-    this.copy(result.andThen(_.transform(flatMapPF)(mapPF)))
+  protected[expect] def transform[T](flatMapPF: R =/> Expect[T], mapPF: R =/> T): AbstractReturningWithRegex[T] = {
+    this.copy(result.andThen(_.transform(flatMapPF, mapPF)))
   }
 
   def structurallyEquals[WW[X] <: RegexWhen[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[ReturningExpectWithRegex[R]]
@@ -94,13 +91,13 @@ case class ActionReturningActionWithRegex[R, T](parent: ReturningWithRegex[R], r
   }
 
   protected[expect] def map[U](f: T => U): AbstractReturningWithRegex[U] = {
-    this.copy(resultAction = resultAction.andThen(_.map(f)))
+    this.copy(parent, resultAction.andThen(_.map(f)))
   }
   protected[expect] def flatMap[U](f: T => Expect[U]): AbstractReturningWithRegex[U] = {
-    this.copy(resultAction = resultAction.andThen(_.flatMap(f)))
+    this.copy(parent, resultAction.andThen(_.flatMap(f)))
   }
-  protected[expect] def transform[U](flatMapPF: T =/> Expect[U])(mapPF: T =/> U): AbstractReturningWithRegex[U] = {
-    this.copy(resultAction = resultAction.andThen(_.transform(flatMapPF)(mapPF)))
+  protected[expect] def transform[U](flatMapPF: T =/> Expect[U], mapPF: T =/> U): AbstractReturningWithRegex[U] = {
+    this.copy(parent, resultAction.andThen(_.transform(flatMapPF, mapPF)))
   }
 
   def structurallyEquals[WW[X] <: RegexWhen[X]](other: Action[T, WW]): Boolean = other.isInstanceOf[ActionReturningActionWithRegex[R, T]]

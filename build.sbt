@@ -24,8 +24,7 @@ scalacOptions ++= Seq(
   "-Ywarn-nullary-unit",            //Warn when nullary methods return Unit.
   "-Ywarn-numeric-widen",           //Warn when numerics are widened.
   "-Ywarn-unused",                  //Warn when local and private vals, vars, defs, and types are unused.
-  "-Ywarn-unused-import",           //Warn when imports are unused.
-  "-P:splain:infix:true"
+  "-Ywarn-unused-import"            //Warn when imports are unused.
 )
 
 //======================================================================================================================

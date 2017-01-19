@@ -43,11 +43,11 @@ class EmptySpec extends AsyncFlatSpec with Matchers with TestUtils {
     val defaultValue = "some nice default value"
     val e = new Expect("ls", defaultValue)()
 
-    val e2 = e.transform {
+    val e2 = e.transform({
       case e.defaultValue => new Expect("ls", defaultValue.split(" ").headOption)()
-    } {
+    }, {
       case _ => None
-    }
+    })
     e2.run() map {
       _ should not be None
     }
@@ -56,11 +56,11 @@ class EmptySpec extends AsyncFlatSpec with Matchers with TestUtils {
     val defaultValue = "some nice default value"
     val e = new Expect("ls", defaultValue)()
     
-    val e2 = e.transform {
+    val e2 = e.transform({
       case t if t != e.defaultValue => new Expect("ls", None: Option[String])()
-    } {
+    }, {
       case _ => defaultValue.split(" ").headOption
-    }
+    })
     e2.run() map {
       _ should not be None
     }
@@ -68,11 +68,11 @@ class EmptySpec extends AsyncFlatSpec with Matchers with TestUtils {
 
   "Transforming when the defaultValue is not in domain" should "throw a NoSuchElementException" in {
     val e = new Expect("ls", "some nice default value")()
-    val thrown = the [NoSuchElementException] thrownBy e.transform {
+    val thrown = the [NoSuchElementException] thrownBy e.transform({
       PartialFunction.empty[String, Expect[String]]
-    } {
+    }, {
       PartialFunction.empty[String, String]
-    }
+    })
     thrown.getMessage should include ("default value")
   }
 

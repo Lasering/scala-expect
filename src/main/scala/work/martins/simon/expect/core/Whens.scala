@@ -70,8 +70,8 @@ sealed trait When[R] extends LazyLogging {
 
   private[core] def map[T](f: R => T): This[T] = withActions(actions.map(_.map(f)))
   private[core] def flatMap[T](f: R => Expect[T]): This[T] = withActions(actions.map(_.flatMap(f)))
-  private[core] def transform[T](flatMapPF: PartialFunction[R, Expect[T]])(mapPF: PartialFunction[R, T]): This[T] = {
-    withActions(actions.map(_.transform(flatMapPF)(mapPF)))
+  private[core] def transform[T](flatMapPF: PartialFunction[R, Expect[T]], mapPF: PartialFunction[R, T]): This[T] = {
+    withActions(actions.map(_.transform(flatMapPF, mapPF)))
   }
 
   /** Create a new $type with the specified actions. */

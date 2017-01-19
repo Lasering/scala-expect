@@ -3,7 +3,7 @@ package work.martins.simon.expect.core.actions
 import scala.language.higherKinds
 
 import work.martins.simon.expect.StringUtils._
-import work.martins.simon.expect.core.{Expect, Context, RichProcess, When}
+import work.martins.simon.expect.core.{Context, Expect, RichProcess, When}
 
 object Sendln {
   def apply[R](text: String): Send[R] = new Send(text + System.lineSeparator())
@@ -25,7 +25,7 @@ final case class Send[R](text: String) extends Action[R, When] {
 
   protected[expect] def map[T](f: R => T): Action[T, When] = this.asInstanceOf[Send[T]]
   protected[expect] def flatMap[T](f: R => Expect[T]): Action[T, When] = this.asInstanceOf[Send[T]]
-  protected[expect] def transform[T](flatMapPF: R =/> Expect[T])(mapPF: R =/> T): Action[T, When] = this.asInstanceOf[Send[T]]
+  protected[expect] def transform[T](flatMapPF: R =/> Expect[T], mapPF: R =/> T): Action[T, When] = this.asInstanceOf[Send[T]]
 
   def structurallyEquals[WW[X] <: When[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[Send[R]]
 

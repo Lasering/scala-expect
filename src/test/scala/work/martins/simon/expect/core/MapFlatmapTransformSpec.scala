@@ -95,28 +95,28 @@ class MapFlatmapTransformSpec extends AsyncWordSpec with BeforeAndAfterEach with
       }
       "transformed" should {
         "throw a NoSuchElementException if the transform function if not defined for some result (in map)" in {
-          val transformedExpect1 = expect.transform {
+          val transformedExpect1 = expect.transform({
             case expect.defaultValue => flatMap(expect.defaultValue)
-          } {
+          }, {
             PartialFunction.empty[Int, String]
-          }
+          })
           testActionsAndFailedResult(transformedExpect1, builder)
         }
         "throw a NoSuchElementException if the transform function if not defined for some result (in flatMap)" in {
-          val transformedExpect2 = expect.transform {
+          val transformedExpect2 = expect.transform({
             PartialFunction.empty[Int, Expect[String]]
-          } {
+          }, {
             case expect.defaultValue => mapFunction(expect.defaultValue).mkString
-          }
+          })
           testActionsAndFailedResult(transformedExpect2, builder)
         }
   
         val newMappedResult = mapFunction(result).mkString
-        val mappedExpect: Expect[String] = expect.transform {
+        val mappedExpect: Expect[String] = expect.transform({
           case expect.defaultValue => flatMap(expect.defaultValue)
-        } {
+        }, {
           case `result` => newMappedResult
-        }
+        })
         "return the correct result for: transform (map)" in {
           testActionsAndResult(mappedExpect, builder, newMappedResult)
         }
@@ -127,19 +127,19 @@ class MapFlatmapTransformSpec extends AsyncWordSpec with BeforeAndAfterEach with
           testActionsAndResult(mappedExpect.flatMap(flatMap2), builder, flatMapFunction2(newMappedResult))
         }
         "return the correct result for: transform (map) followed by a transform" in {
-          testActionsAndResult(mappedExpect.transform{
+          testActionsAndResult(mappedExpect.transform({
             case mappedExpect.defaultValue => flatMap2(mappedExpect.defaultValue)
-          }{
+          }, {
             case `newMappedResult` => Array.ofDim[Byte](5)
-          }, builder, Array.ofDim[Byte](5))
+          }), builder, Array.ofDim[Byte](5))
         }
           
         val newFlatMappedResult = flatMapFunction(result)
-        val flatMappedExpect: Expect[String] = expect.transform {
+        val flatMappedExpect: Expect[String] = expect.transform({
           case `result` => flatMap(result)
-        } {
+        }, {
           case expect.defaultValue => mapFunction(expect.defaultValue).mkString
-        }
+        })
         "return the correct result for: transform (flatMap)" in {
           testActionsAndResult(flatMappedExpect, builder, newFlatMappedResult)
         }
@@ -151,11 +151,11 @@ class MapFlatmapTransformSpec extends AsyncWordSpec with BeforeAndAfterEach with
           testActionsAndResult(flatMappedExpect.flatMap(flatMap2), builder, flatMapFunction2(newFlatMappedResult))
         }
         "return the correct result for: transform (flatMap) followed by a transform" in {
-          testActionsAndResult(flatMappedExpect.transform{
+          testActionsAndResult(flatMappedExpect.transform({
             case `newFlatMappedResult` => new Expect("ls",  Array.ofDim[Byte](5))()
-          }{
+          }, {
             case flatMappedExpect.defaultValue => flatMapFunction2(flatMappedExpect.defaultValue)
-          }, builder, Array.ofDim[Byte](5))
+          }), builder, Array.ofDim[Byte](5))
         }
       }
     }

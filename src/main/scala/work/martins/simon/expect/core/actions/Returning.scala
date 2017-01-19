@@ -8,12 +8,12 @@ import work.martins.simon.expect.core._
 sealed trait AbstractReturning[WR] extends Action[WR, When] {
   protected[expect] override def map[T](f: WR => T): AbstractReturning[T]
   protected[expect] override def flatMap[T](f: WR => Expect[T]): AbstractReturning[T]
-  protected[expect] override def transform[T](flatMapPF: WR =/> Expect[T])(mapPF: WR =/> T): AbstractReturning[T]
+  protected[expect] override def transform[T](flatMapPF: WR =/> Expect[T], mapPF: WR =/> T): AbstractReturning[T]
 }
 
 object Returning {
   //def apply[R](result: () => R): Returning[R] = new Returning((u: Unit) => result())
-  def apply[R](result: => R): Returning[R] = new Returning((u: Unit) => result)
+  def apply[R](result: => R): Returning[R] = new Returning(_ => result)
 }
 /**
   * $returningAction
@@ -30,19 +30,16 @@ case class Returning[R](result: Unit => R) extends AbstractReturning[R] {
   protected[expect] def flatMap[T](f: R => Expect[T]): AbstractReturning[T] = {
     ReturningExpect(result andThen f)
   }
-  protected[expect] def transform[T](flatMapPF: R =/> Expect[T])(mapPF: R =/> T): AbstractReturning[T] = {
+  protected[expect] def transform[T](flatMapPF: R =/> Expect[T], mapPF: R =/> T): AbstractReturning[T] = {
     val computeAction: R => AbstractReturning[T] = {
-      //FIXME: is there any way of implementing this without the double evaluation of pattern matchers and guards?
-      //the double evaluation occurs in isDefinedAt and the apply
-
-      //We cannot invoke map/flatMap, because if we did the returning result would be ran twice in the ActionReturningAction:
-      //Once inside the execute which invokes parent.result
-      //And another when the action returned by the ActionReturningAction is ran
+      // We cannot use the map/flatMap because if we did the returning result would be ran twice in the ActionReturningAction:
+      //   · once inside the execute which invokes parent.result
+      //   · and another when the action returned by the ActionReturningAction is ran
       case r if flatMapPF.isDefinedAt(r) => ReturningExpect(_ => flatMapPF(r))
       case r if mapPF.isDefinedAt(r) => this.copy(_ => mapPF(r))
       case r => pfNotDefined[AbstractReturning[T]](r)
     }
-    new ActionReturningAction(this, computeAction)
+    ActionReturningAction(this, computeAction)
   }
 
   def structurallyEquals[WW[X] <: When[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[Returning[R]]
@@ -51,7 +48,7 @@ case class Returning[R](result: Unit => R) extends AbstractReturning[R] {
 
 object ReturningExpect {
   //def apply[R](result: () => Expect[R]): ReturningExpect[R] = new ReturningExpect((u: Unit) => result())
-  def apply[R](result: => Expect[R]): ReturningExpect[R] = new ReturningExpect((u: Unit) => result)
+  def apply[R](result: => Expect[R]): ReturningExpect[R] = new ReturningExpect(_ => result)
 }
 /**
   * When this action is executed:
@@ -79,8 +76,8 @@ case class ReturningExpect[R](result: Unit => Expect[R]) extends AbstractReturni
   protected[expect] def flatMap[T](f: R => Expect[T]): AbstractReturning[T] = {
     this.copy(result.andThen(_.flatMap(f)))
   }
-  protected[expect] def transform[T](flatMapPF: R =/> Expect[T])(mapPF: R =/> T): AbstractReturning[T] = {
-    this.copy(result.andThen(_.transform(flatMapPF)(mapPF)))
+  protected[expect] def transform[T](flatMapPF: R =/> Expect[T], mapPF: R =/> T): AbstractReturning[T] = {
+    this.copy(result.andThen(_.transform(flatMapPF, mapPF)))
   }
 
   def structurallyEquals[WW[X] <: When[X]](other: Action[R, WW]): Boolean = this.isInstanceOf[ReturningExpect[R]]
@@ -93,13 +90,13 @@ case class ActionReturningAction[R, T](parent: Returning[R], resultAction: R => 
   }
 
   protected[expect] def map[U](f: T => U): AbstractReturning[U] = {
-    this.copy(resultAction = resultAction.andThen(_.map(f)))
+    this.copy(parent, resultAction.andThen(_.map(f)))
   }
   protected[expect] def flatMap[U](f: T => Expect[U]): AbstractReturning[U] = {
-    this.copy(resultAction = resultAction.andThen(_.flatMap(f)))
+    this.copy(parent, resultAction.andThen(_.flatMap(f)))
   }
-  protected[expect] def transform[U](flatMapPF: T =/> Expect[U])(mapPF: T =/> U): AbstractReturning[U] = {
-    this.copy(resultAction = resultAction.andThen(_.transform(flatMapPF)(mapPF)))
+  protected[expect] def transform[U](flatMapPF: T =/> Expect[U], mapPF: T =/> U): AbstractReturning[U] = {
+    this.copy(parent, resultAction.andThen(_.transform(flatMapPF, mapPF)))
   }
 
   def structurallyEquals[WW[X] <: When[X]](other: Action[T, WW]): Boolean = other.isInstanceOf[ActionReturningAction[R, T]]

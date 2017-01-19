@@ -305,21 +305,20 @@ class BuilderSpec extends WordSpec with Matchers {
           expect("".r){
             returning("text")
           }
-        }.transform{
+        }.transform({
           case "" => new core.Expect("ls", "")()
-        }{
+        }, {
           case "text" => "diferentText"
-        }
-        //Test structurally equals on ActionReturningActionWithRegex
+        })//Test structurally equals on ActionReturningActionWithRegex
         val araWithRegex: core.Expect[String] = new dsl.Expect("ls", "") {
           expect("".r){
             returning(m => "text")
           }
-        }.transform{
+        }.transform({
           case "" => new core.Expect("ls", "")()
-        }{
+        }, {
           case "text" => "I see what you did here"
-        }
+        })
 
         wrongExpects.map(ara.structurallyEquals(_)) should contain only false
         wrongExpects.map(araWithRegex.structurallyEquals(_)) should contain only false
