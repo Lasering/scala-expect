@@ -184,10 +184,10 @@ class BuilderSpec extends WordSpec with Matchers {
           )
         ),
         core.ExpectBlock(
-          core.EndOfFileWhen(
+          core.EndOfFileWhen()(
             Exit()
           ),
-          core.TimeoutWhen(
+          core.TimeoutWhen()(
             Exit()
           )
         )
@@ -245,10 +245,10 @@ class BuilderSpec extends WordSpec with Matchers {
           )
         ),
         core.ExpectBlock(
-          core.EndOfFileWhen(
+          core.EndOfFileWhen()(
             ReturningExpect(new core.Expect("ls", defaultValue = "")())
           ),
-          core.TimeoutWhen(
+          core.TimeoutWhen()(
             Returning("someValue"),
             Exit()
           )

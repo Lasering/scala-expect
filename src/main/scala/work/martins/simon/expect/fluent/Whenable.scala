@@ -1,35 +1,61 @@
 package work.martins.simon.expect.fluent
 
-import work.martins.simon.expect.{Timeout, EndOfFile}
-
+import work.martins.simon.expect.{EndOfFile, FromInputStream, Timeout}
 import scala.util.matching.Regex
 
 trait Whenable[R] extends Expectable[R] {
-  protected val whenableParent: Whenable[R]
+  protected val whenableParent: ExpectBlock[R] //The root of an Whenable must be an ExpectBlock
+  protected lazy val expectableParent: Expect[R] = whenableParent.parent
 
   /**
    * Adds a new `StringWhen` that matches whenever `pattern` is contained
-   * in the text read from the process output (stdOut).
+   * in the text read from the `FromInputStream` specified in the parent ExpectBlock.
    * @param pattern the pattern to match against.
    * @return the new `StringWhen`.
    */
-  def when(pattern: String): StringWhen[R] = whenableParent.when(pattern)
+  def when(pattern: String): StringWhen[R] = when(pattern, whenableParent.readFrom)
+  /**
+    * Adds a new `StringWhen` that matches whenever `pattern` is contained
+    * in the text read from the specified `FromInputStream`.
+    * @param pattern the pattern to match against.
+    * @param readFrom from which `FromInputStream` to read the output.
+    * @return the new `StringWhen`.
+    */
+  def when(pattern: String, readFrom: FromInputStream): StringWhen[R] = whenableParent.when(pattern, readFrom)
+  
   /**
    * Adds a new `RegexWhen` that matches whenever the regex `pattern` successfully matches
-   * against the text read from the process output (stdOut).
+   * against the text read from `FromInputStream` specified in the parent ExpectBlock.
    * @param pattern the pattern to match against.
    * @return the new `RegexWhen`.
    */
-  def when(pattern: Regex): RegexWhen[R] = whenableParent.when(pattern)
+  def when(pattern: Regex): RegexWhen[R] = when(pattern, whenableParent.readFrom)
   /**
-   * Adds a new `EndOfFileWhen` that matches whenever the EndOfFile in the process output (stdOut) is reached.
-   * @param pattern the pattern to match against.
-   * @return the new `EndOfFileWhen`.
-   */
-  def when(pattern: EndOfFile.type): EndOfFileWhen[R] = whenableParent.when(pattern)
+    * Adds a new `RegexWhen` that matches whenever the regex `pattern` successfully matches
+    * against the text read from the specified `FromInputStream`.
+    * @param pattern the pattern to match against.
+    * @param readFrom from which `FromInputStream` to read the output.
+    * @return the new `RegexWhen`.
+    */
+  def when(pattern: Regex, readFrom: FromInputStream): RegexWhen[R] = whenableParent.when(pattern, readFrom)
+  
   /**
-   * Adds a new `TimeoutWhen` that matches whenever a Timeout in thrown while trying to read text
-   * from the process output (stdOut).
+    * Adds a new `EndOfFileWhen` that matches whenever the EndOfFile in read from `FromInputStream`
+    * specified in the parent ExpectBlock.
+    * @param pattern the pattern to match against.
+    * @return the new `EndOfFileWhen`.
+    */
+  def when(pattern: EndOfFile.type): EndOfFileWhen[R] = when(pattern, whenableParent.readFrom)
+  /**
+    * Adds a new `EndOfFileWhen` that matches whenever the EndOfFile in read from the specified `FromInputStream`.
+    * @param pattern the pattern to match against.
+    * @param readFrom from which `FromInputStream` to read the output.
+    * @return the new `EndOfFileWhen`.
+    */
+  def when(pattern: EndOfFile.type, readFrom: FromInputStream): EndOfFileWhen[R] = whenableParent.when(pattern, readFrom)
+  
+  /**
+   * Adds a new `TimeoutWhen` that matches whenever the read from any of the `FromStreamInput`s times out.
    * @param pattern the pattern to match against.
    * @return the new `TimeoutWhen`.
    */

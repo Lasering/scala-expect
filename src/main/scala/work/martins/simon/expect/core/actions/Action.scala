@@ -1,7 +1,8 @@
 package work.martins.simon.expect.core.actions
 
-import work.martins.simon.expect.core.{Expect, IntermediateResult, RichProcess, When}
 import scala.language.higherKinds
+
+import work.martins.simon.expect.core.{Expect, Context, RichProcess, When}
 
 /**
   * @define type Action
@@ -13,7 +14,7 @@ import scala.language.higherKinds
   * @tparam W the concrete When type constructor to which this action can be applied.
   */
 trait Action[R, -W[X] <: When[X]] {
-  def execute(when: W[R], process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R]
+  def execute(when: W[R], process: RichProcess, intermediateResult: Context[R]): Context[R]
 
   protected[expect] def map[T](f: R => T): Action[T, W]
   protected[expect] def flatMap[T](f: R => Expect[T]): Action[T, W]

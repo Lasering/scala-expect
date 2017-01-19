@@ -1,9 +1,9 @@
 package work.martins.simon.expect.core.actions
 
-import work.martins.simon.expect.core._
-
-import scala.util.matching.Regex.Match
 import scala.language.higherKinds
+import scala.util.matching.Regex.Match
+
+import work.martins.simon.expect.core._
 
 object SendlnWithRegex {
   def apply[R](text: Match => String): SendWithRegex[R] = new SendWithRegex(text.andThen(_ + System.lineSeparator()))
@@ -17,10 +17,10 @@ object SendlnWithRegex {
   * @param text the text to send.
   */
 final case class SendWithRegex[R](text: Match => String) extends Action[R, RegexWhen] {
-  def execute(when: RegexWhen[R], process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
-    val regexMatch = when.regexMatch(intermediateResult.output)
+  def execute(when: RegexWhen[R], process: RichProcess, context: Context[R]): Context[R] = {
+    val regexMatch = when.regexMatch(context.output)
     process.print(text(regexMatch))
-    intermediateResult
+    context
   }
 
   //These methods just perform a cast because the type argument R is just used here,

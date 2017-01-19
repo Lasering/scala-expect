@@ -2,7 +2,7 @@ package work.martins.simon.expect.fluent
 
 import com.typesafe.config.Config
 import work.martins.simon.expect.StringUtils._
-import work.martins.simon.expect.{Settings, core}
+import work.martins.simon.expect.{FromInputStream, Settings, StdOut, core}
 
 /**
   * @define type Expect
@@ -23,11 +23,11 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
 
   require(command.nonEmpty, "Expect must have a command to run.")
 
-  //We decided to set expectableParent to 'this' to make it obvious that this is the root of all Expectables.
-  protected val expectableParent: Expectable[R] = this
+  protected val expectableParent: Expect[R] = this
   private var expectBlocks = Seq.empty[ExpectBlock[R]]
-  override def expect: ExpectBlock[R] = {
-    val block = new ExpectBlock(this)
+  override def expect: ExpectBlock[R] = expect(StdOut)
+  override def expect(from: FromInputStream): ExpectBlock[R] = {
+    val block = new ExpectBlock(this, from)
     expectBlocks :+= block
     block
   }

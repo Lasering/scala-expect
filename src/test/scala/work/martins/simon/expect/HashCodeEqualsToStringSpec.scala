@@ -29,7 +29,7 @@ class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
     Timeout, //The curve ball to test that equals returns false
 
     //To test equals returns false on expectBlock
-    ExpectBlock(StringWhen("1")()),
+    core.ExpectBlock(StringWhen("1")()),
     new ExpectBlock(new Expect("ls", "")),
 
     new Settings(), //To test equals returns false on Settings
@@ -129,7 +129,6 @@ class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
       settingsToString should include ("settings")
       settingsToString should include (settings.timeout.toString)
       settingsToString should include (settings.charset.toString)
-      settingsToString should include (settings.bufferSize.toString)
       settingsToString should include (settings.redirectStdErrToStdOut.toString)
 
       for (block <- expect.toCore.expectBlocks) {
@@ -144,10 +143,10 @@ class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
           whenToString should include ("when")
 
           when match {
-            case StringWhen(pattern) => whenToString should include (pattern)
-            case RegexWhen(pattern) => whenToString should include (escape(pattern.regex)) //This one is a little cheat
-            case EndOfFileWhen(_*) => whenToString should include ("EndOfFile")
-            case TimeoutWhen(_*) => whenToString should include ("Timeout")
+            case StringWhen(pattern, _) => whenToString should include (pattern)
+            case RegexWhen(pattern, _) => whenToString should include (escape(pattern.regex)) //This one is a little cheat
+            case EndOfFileWhen(_) => whenToString should include ("EndOfFile")
+            case TimeoutWhen() => whenToString should include ("Timeout")
           }
 
           for (action <- when.actions) {

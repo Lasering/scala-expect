@@ -1,9 +1,8 @@
 package work.martins.simon.expect.fluent
 
 import work.martins.simon.expect.StringUtils._
-import work.martins.simon.expect.core
+import work.martins.simon.expect.{FromInputStream, StdOut, core}
 import work.martins.simon.expect.core.actions._
-
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 import scala.language.higherKinds
@@ -18,11 +17,12 @@ sealed trait When[R] extends Whenable[R] {
   /** The concrete When type constructor to which the actions will be applied. */
   type This[X] <: When[X]
   val thisSubtype: This[R] = this.asInstanceOf[This[R]]
-
+  
+  def readFrom: FromInputStream
+  
   def parent: ExpectBlock[R]
 
-  protected val expectableParent: Expectable[R] = parent
-  protected val whenableParent: Whenable[R] = parent
+  protected val whenableParent: ExpectBlock[R] = parent
 
   protected var actions = Seq.empty[Action[R, CW]]
   protected def newAction(action: Action[R, CW]): This[R] = {
@@ -110,11 +110,11 @@ sealed trait When[R] extends Whenable[R] {
        |}""".stripMargin
 }
 
-case class StringWhen[R](parent: ExpectBlock[R], pattern: String) extends When[R]{
+case class StringWhen[R](parent: ExpectBlock[R], pattern: String, readFrom: FromInputStream = StdOut) extends When[R]{
   type CW[X] = core.StringWhen[X]
   type This[X] = StringWhen[X]
 
-  def toCore: core.StringWhen[R] = new core.StringWhen[R](pattern)(actions:_*)
+  def toCore: core.StringWhen[R] = new core.StringWhen[R](pattern, readFrom)(actions:_*)
 
   override def toString: String = toString(escape(pattern))
   override def equals(other: Any): Boolean = other match {
@@ -126,7 +126,7 @@ case class StringWhen[R](parent: ExpectBlock[R], pattern: String) extends When[R
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
-case class RegexWhen[R](parent: ExpectBlock[R], pattern: Regex) extends When[R] {
+case class RegexWhen[R](parent: ExpectBlock[R], pattern: Regex, readFrom: FromInputStream = StdOut) extends When[R] {
   type CW[X] = core.RegexWhen[X]
   type This[X] = RegexWhen[X]
 
@@ -157,7 +157,7 @@ case class RegexWhen[R](parent: ExpectBlock[R], pattern: Regex) extends When[R] 
   def returningExpect(result: Match => core.Expect[R]): RegexWhen[R] = newAction(ReturningExpectWithRegex(result))
 
 
-  def toCore: core.RegexWhen[R] = new core.RegexWhen[R](pattern)(actions:_*)
+  def toCore: core.RegexWhen[R] = new core.RegexWhen[R](pattern, readFrom)(actions:_*)
 
   override def toString: String = toString(escape(pattern.regex) + ".r")
   override def equals(other: Any): Boolean = other match {
@@ -169,11 +169,11 @@ case class RegexWhen[R](parent: ExpectBlock[R], pattern: Regex) extends When[R] 
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
-case class EndOfFileWhen[R](parent: ExpectBlock[R]) extends When[R] {
+case class EndOfFileWhen[R](parent: ExpectBlock[R], readFrom: FromInputStream = StdOut) extends When[R] {
   type CW[X] = core.EndOfFileWhen[X]
   type This[X] = EndOfFileWhen[X]
 
-  def toCore: core.EndOfFileWhen[R] = new core.EndOfFileWhen[R](actions:_*)
+  def toCore: core.EndOfFileWhen[R] = new core.EndOfFileWhen[R](readFrom)(actions:_*)
 
   override def toString: String = toString("EndOfFile")
   override def equals(other: Any): Boolean = other match {
@@ -185,8 +185,12 @@ case class EndOfFileWhen[R](parent: ExpectBlock[R]) extends When[R] {
 case class TimeoutWhen[R](parent: ExpectBlock[R]) extends When[R] {
   type CW[X] = core.TimeoutWhen[X]
   type This[X] = TimeoutWhen[X]
-
-  def toCore: core.TimeoutWhen[R] = new core.TimeoutWhen[R](actions:_*)
+  
+  // The readFrom of a TimeoutWhen is not used but to keep the implementation simple we also include it
+  // and set its value to StdOut.
+  final def readFrom: FromInputStream = StdOut
+  
+  def toCore: core.TimeoutWhen[R] = new core.TimeoutWhen[R]()(actions:_*)
 
   override def toString: String = toString("Timeout")
   override def equals(other: Any): Boolean = other match {

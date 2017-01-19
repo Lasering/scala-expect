@@ -1,7 +1,9 @@
 package work.martins.simon.expect.core.actions
 
-import work.martins.simon.expect.core._
 import scala.language.higherKinds
+
+import work.martins.simon.expect.core.Context.ChangeToNewExpect
+import work.martins.simon.expect.core._
 
 sealed trait AbstractReturning[WR] extends Action[WR, When] {
   protected[expect] override def map[T](f: WR => T): AbstractReturning[T]
@@ -18,8 +20,8 @@ object Returning {
   * $moreThanOne
   **/
 case class Returning[R](result: Unit => R) extends AbstractReturning[R] {
-  def execute(when: When[R], process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
-    intermediateResult.copy(value = result(()))
+  def execute(when: When[R], process: RichProcess, context: Context[R]): Context[R] = {
+    context.copy(value = result(()))
   }
 
   protected[expect] def map[T](f: R => T): AbstractReturning[T] = {
@@ -66,9 +68,9 @@ object ReturningExpect {
   * Any action or expect block added after this will not be executed.
   */
 case class ReturningExpect[R](result: Unit => Expect[R]) extends AbstractReturning[R] {
-  def execute(when: When[R], process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
+  def execute(when: When[R], process: RichProcess, context: Context[R]): Context[R] = {
     val newExpect = result(())
-    intermediateResult.copy(executionAction = ChangeToNewExpect(newExpect))
+    context.copy(executionAction = ChangeToNewExpect(newExpect))
   }
 
   protected[expect] def map[T](f: R => T): AbstractReturning[T] = {
@@ -85,19 +87,19 @@ case class ReturningExpect[R](result: Unit => Expect[R]) extends AbstractReturni
 }
 
 case class ActionReturningAction[R, T](parent: Returning[R], resultAction: R => AbstractReturning[T]) extends AbstractReturning[T] {
-  def execute(when: When[T], process: RichProcess, intermediateResult: IntermediateResult[T]): IntermediateResult[T] = {
+  def execute(when: When[T], process: RichProcess, context: Context[T]): Context[T] = {
     val parentResult: R = parent.result(())
-    resultAction(parentResult).execute(when, process, intermediateResult)
+    resultAction(parentResult).execute(when, process, context)
   }
 
   protected[expect] def map[U](f: T => U): AbstractReturning[U] = {
-    this.copy(parent, resultAction.andThen(_.map(f)))
+    this.copy(resultAction = resultAction.andThen(_.map(f)))
   }
   protected[expect] def flatMap[U](f: T => Expect[U]): AbstractReturning[U] = {
-    this.copy(parent, resultAction.andThen(_.flatMap(f)))
+    this.copy(resultAction = resultAction.andThen(_.flatMap(f)))
   }
   protected[expect] def transform[U](flatMapPF: T =/> Expect[U])(mapPF: T =/> U): AbstractReturning[U] = {
-    this.copy(parent, resultAction.andThen(_.transform(flatMapPF)(mapPF)))
+    this.copy(resultAction = resultAction.andThen(_.transform(flatMapPF)(mapPF)))
   }
 
   def structurallyEquals[WW[X] <: When[X]](other: Action[T, WW]): Boolean = other.isInstanceOf[ActionReturningAction[R, T]]

@@ -1,8 +1,9 @@
 package work.martins.simon.expect.core.actions
 
-import work.martins.simon.expect.core._
-
 import scala.language.higherKinds
+
+import work.martins.simon.expect.core.Context.Terminate
+import work.martins.simon.expect.core._
 
 /**
   * When this action is executed the current run of Expect is terminated causing it to return the
@@ -11,8 +12,8 @@ import scala.language.higherKinds
   * Any action or expect block added after this will not be executed.
   */
 final case class Exit[R]() extends Action[R, When] {
-  def execute(when: When[R], process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
-    intermediateResult.copy(executionAction = Terminate)
+  def execute(when: When[R], process: RichProcess, context: Context[R]): Context[R] = {
+    context.copy(executionAction = Terminate)
   }
 
   //These methods just perform a cast because the type argument R is just used here,

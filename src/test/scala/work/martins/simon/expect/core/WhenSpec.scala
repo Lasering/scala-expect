@@ -16,7 +16,7 @@ class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
             StringWhen("Is there anybody out there?") (
               Returning("Just nod if you can hear me.")
             ),
-            TimeoutWhen(
+            TimeoutWhen()(
               Returning("Is there anyone at home?")
             )
           )
@@ -31,6 +31,11 @@ class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
             StringWhen("Come on, now,") (
               Returning("I hear you're feeling down.")
             )
+          ), ExpectBlock (
+            TimeoutWhen()(
+              //The expect will never reach this because a TimeoutException will be thrown in the previous expect block
+              Returning("can't reach this")
+            )
           )
         )
         e.run().failed map {
@@ -43,7 +48,7 @@ class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
             StringWhen("Is there anybody out there?") (
               Returning("Just nod if you can hear me.")
             ),
-            TimeoutWhen(
+            TimeoutWhen()(
               Returning { (u: Unit) =>
                 throw new IllegalArgumentException()
               }
@@ -63,7 +68,7 @@ class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
             StringWhen("Well I can ease your pain") (
               Returning("Get you on your feet again.")
             ),
-            EndOfFileWhen(
+            EndOfFileWhen()(
               Returning("Relax.")
             )
           )
@@ -78,6 +83,11 @@ class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
             StringWhen("I'll need some information first.") (
               Returning("Just the basic facts.")
             )
+          ), ExpectBlock (
+            EndOfFileWhen()(
+              //The expect will never reach this because a EOFException will be thrown in the previous expect block
+              Returning("can't reach this")
+            )
           )
         )
         e.run().failed map {
@@ -90,7 +100,7 @@ class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
             StringWhen("Well I can ease your pain") (
               Returning("Get you on your feet again.")
             ),
-            EndOfFileWhen(
+            EndOfFileWhen()(
               Returning { (u: Unit) =>
                 throw new IllegalArgumentException()
               }

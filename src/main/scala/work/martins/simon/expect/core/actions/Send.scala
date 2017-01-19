@@ -1,9 +1,9 @@
 package work.martins.simon.expect.core.actions
 
-import work.martins.simon.expect.StringUtils._
-import work.martins.simon.expect.core.{Expect, IntermediateResult, RichProcess, When}
-
 import scala.language.higherKinds
+
+import work.martins.simon.expect.StringUtils._
+import work.martins.simon.expect.core.{Expect, Context, RichProcess, When}
 
 object Sendln {
   def apply[R](text: String): Send[R] = new Send(text + System.lineSeparator())
@@ -15,9 +15,9 @@ object Sendln {
   * @param text the text to send.
   */
 final case class Send[R](text: String) extends Action[R, When] {
-  def execute(when: When[R], process: RichProcess, intermediateResult: IntermediateResult[R]): IntermediateResult[R] = {
+  def execute(when: When[R], process: RichProcess, context: Context[R]): Context[R] = {
     process.print(text)
-    intermediateResult
+    context
   }
 
   //These methods just perform a cast because the type argument R is just used here,

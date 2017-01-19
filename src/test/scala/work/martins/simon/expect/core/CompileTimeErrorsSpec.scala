@@ -43,9 +43,9 @@ class CompileTimeErrorsSpec extends FlatSpec with Matchers {
     )
     StringWhen("")(actions:_*)
     RegexWhen(".*".r)(actions:_*)
-    EndOfFileWhen(actions:_*)
-    TimeoutWhen(actions:_*)
-
+    EndOfFileWhen()(actions:_*)
+    TimeoutWhen()(actions:_*)
+    
     """val actions: Seq[Action[String, When]] = Seq(
          Send(""),
          Returning(""),
@@ -54,7 +54,7 @@ class CompileTimeErrorsSpec extends FlatSpec with Matchers {
        )
        StringWhen("")(actions:_*)
        RegexWhen(".*".r)(actions:_*)
-       EndOfFileWhen(actions:_*)
-       TimeoutWhen(actions:_*)""" should compile
+       EndOfFileWhen()(actions:_*)
+       TimeoutWhen()(actions:_*)""" should compile
   }
 }

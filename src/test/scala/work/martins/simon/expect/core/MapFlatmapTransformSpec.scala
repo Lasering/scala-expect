@@ -27,7 +27,7 @@ class MapFlatmapTransformSpec extends AsyncWordSpec with BeforeAndAfterEach with
         builders(2).append(addedValue)
         new Expect("ls", returnedResults(2))()
       }
-    )), constructExpect(defaultValue, EndOfFileWhen(
+    )), constructExpect(defaultValue, EndOfFileWhen()(
       ReturningExpect {
         builders(3).append(addedValue)
         new Expect("ls", returnedResults(3))()
@@ -42,7 +42,7 @@ class MapFlatmapTransformSpec extends AsyncWordSpec with BeforeAndAfterEach with
         )
       ),
       ExpectBlock(
-        TimeoutWhen(
+        TimeoutWhen()(
           Returning(returnedResults(4)),
           //These two actions serve two purposes:
           // · Testing map, flatMap and transform for Send and Exit.

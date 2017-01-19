@@ -1,9 +1,8 @@
 package work.martins.simon.expect.dsl
 
 import com.typesafe.config.Config
-import work.martins.simon.expect.{EndOfFile, Settings, Timeout, fluent, core}
+import work.martins.simon.expect._
 import work.martins.simon.expect.StringUtils._
-
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
@@ -27,17 +26,21 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
   protected var expectBlock: Option[fluent.ExpectBlock[R]] = None
   protected var when: Option[fluent.When[R]] = None
 
-  def expect(f: => Unit): Unit = {
+  def expect(f: => Unit): Unit = expect(StdOut)(f)
+  def expect(readFrom: FromInputStream)(f: => Unit): Unit = {
     require(expectBlock.isEmpty && when.isEmpty, "Expect block must be the top level object.")
-    val createdBlock = fluentExpect.expect
+    val createdBlock = fluentExpect.expect(readFrom)
     expectBlock = Some(createdBlock)
     f
     expectBlock = None
     require(createdBlock.containsWhens(), "Expect block cannot be empty.")
   }
   def expect(pattern: String)(f: => Unit): Unit = expect { when(pattern)(f) }
+  def expect(pattern: String, readFrom: FromInputStream)(f: => Unit): Unit = expect { when(pattern, readFrom)(f) }
   def expect(pattern: Regex)(f: => Unit): Unit = expect { when(pattern)(f) }
+  def expect(pattern: Regex, readFrom: FromInputStream)(f: => Unit): Unit = expect { when(pattern, readFrom)(f) }
   def expect(pattern: EndOfFile.type)(f: => Unit): Unit = expect { when(pattern)(f) }
+  def expect(pattern: EndOfFile.type, readFrom: FromInputStream)(f: => Unit): Unit = expect { when(pattern, readFrom)(f) }
   def expect(pattern: Timeout.type)(f: => Unit): Unit = expect { when(pattern)(f) }
   def addExpectBlock(block: Expect[R] => Unit): Unit = block(this)
 
@@ -50,8 +53,11 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
     }
   }
   def when(pattern: String)(f: => Unit): Unit = newWhen(_.when(pattern))(f)
+  def when(pattern: String, readFrom: FromInputStream)(f: => Unit): Unit = newWhen(_.when(pattern, readFrom))(f)
   def when(pattern: Regex)(f: => Unit): Unit = newWhen(_.when(pattern))(f)
+  def when(pattern: Regex, readFrom: FromInputStream)(f: => Unit): Unit = newWhen(_.when(pattern, readFrom))(f)
   def when(pattern: EndOfFile.type)(f: => Unit): Unit = newWhen(_.when(pattern))(f)
+  def when(pattern: EndOfFile.type, readFrom: FromInputStream)(f: => Unit): Unit = newWhen(_.when(pattern, readFrom))(f)
   def when(pattern: Timeout.type)(f: => Unit): Unit = newWhen(_.when(pattern))(f)
   def addWhen(block: Expect[R] => Unit): Unit = block(this)
   def addWhens(block: Expect[R] => Unit): Unit = block(this)

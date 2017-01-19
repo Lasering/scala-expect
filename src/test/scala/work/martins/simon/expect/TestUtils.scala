@@ -14,7 +14,7 @@ trait TestUtils extends ScalaFutures with Matchers { test: AsyncTestSuite =>
   def constructExpect(whens: When[String]*): Expect[String] = constructExpect("", whens:_*)
 
   def testActionsAndResult[R](expect: Expect[R], builder: StringBuilder, expectedResult: R, numberOfAppends: Int = 1): Future[Assertion] = {
-    //Ensure the actions were not executed in the mapping
+    //Ensure the actions were not executed while constructing and transforming the expect
     builder.result() shouldBe empty
     expect.run() map { obtainedResult =>
       //Ensure the actions were executed
@@ -24,7 +24,7 @@ trait TestUtils extends ScalaFutures with Matchers { test: AsyncTestSuite =>
   }
 
   def testActionsAndFailedResult[R](expect: Expect[R], builder: StringBuilder): Future[Assertion] = {
-    //Ensure the actions were not executed in the mapping
+    //Ensure the actions were not executed while constructing and transforming the expect
     builder.result() shouldBe empty
     expect.run().failed map { obtainedResult =>
       //Ensure the actions were executed

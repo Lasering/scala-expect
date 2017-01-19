@@ -1,27 +1,24 @@
 package work.martins.simon.expect.fluent
 
 import scala.util.matching.Regex
-import work.martins.simon.expect.{Timeout, EndOfFile, core}
+
+import work.martins.simon.expect._
 import work.martins.simon.expect.StringUtils._
 
 /**
   * @define type ExpectBlock
   */
-final class ExpectBlock[R](val parent: Expect[R]) extends Whenable[R] {
-  val settings = parent.settings
-
-  protected val whenableParent: Whenable[R] = this
-
-  //We decided to set whenableParent to 'this' to make it obvious that this is the root of all Whenables.
-  protected override val expectableParent: Expectable[R] = parent
+final class ExpectBlock[R](val parent: Expect[R], val readFrom: FromInputStream = StdOut) extends Whenable[R] {
+  protected val whenableParent: ExpectBlock[R] = this
   private var whens = Seq.empty[When[R]]
   protected def newWhen[W <: When[R]](when: W): W = {
     whens :+= when
     when
   }
-  override def when(pattern: String): StringWhen[R] = newWhen(new StringWhen[R](this, pattern))
-  override def when(pattern: Regex): RegexWhen[R] = newWhen(new RegexWhen[R](this, pattern))
-  override def when(pattern: EndOfFile.type): EndOfFileWhen[R] = newWhen(new EndOfFileWhen[R](this))
+  
+  override def when(pattern: String, readFrom: FromInputStream): StringWhen[R] = newWhen(new StringWhen[R](this, pattern, readFrom))
+  override def when(pattern: Regex, readFrom: FromInputStream): RegexWhen[R] = newWhen(new RegexWhen[R](this, pattern, readFrom))
+  override def when(pattern: EndOfFile.type, readFrom: FromInputStream): EndOfFileWhen[R] = newWhen(new EndOfFileWhen[R](this, readFrom))
   override def when(pattern: Timeout.type): TimeoutWhen[R] = newWhen(new TimeoutWhen[R](this))
   override def addWhen[W <: When[R]](f: ExpectBlock[R] => W): W = f(this)
   override def addWhens(f: ExpectBlock[R] => Unit): ExpectBlock[R] = {
