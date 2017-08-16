@@ -1,12 +1,12 @@
 package work.martins.simon.expect.core.actions
 
+import work.martins.simon.expect.StringUtils._
+import work.martins.simon.expect.core.{RunContext, Expect, When}
+
 import scala.language.higherKinds
 
-import work.martins.simon.expect.StringUtils._
-import work.martins.simon.expect.core.{Context, Expect, RichProcess, When}
-
 object Sendln {
-  def apply[R](text: String): Send[R] = new Send(text + System.lineSeparator())
+  def apply[R](text: String, sensitive: Boolean = false): Send[R] = Send(text + System.lineSeparator(), sensitive)
 }
 
 /**
@@ -14,10 +14,10 @@ object Sendln {
   *
   * @param text the text to send.
   */
-final case class Send[R](text: String) extends Action[R, When] {
-  def execute(when: When[R], process: RichProcess, context: Context[R]): Context[R] = {
-    process.print(text)
-    context
+final case class Send[+R](text: String, sensitive: Boolean = false) extends Action[R, When] {
+  def run[RR >: R](when: When[RR], runContext: RunContext[RR]): RunContext[RR] = {
+    runContext.process.write(text)
+    runContext
   }
 
   //These methods just perform a cast because the type argument R is just used here,
@@ -27,7 +27,11 @@ final case class Send[R](text: String) extends Action[R, When] {
   protected[expect] def flatMap[T](f: R => Expect[T]): Action[T, When] = this.asInstanceOf[Send[T]]
   protected[expect] def transform[T](flatMapPF: R =/> Expect[T], mapPF: R =/> T): Action[T, When] = this.asInstanceOf[Send[T]]
 
-  def structurallyEquals[WW[X] <: When[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[Send[R]]
+  def structurallyEquals[RR >: R, WW[X] <: When[X]](other: Action[RR, WW]): Boolean = other.isInstanceOf[Send[RR]]
 
-  override def toString: String = s"Send(${escape(text)})"
+  override def toString: String = if (sensitive) {
+    s"Send(<omitted sensitive output>)"
+  } else {
+    s"Send(${escape(text)})"
+  }
 }

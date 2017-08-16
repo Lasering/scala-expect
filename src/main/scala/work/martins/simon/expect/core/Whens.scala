@@ -9,30 +9,31 @@ import scala.annotation.tailrec
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
-import work.martins.simon.expect.core.Context.{ChangeToNewExpect, Continue, Terminate}
+import work.martins.simon.expect.core.RunContext.{ChangeToNewExpect, Continue, Terminate}
 import work.martins.simon.expect.{FromInputStream, StdOut}
 
 /**
   * @define type `When`
   */
-sealed trait When[R] extends LazyLogging {
+sealed trait When[+R] extends LazyLogging {
   /** The concrete $type type constructor to which the actions will be applied. */
   type This[X] <: When[X]
 
   // Because a core When does not have access to its parent (an ExpectBlock) we cannot implement the same
-  // strategy of the fluent When, which uses by default for the readFrom of its whens the readFrom of its parent.
+  // strategy of the fluent When, which uses by default for the `readFrom` its parent `readFrom`.
   // We could add the parent to the constructor of the when but that would make the core When unusable.
-  /** From which InputStream to read text from. By default StdOut. */
+  /** From which InputStream to read text from. */
   def readFrom: FromInputStream
   
-  /** The actions this $type runs when it matches against the output of the defined InputStream. */
+  /** The actions this $type runs when it matches against the output read from `readFrom` InputStream. */
   def actions: Seq[Action[R, This]]
 
   /**
    * @param output the String to match against.
    * @return whether this $type matches against `output`.
    */
-  def matches(output: String): Boolean = false
+  def matches(output: String): Boolean
+
   /**
    * @param output the output to trim.
    * @return the text in `output` that remains after removing all the text up to and including the first occurrence
@@ -40,32 +41,28 @@ sealed trait When[R] extends LazyLogging {
    */
   def trimToMatchedText(output: String): String = output
 
-  /**
-   * Executes all the actions of this $type.
-   */
-  def execute(process: RichProcess, context: Context[R]): Context[R] = {
+  /** Runs all the actions of this $type. */
+  def run[RR >: R](runContext: RunContext[RR]): RunContext[RR] = {
     @tailrec
-    def executeInner(actions: Seq[Action[R, This]], innerContext: Context[R]): Context[R] = {
+    def runInner(actions: Seq[Action[RR, This]], innerRunContext: RunContext[RR]): RunContext[RR] = {
       actions.headOption match {
         case Some(action) =>
-          val ir = action.execute(this.asInstanceOf[This[R]], process, innerContext)
-          ir.executionAction match {
+          val newRunContext = action.run(this.asInstanceOf[This[RR]], innerRunContext)
+          newRunContext.executionAction match {
             case Continue =>
-              //Continue with the remaining actions
-              executeInner(actions.tail, ir)
+              runInner(actions.tail, newRunContext)
             case Terminate | ChangeToNewExpect(_) =>
-              //We just return ir because we want do a preemptive exit
-              //ie, ensure anything after this action does not get executed)
-              ir
+              // We just return the new run context to do a preemptive exit, ie, ensure
+              // anything after this action does not get executed
+              newRunContext
           }
         case None =>
-          //No more actions. We just return the current intermediateResult
-          innerContext
+          // No more actions. We just return the current RunContext
+          innerRunContext
       }
     }
 
-    val finalResult = executeInner(actions, context)
-    finalResult.withOutput(trimToMatchedText)
+    runInner(actions, runContext).withOutput(trimToMatchedText)
   }
 
   private[core] def map[T](f: R => T): This[T] = withActions(actions.map(_.map(f)))
@@ -84,14 +81,16 @@ sealed trait When[R] extends LazyLogging {
     *
     * @param other the other $type to compare this $type to.
     */
-  def structurallyEquals(other: When[R]): Boolean = {
+  def structurallyEquals[RR >: R](other: When[RR]): Boolean = {
     actions.size == other.actions.size && actions.zip(other.actions).forall { case (a, b) => a.structurallyEquals(b) } &&
     readFrom == other.readFrom
   }
 
+  /** Textual representation of the pattern this $type will match against. */
   def patternString: String
+  
   override def toString: String =
-    s"""when($patternString) {
+    s"""when($patternString, readFrom = $readFrom) {
        |${actions.mkString("\n").indent()}
        |}""".stripMargin
 }
@@ -106,7 +105,7 @@ case class StringWhen[R](pattern: String, readFrom: FromInputStream = StdOut)(va
 
   def withActions[T](actions: Seq[Action[T, This]]): StringWhen[T] = StringWhen(pattern, readFrom)(actions:_*)
 
-  override def structurallyEquals(other: When[R]): Boolean = other match {
+  override def structurallyEquals[RR >: R](other: When[RR]): Boolean = other match {
     case that: StringWhen[R] => super.structurallyEquals(other) && pattern == that.pattern
     case _ => false
   }
@@ -133,7 +132,7 @@ case class RegexWhen[R](pattern: Regex, readFrom: FromInputStream = StdOut)(val 
 
   def withActions[T](actions: Seq[Action[T, This]]): RegexWhen[T] = RegexWhen(pattern, readFrom)(actions:_*)
   
-  override def structurallyEquals(other: When[R]): Boolean = other match {
+  override def structurallyEquals[RR >: R](other: When[RR]): Boolean = other match {
     case that: RegexWhen[R] => super.structurallyEquals(other) && pattern.regex == that.pattern.regex
     case _ => false
   }
@@ -176,9 +175,11 @@ case class RegexWhen[R](pattern: Regex, readFrom: FromInputStream = StdOut)(val 
 case class EndOfFileWhen[R](readFrom: FromInputStream = StdOut)(val actions: Action[R, EndOfFileWhen]*) extends When[R] {
   final type This[X] = EndOfFileWhen[X]
 
+  override def matches(output: String) = false
+
   def withActions[T](actions: Seq[Action[T, This]]): EndOfFileWhen[T] = EndOfFileWhen(readFrom)(actions:_*)
   
-  override def structurallyEquals(other: When[R]): Boolean = other match {
+  override def structurallyEquals[RR >: R](other: When[RR]): Boolean = other match {
     case _: EndOfFileWhen[R] => super.structurallyEquals(other)
     case _ => false
   }
@@ -187,14 +188,16 @@ case class EndOfFileWhen[R](readFrom: FromInputStream = StdOut)(val actions: Act
 }
 case class TimeoutWhen[R]()(val actions: Action[R, TimeoutWhen]*) extends When[R] {
   final type This[X] = TimeoutWhen[X]
-  
+
+  override def matches(output: String) = false
+
   // The readFrom of a TimeoutWhen is not used but to keep the implementation simple we also include it
   // and set its value to StdOut, which is of no consequence since its not used.
   final def readFrom: FromInputStream = StdOut
   
   def withActions[T](actions: Seq[Action[T, This]]): TimeoutWhen[T] = TimeoutWhen()(actions:_*)
   
-  override def structurallyEquals(other: When[R]): Boolean = other match {
+  override def structurallyEquals[RR >: R](other: When[RR]): Boolean = other match {
     case _: TimeoutWhen[R] => super.structurallyEquals(other)
     case _ => false
   }

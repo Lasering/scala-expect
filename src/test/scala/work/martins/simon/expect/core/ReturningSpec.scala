@@ -27,7 +27,7 @@ class ReturningSpec extends AsyncFlatSpec with TestUtils with BeforeAndAfterEach
         "c"
       }
     ))
-    testActionsAndResult(expect, builder, "b", numberOfAppends = 2)
+    testActionsAndResult(expect, builder, expectedResult = "b", numberOfAppends = 2)
   }
 
   it should "be able to interact with the spawned program" in {

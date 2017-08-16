@@ -9,13 +9,13 @@ import work.martins.simon.expect.{FromInputStream, Settings, StdOut, core}
   */
 class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings()) extends Expectable[R] {
   def this(command: Seq[String], defaultValue: R, config: Config) = {
-    this(command, defaultValue, new Settings(config))
+    this(command, defaultValue, Settings.fromConfig(config))
   }
   def this(command: String, defaultValue: R, settings: Settings) = {
     this(splitBySpaces(command), defaultValue, settings)
   }
   def this(command: String, defaultValue: R, config: Config) = {
-    this(command, defaultValue, new Settings(config))
+    this(command, defaultValue, Settings.fromConfig(config))
   }
   def this(command: String, defaultValue: R) = {
     this(command, defaultValue, new Settings())

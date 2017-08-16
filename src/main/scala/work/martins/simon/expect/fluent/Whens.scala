@@ -36,14 +36,14 @@ sealed trait When[R] extends Whenable[R] {
     *
     * @return this When.
     */
-  def send(text: String): This[R] = newAction(Send(text))
+  def send(text: String, sensitive: Boolean = false): This[R] = newAction(Send(text, sensitive))
   /**
    * Sends `text` terminated with `System.lineSeparator()` to the stdIn of the underlying process.
    * Send will only occur when Expect is run.
     *
     * @return this When.
    */
-  def sendln(text: String): This[R] = newAction(Sendln(text))
+  def sendln(text: String, sensitive: Boolean = false): This[R] = newAction(Sendln(text, sensitive))
   /**
    * Returns `result` when this Expect is run.
    * If this method is invoked more than once only the last `result` will be returned.
@@ -105,7 +105,7 @@ sealed trait When[R] extends Whenable[R] {
   def toCore: CW[R]
 
   def toString(pattern: String): String =
-    s"""when($pattern) {
+    s"""when($pattern, readFrom = $readFrom) {
        |${actions.mkString("\n").indent()}
        |}""".stripMargin
 }

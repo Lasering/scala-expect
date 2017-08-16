@@ -3,10 +3,10 @@ package work.martins.simon.expect.core.actions
 import scala.language.higherKinds
 import scala.util.matching.Regex.Match
 
-import work.martins.simon.expect.core.Context.ChangeToNewExpect
+import work.martins.simon.expect.core.RunContext.ChangeToNewExpect
 import work.martins.simon.expect.core.{RegexWhen, _}
 
-sealed trait AbstractReturningWithRegex[WR] extends Action[WR, RegexWhen] {
+sealed trait AbstractReturningWithRegex[+WR] extends Action[WR, RegexWhen] {
   protected[expect] override def map[T](f: WR => T): AbstractReturningWithRegex[T]
   protected[expect] override def flatMap[T](f: WR => Expect[T]): AbstractReturningWithRegex[T]
   protected[expect] override def transform[T](flatMapPF: WR =/> Expect[T], mapPF: WR =/> T): AbstractReturningWithRegex[T]
@@ -18,10 +18,10 @@ sealed trait AbstractReturningWithRegex[WR] extends Action[WR, RegexWhen] {
   * $regexWhen
   * $moreThanOne
   */
-case class ReturningWithRegex[R](result: Match => R) extends AbstractReturningWithRegex[R] {
-  def execute(when: RegexWhen[R], process: RichProcess, context: Context[R]): Context[R] = {
-    val regexMatch = when.regexMatch(context.output)
-    context.copy(value = result(regexMatch))
+case class ReturningWithRegex[+R](result: Match => R) extends AbstractReturningWithRegex[R] {
+  def run[RR >: R](when: RegexWhen[RR], runContext: RunContext[RR]): RunContext[RR] = {
+    val regexMatch = when.regexMatch(runContext.output)
+    runContext.copy(value = result(regexMatch))
   }
 
   protected[expect] def map[T](f: R => T): AbstractReturningWithRegex[T] = {
@@ -37,12 +37,12 @@ case class ReturningWithRegex[R](result: Match => R) extends AbstractReturningWi
       //And another when the action returned by the ActionReturningAction is ran
       case r if flatMapPF.isDefinedAt(r) => ReturningExpectWithRegex(_ => flatMapPF(r))
       case r if mapPF.isDefinedAt(r) => this.copy(_ => mapPF(r))
-      case r => pfNotDefined[AbstractReturningWithRegex[T]](r)
+      case r => pfNotDefined[R, AbstractReturningWithRegex[T]](r)
     }
     ActionReturningActionWithRegex(this, computeAction)
   }
 
-  def structurallyEquals[WW[X] <: RegexWhen[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[ReturningWithRegex[R]]
+  def structurallyEquals[RR >: R, WW[X] <: RegexWhen[X]](other: Action[RR, WW]): Boolean = other.isInstanceOf[ReturningWithRegex[RR]]
 }
 
 /**
@@ -61,11 +61,11 @@ case class ReturningWithRegex[R](result: Match => R) extends AbstractReturningWi
   * $regexWhen
   * Any action or expect block added after this will not be executed.
   */
-case class ReturningExpectWithRegex[R](result: Match => Expect[R]) extends AbstractReturningWithRegex[R] {
-  def execute(when: RegexWhen[R], process: RichProcess, context: Context[R]): Context[R] = {
-    val regexMatch = when.regexMatch(context.output)
+case class ReturningExpectWithRegex[+R](result: Match => Expect[R]) extends AbstractReturningWithRegex[R] {
+  def run[RR >: R](when: RegexWhen[RR], runContext: RunContext[RR]): RunContext[RR] = {
+    val regexMatch = when.regexMatch(runContext.output)
     val expect = result(regexMatch)
-    context.copy(executionAction = ChangeToNewExpect(expect))
+    runContext.copy(executionAction = ChangeToNewExpect(expect))
   }
 
   protected[expect] def map[T](f: R => T): AbstractReturningWithRegex[T] = {
@@ -78,16 +78,16 @@ case class ReturningExpectWithRegex[R](result: Match => Expect[R]) extends Abstr
     this.copy(result.andThen(_.transform(flatMapPF, mapPF)))
   }
 
-  def structurallyEquals[WW[X] <: RegexWhen[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[ReturningExpectWithRegex[R]]
+  def structurallyEquals[RR >: R, WW[X] <: RegexWhen[X]](other: Action[RR, WW]): Boolean = other.isInstanceOf[ReturningExpectWithRegex[RR]]
 }
 
-case class ActionReturningActionWithRegex[R, T](parent: ReturningWithRegex[R], resultAction: R => AbstractReturningWithRegex[T])
+case class ActionReturningActionWithRegex[R, +T](parent: ReturningWithRegex[R], resultAction: R => AbstractReturningWithRegex[T])
   extends AbstractReturningWithRegex[T] {
 
-  def execute(when: RegexWhen[T], process: RichProcess, context: Context[T]): Context[T] = {
-    val regexMatch = when.regexMatch(context.stdOutOutput)
+  def run[TT >: T](when: RegexWhen[TT], runContext: RunContext[TT]): RunContext[TT] = {
+    val regexMatch = when.regexMatch(runContext.stdOutOutput)
     val parentResult: R = parent.result(regexMatch)
-    resultAction(parentResult).execute(when, process, context)
+    resultAction(parentResult).run(when, runContext)
   }
 
   protected[expect] def map[U](f: T => U): AbstractReturningWithRegex[U] = {
@@ -100,5 +100,5 @@ case class ActionReturningActionWithRegex[R, T](parent: ReturningWithRegex[R], r
     this.copy(parent, resultAction.andThen(_.transform(flatMapPF, mapPF)))
   }
 
-  def structurallyEquals[WW[X] <: RegexWhen[X]](other: Action[T, WW]): Boolean = other.isInstanceOf[ActionReturningActionWithRegex[R, T]]
+  def structurallyEquals[TT >: T, WW[X] <: RegexWhen[X]](other: Action[TT, WW]): Boolean = other.isInstanceOf[ActionReturningActionWithRegex[R, TT]]
 }

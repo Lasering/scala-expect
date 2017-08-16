@@ -3,6 +3,7 @@ package work.martins.simon.expect
 import org.scalatest.{FlatSpec, Matchers}
 import work.martins.simon.expect.StringUtils._
 import work.martins.simon.expect.core._
+import work.martins.simon.expect.core.actions.Send
 import work.martins.simon.expect.fluent.{Expect, ExpectBlock, When}
 
 import scala.collection.immutable.HashSet
@@ -12,6 +13,7 @@ class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
   def addSendAndExit[R](when: When[R]): Unit = {
     when
       .send("text")
+      .send("a password", sensitive = true)
       .exit()
   }
   def addBlock(e: fluent.Expect[String]): Unit = {
@@ -32,7 +34,6 @@ class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
     core.ExpectBlock(StringWhen("1")()),
     new ExpectBlock(new Expect("ls", "")),
 
-    new Settings(), //To test equals returns false on Settings
     new Expect("ls", ""),
     new Expect("ls", "") {
       expect("1")
@@ -126,7 +127,7 @@ class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
 
       val settings = expect.settings
       val settingsToString = settings.toString
-      settingsToString should include ("settings")
+      settingsToString should include ("Settings")
       settingsToString should include (settings.timeout.toString)
       settingsToString should include (settings.charset.toString)
       settingsToString should include (settings.redirectStdErrToStdOut.toString)
@@ -152,6 +153,11 @@ class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
           for (action <- when.actions) {
             whenToString should include (action.toString)
             action.toString should include (action.getClass.getSimpleName)
+            action match {
+              case Send(_, true) => action.toString should include ("omitted sensitive output")
+              case Send(text, false) => action.toString should include (text)
+              case _ =>
+            }
           }
         }
       }

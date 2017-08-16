@@ -2,16 +2,22 @@ package work.martins.simon.expect.core.actions
 
 import scala.language.higherKinds
 
-import work.martins.simon.expect.core.Context.ChangeToNewExpect
+import work.martins.simon.expect.core.RunContext.ChangeToNewExpect
 import work.martins.simon.expect.core._
 
-sealed trait AbstractReturning[WR] extends Action[WR, When] {
+sealed trait AbstractReturning[+WR] extends Action[WR, When] {
   protected[expect] override def map[T](f: WR => T): AbstractReturning[T]
   protected[expect] override def flatMap[T](f: WR => Expect[T]): AbstractReturning[T]
   protected[expect] override def transform[T](flatMapPF: WR =/> Expect[T], mapPF: WR =/> T): AbstractReturning[T]
 }
 
+// Returning cannot be declared:
+//   case class Returning(result: => R) extends AbstractReturning[R]
+// because `val' parameters may not be call-by-name. To solve this problem we declared Returning with result
+// type as Unit => R. This implies we do not need to implement the sensitive flag like in Send.
+
 object Returning {
+  // => R and () => R have the same type after erasure: Function0. Which means this apply cannot be declared
   //def apply[R](result: () => R): Returning[R] = new Returning((u: Unit) => result())
   def apply[R](result: => R): Returning[R] = new Returning(_ => result)
 }
@@ -19,9 +25,9 @@ object Returning {
   * $returningAction
   * $moreThanOne
   **/
-case class Returning[R](result: Unit => R) extends AbstractReturning[R] {
-  def execute(when: When[R], process: RichProcess, context: Context[R]): Context[R] = {
-    context.copy(value = result(()))
+case class Returning[+R](result: Unit => R) extends AbstractReturning[R] {
+  def run[RR >: R](when: When[RR], runContext: RunContext[RR]): RunContext[RR] = {
+    runContext.copy(value = result(()))
   }
 
   protected[expect] def map[T](f: R => T): AbstractReturning[T] = {
@@ -37,12 +43,12 @@ case class Returning[R](result: Unit => R) extends AbstractReturning[R] {
       //   · and another when the action returned by the ActionReturningAction is ran
       case r if flatMapPF.isDefinedAt(r) => ReturningExpect(_ => flatMapPF(r))
       case r if mapPF.isDefinedAt(r) => this.copy(_ => mapPF(r))
-      case r => pfNotDefined[AbstractReturning[T]](r)
+      case r => pfNotDefined[R, AbstractReturning[T]](r)
     }
     ActionReturningAction(this, computeAction)
   }
 
-  def structurallyEquals[WW[X] <: When[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[Returning[R]]
+  def structurallyEquals[RR >: R, WW[X] <: When[X]](other: Action[RR, WW]): Boolean = other.isInstanceOf[Returning[RR]]
 }
 
 
@@ -64,10 +70,10 @@ object ReturningExpect {
   *
   * Any action or expect block added after this will not be executed.
   */
-case class ReturningExpect[R](result: Unit => Expect[R]) extends AbstractReturning[R] {
-  def execute(when: When[R], process: RichProcess, context: Context[R]): Context[R] = {
+case class ReturningExpect[+R](result: Unit => Expect[R]) extends AbstractReturning[R] {
+  def run[RR >: R](when: When[RR], runContext: RunContext[RR]): RunContext[RR] = {
     val newExpect = result(())
-    context.copy(executionAction = ChangeToNewExpect(newExpect))
+    runContext.copy(executionAction = ChangeToNewExpect(newExpect))
   }
 
   protected[expect] def map[T](f: R => T): AbstractReturning[T] = {
@@ -80,13 +86,13 @@ case class ReturningExpect[R](result: Unit => Expect[R]) extends AbstractReturni
     this.copy(result.andThen(_.transform(flatMapPF, mapPF)))
   }
 
-  def structurallyEquals[WW[X] <: When[X]](other: Action[R, WW]): Boolean = this.isInstanceOf[ReturningExpect[R]]
+  def structurallyEquals[RR >: R, WW[X] <: When[X]](other: Action[RR, WW]): Boolean = this.isInstanceOf[ReturningExpect[RR]]
 }
 
-case class ActionReturningAction[R, T](parent: Returning[R], resultAction: R => AbstractReturning[T]) extends AbstractReturning[T] {
-  def execute(when: When[T], process: RichProcess, context: Context[T]): Context[T] = {
+case class ActionReturningAction[R, +T](parent: Returning[R], resultAction: R => AbstractReturning[T]) extends AbstractReturning[T] {
+  def run[TT >: T](when: When[TT], runContext: RunContext[TT]): RunContext[TT] = {
     val parentResult: R = parent.result(())
-    resultAction(parentResult).execute(when, process, context)
+    resultAction(parentResult).run(when, runContext)
   }
 
   protected[expect] def map[U](f: T => U): AbstractReturning[U] = {
@@ -99,5 +105,5 @@ case class ActionReturningAction[R, T](parent: Returning[R], resultAction: R => 
     this.copy(parent, resultAction.andThen(_.transform(flatMapPF, mapPF)))
   }
 
-  def structurallyEquals[WW[X] <: When[X]](other: Action[T, WW]): Boolean = other.isInstanceOf[ActionReturningAction[R, T]]
+  def structurallyEquals[TT >: T, WW[X] <: When[X]](other: Action[TT, WW]): Boolean = other.isInstanceOf[ActionReturningAction[R, TT]]
 }

@@ -46,12 +46,9 @@ class MapFlatmapTransformSpec extends AsyncWordSpec with BeforeAndAfterEach with
           Returning(returnedResults(4)),
           //These two actions serve two purposes:
           // · Testing map, flatMap and transform for Send and Exit.
-          // · Cause the RichProcess reader thread to be interrupted:
-          //     We are writing a string bigger than the buffer size of the expect,
-          //     then right away we close the program. The reader thread should still be reading the output
-          //     when we close it, so it should be interrupted.
+          // · Sending a very big string hopefully bigger than the RichProcess' buffer is capable of handling.
           Send {
-            val array = Array.ofDim[Byte](2048)
+            val array = Array.ofDim[Byte](1024*1024)
             Random.nextBytes(array)
             array.map(_.toInt).mkString(" + ")
           },
@@ -95,19 +92,17 @@ class MapFlatmapTransformSpec extends AsyncWordSpec with BeforeAndAfterEach with
       }
       "transformed" should {
         "throw a NoSuchElementException if the transform function if not defined for some result (in map)" in {
-          val transformedExpect1 = expect.transform({
-            case expect.defaultValue => flatMap(expect.defaultValue)
-          }, {
+          val transformedExpect1 = expect.transform(
+            { case expect.defaultValue => flatMap(expect.defaultValue) },
             PartialFunction.empty[Int, String]
-          })
+          )
           testActionsAndFailedResult(transformedExpect1, builder)
         }
         "throw a NoSuchElementException if the transform function if not defined for some result (in flatMap)" in {
-          val transformedExpect2 = expect.transform({
-            PartialFunction.empty[Int, Expect[String]]
-          }, {
-            case expect.defaultValue => mapFunction(expect.defaultValue).mkString
-          })
+          val transformedExpect2 = expect.transform(
+            PartialFunction.empty[Int, Expect[String]],
+            { case expect.defaultValue => mapFunction(expect.defaultValue).mkString }
+          )
           testActionsAndFailedResult(transformedExpect2, builder)
         }
   

@@ -15,7 +15,7 @@ class EmptySpec extends AsyncFlatSpec with Matchers with TestUtils {
 
   "An Expect with a command not available in the system" should "throw IOException" in {
     assertThrows[IOException] {
-      new Expect("ã", defaultValue = ())().run()
+      new Expect("存在しない", defaultValue = ())().run()
     }
   }
 
@@ -49,7 +49,7 @@ class EmptySpec extends AsyncFlatSpec with Matchers with TestUtils {
       case _ => None
     })
     e2.run() map {
-      _ should not be None
+      _ shouldBe Some("some")
     }
   }
   it should "transform just the default value (map)" in {
@@ -62,23 +62,24 @@ class EmptySpec extends AsyncFlatSpec with Matchers with TestUtils {
       case _ => defaultValue.split(" ").headOption
     })
     e2.run() map {
-      _ should not be None
+      _ shouldBe Some("some")
     }
   }
 
   "Transforming when the defaultValue is not in domain" should "throw a NoSuchElementException" in {
     val e = new Expect("ls", "some nice default value")()
-    val thrown = the [NoSuchElementException] thrownBy e.transform({
-      PartialFunction.empty[String, Expect[String]]
-    }, {
+    val thrown = the [NoSuchElementException] thrownBy e.transform(
+      PartialFunction.empty[String, Expect[String]],
       PartialFunction.empty[String, String]
-    })
+    )
     thrown.getMessage should include ("default value")
   }
 
   "An Expect with an empty expect block" should "fail with IllegalArgumentException" in {
     assertThrows[IllegalArgumentException] {
-      new Expect("ls", defaultValue = ())(ExpectBlock())
+      new Expect("ls", defaultValue = ())(
+        ExpectBlock()
+      )
     }
   }
 
@@ -86,7 +87,9 @@ class EmptySpec extends AsyncFlatSpec with Matchers with TestUtils {
     val defaultValue = "some nice default value"
     val e = new Expect(Seq("echo", "ola"), defaultValue, ConfigFactory.load())(
       ExpectBlock(
-        StringWhen("ola")()
+        StringWhen("ola")(
+          //Purposefully left empty
+        )
       )
     )
     e.run() map {

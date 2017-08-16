@@ -2,48 +2,76 @@ package work.martins.simon.expect.core
 
 import java.io.{EOFException, IOException}
 import java.nio.ByteBuffer
-import java.nio.charset.Charset
-import java.util.concurrent.{BlockingDeque, LinkedBlockingDeque, TimeUnit, TimeoutException}
-
-import scala.concurrent.blocking
-import scala.concurrent.duration.FiniteDuration
+import java.util.concurrent.{BlockingDeque, LinkedBlockingDeque, TimeUnit}
 
 import com.typesafe.scalalogging.LazyLogging
 import com.zaxxer.nuprocess.{NuAbstractProcessHandler, NuProcess, NuProcessBuilder}
 import work.martins.simon.expect.{FromInputStream, Settings, StdErr, StdOut}
 
-object RichProcess {
-  def apply(command: Seq[String], settings: Settings): RichProcess = {
-    new RichProcess(command, settings.timeout, settings.charset, settings.redirectStdErrToStdOut)
-  }
-  def apply(command: Seq[String], timeout: FiniteDuration, charset: Charset, redirectStdErrToStdOut: Boolean): RichProcess = {
-    new RichProcess(command, timeout, charset, redirectStdErrToStdOut)
-  }
+import scala.concurrent.duration.Deadline
+import scala.concurrent.{TimeoutException, blocking}
+import scala.collection.JavaConverters._
+
+trait RichProcess {
+  val command: Seq[String]
+  val settings: Settings
+
+  /**
+    * Tries to read from the selected InputStream of the process.
+    * If no bytes are read within `timeout` a `TimeoutException` will be thrown.
+    * If the end of file is reached an `EOFException` is thrown.
+    * Otherwise, a String encoded with `settings.charset` is created from the read bytes.
+    *
+    * This method may block up until the deadline expires.
+    *
+    * @return a String created from the read bytes encoded with `charset`.
+    */
+  def read(from: FromInputStream = StdOut)(implicit deadline: Deadline): String
+  /**
+    * Tries to read from `StdOut` or `StdErr` of the process, whichever has output to offer first.
+    * If no bytes are read within `timeout` a `TimeoutException` will be thrown.
+    * If the end of file is reached an `EOFException` is thrown.
+    * Otherwise, a String encoded with `settings.charset` is created from the read bytes.
+    *
+    * This method may block up until the deadline expires.
+    *
+    * @return from which `InputStream` the output read from, and a String created from the read bytes encoded with `charset`.
+    */
+  def readOnFirstInputStream()(implicit deadline: Deadline): (FromInputStream, String)
+
+  /**
+    * Writes to the `StdIn` of the process the bytes obtained from decoding `text` using `settings.charset`.
+    * @param text the text to write to the `OutputStream`.
+    */
+  def write(text: String): Unit
+
+  /** Destroys the process if it's still alive. */
+  def destroy(): Unit
+
+  def withCommand(command: Seq[String] = this.command): RichProcess
 }
 
-/**
-  * Launches a `java.lang.Process` with methods to read and print from its stdout and stdin respectively.
-  *
-  * @param command the command to launch and its arguments.
-  * @param timeout how much time to wait when performing a read.
-  * @param charset the charset used for encoding and decoding the Strings.
-  */
-class RichProcess(val command: Seq[String], val timeout: FiniteDuration, val charset: Charset, val redirectStdErrToStdOut: Boolean) {
+case class NuProcessRichProcess(command: Seq[String], settings: Settings) extends RichProcess with LazyLogging {
   protected val stdInQueue = new LinkedBlockingDeque[String]()
   protected val stdOutQueue = new LinkedBlockingDeque[Either[EOFException, String]]()
   protected val stdErrQueue = new LinkedBlockingDeque[Either[EOFException, String]]()
-  
+  protected val readAvailableOnInputStream = new LinkedBlockingDeque[FromInputStream]()
+
   protected val handler = new ProcessHandler()
   val process: NuProcess = new NuProcessBuilder(handler, command:_*).start()
-  if (handler.failedAtStart) throw new IOException()
-  
+
+  // See https://github.com/brettwooldridge/NuProcess/issues/67 as to why this code exists
+  if (!handler.startedNormally) throw new IOException()
+
   class ProcessHandler extends NuAbstractProcessHandler with LazyLogging {
     var nuProcess: NuProcess = _
-  
+    var startedNormally = false
+
     override def onStart(nuProcess: NuProcess): Unit = {
       this.nuProcess = nuProcess
+      startedNormally = true
     }
-  
+
     private var unwrittenBytes = Array.emptyByteArray
     override def onStdinReady(buffer: ByteBuffer): Boolean = {
       if (unwrittenBytes.length > 0) {
@@ -54,7 +82,7 @@ class RichProcess(val command: Seq[String], val timeout: FiniteDuration, val cha
         // process.wantWrite() is invoked. And wantWrite is only invoked inside the method print which:
         //  · First puts a string to the stdInQueue
         //  · Then invokes wantWrite.
-        write(buffer, stdInQueue.remove().getBytes(charset))
+        write(buffer, stdInQueue.remove().getBytes(settings.charset))
       }
     }
     private def write(buffer: ByteBuffer, bytes: Array[Byte]): Boolean = {
@@ -71,90 +99,75 @@ class RichProcess(val command: Seq[String], val timeout: FiniteDuration, val cha
         true
       }
     }
-    
+
     override def onStdout(buffer: ByteBuffer, closed: Boolean): Unit = {
-      read(buffer, closed, queueOf(StdOut))
+      read(buffer, closed, StdOut)
     }
     override def onStderr(buffer: ByteBuffer, closed: Boolean): Unit = {
-      read(buffer, closed, queueOf(StdErr))
+      read(buffer, closed, StdErr)
     }
-    private def read(buffer: ByteBuffer, closed: Boolean, toQueue: BlockingDeque[Either[EOFException, String]]): Unit = {
+    private def read(buffer: ByteBuffer, closed: Boolean, readFrom: FromInputStream): Unit = {
+      val toQueue = queueOf(readFrom)
+
+      readAvailableOnInputStream.put(readFrom)
+      logger.trace(s"Read available on $readFrom. ReadAvailableOnInputStream: ${readAvailableOnInputStream.asScala.mkString(", ")}")
+
       if (closed) {
         toQueue.put(Left(new EOFException()))
       } else if (buffer.hasRemaining) {
         val bytes = Array.ofDim[Byte](buffer.remaining())
         buffer.get(bytes)
-        toQueue.put(Right(new String(bytes, charset)))
-      }
-    }
-  
-    var failedAtStart = false
-    override def onExit(statusCode: Int): Unit = {
-      if (Option(nuProcess).isEmpty) {
-        // We do not have an nuProcess but the process already terminated signalling there has some kind of
-        // problem starting the process (eg. command not found)
-        // See https://github.com/brettwooldridge/NuProcess/issues/67 as to why we implemented this in this horrific way
-        failedAtStart = true
+        toQueue.put(Right(new String(bytes, settings.charset)))
       }
     }
   }
-  
-  protected var deadline = timeout.fromNow
-  
-  /**
-    * Resets the underlying deadline used when performing a `read`.
-    * The new deadline is `timeout.fromNow`.
-    */
-  def resetDeadline(): Unit = deadline = timeout.fromNow
 
   /**
-    * @return whether the current deadline has any time left.
+    * The corresponding queue for `from`. In the case the `StdErr` is being redirected to `StdOut`
+    * this method will always return the queue of `StdOut`.
+    * @param from which InputStream to get the queue of.
     */
-  def deadLineHasTimeLeft(): Boolean = deadline.hasTimeLeft()
-  
-  /**
-    * Tries to read from the selected InputStream of the process.
-    * If no bytes are read within `timeout` a `TimeoutException` will be thrown.
-    * If the end of file is reached an `EOFException` is thrown.
-    * Otherwise, a String encoded with `charset` is created from the read bytes.
-    * This method awaits for the result of a future, aka, is blocking.
-    *
-    * @return a String created from the read bytes encoded with `charset`.
-    */
-  def read(from: FromInputStream = StdOut): String = {
-    val data = blocking {
-      queueOf(from).pollFirst(deadline.timeLeft.toMillis, TimeUnit.MILLISECONDS)
-    }
-    Option(data) match {
-      case None => throw new TimeoutException
-      case Some(Left(eof)) => throw eof
-      case Some(Right(s)) => s
-    }
-  }
-
   def queueOf(from: FromInputStream = StdOut): BlockingDeque[Either[EOFException, String]] = from match {
-    case StdErr if !redirectStdErrToStdOut => stdErrQueue
+    case StdErr if !settings.redirectStdErrToStdOut => stdErrQueue
     case _ => stdOutQueue
   }
-  
-  /**
-    * Writes to the underlying `OutputStream` the bytes obtained from decoding `text` using `charset`.
-    * Followed by a flush of the `OutputStream`.
-    *
-    * @param text the text to write to the `OutputStream`.
-    */
-  def print(text: String): Unit = {
+
+  /** @inheritdoc */
+  def read(from: FromInputStream = StdOut)(implicit deadline: Deadline): String = {
+    Option(blocking {
+      queueOf(from).pollFirst(deadline.timeLeft.toMillis, TimeUnit.MILLISECONDS)
+    }).map { result =>
+      val from = readAvailableOnInputStream.take()
+      logger.trace(s"Took read available $from. ReadAvailableOnInputStream: ${readAvailableOnInputStream.asScala.mkString(", ")}")
+
+      result.fold(throw _, identity)
+    }.getOrElse(throw new TimeoutException())
+  }
+  /** @inheritdoc */
+  def readOnFirstInputStream()(implicit deadline: Deadline): (FromInputStream, String) = {
+    Option(blocking {
+      readAvailableOnInputStream.pollFirst(deadline.timeLeft.toMillis, TimeUnit.MILLISECONDS)
+    }).flatMap { from =>
+      logger.trace(s"Took read available $from. ReadAvailableOnInputStream: ${readAvailableOnInputStream.asScala.mkString(", ")}")
+      Option(blocking {
+        queueOf(from).pollFirst(deadline.timeLeft.toMillis, TimeUnit.MILLISECONDS)
+      }).map { result =>
+        result.fold(throw _, (from, _))
+      }
+    }.getOrElse(throw new TimeoutException())
+  }
+
+  /** @inheritdoc */
+  def write(text: String): Unit = {
     stdInQueue.put(text)
     process.wantWrite()
   }
 
-  /**
-    * If the underlying process is still alive it's destroy method is invoked and
-    * the input and output streams are closed.
-    */
-  def destroy(): Unit = if (process.isRunning) process.destroy(true)
-
-  def withCommand(newCommand: Seq[String]): RichProcess = {
-    new RichProcess(newCommand, timeout, charset, redirectStdErrToStdOut)
+  /** @inheritdoc */
+  def destroy(): Unit = if (process.isRunning) {
+    // NuProcess already closes the streams for us.
+    process.destroy(true)
   }
+
+  def withCommand(command: Seq[String] = this.command): RichProcess = this.copy(command = command)
 }

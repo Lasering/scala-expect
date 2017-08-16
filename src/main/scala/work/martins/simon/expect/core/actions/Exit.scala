@@ -2,7 +2,7 @@ package work.martins.simon.expect.core.actions
 
 import scala.language.higherKinds
 
-import work.martins.simon.expect.core.Context.Terminate
+import work.martins.simon.expect.core.RunContext.Terminate
 import work.martins.simon.expect.core._
 
 /**
@@ -11,9 +11,9 @@ import work.martins.simon.expect.core._
   *
   * Any action or expect block added after this will not be executed.
   */
-final case class Exit[R]() extends Action[R, When] {
-  def execute(when: When[R], process: RichProcess, context: Context[R]): Context[R] = {
-    context.copy(executionAction = Terminate)
+final case class Exit[+R]() extends Action[R, When] {
+  def run[RR >: R](when: When[RR], runContext: RunContext[RR]): RunContext[RR] = {
+    runContext.copy(executionAction = Terminate)
   }
 
   //These methods just perform a cast because the type argument R is just used here,
@@ -23,5 +23,5 @@ final case class Exit[R]() extends Action[R, When] {
   protected[expect] def flatMap[T](f: R => Expect[T]): Action[T, When] = this.asInstanceOf[Exit[T]]
   protected[expect] def transform[T](flatMapPF: R =/> Expect[T], mapPF: R =/> T): Action[T, When] = this.asInstanceOf[Exit[T]]
 
-  def structurallyEquals[WW[X] <: When[X]](other: Action[R, WW]): Boolean = other.isInstanceOf[Exit[R]]
+  def structurallyEquals[RR >: R, WW[X] <: When[X]](other: Action[RR, WW]): Boolean = other.isInstanceOf[Exit[RR]]
 }

@@ -8,13 +8,13 @@ import scala.util.matching.Regex.Match
 
 class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings()) {
   def this(command: Seq[String], defaultValue: R, config: Config) = {
-    this(command, defaultValue, new Settings(config))
+    this(command, defaultValue, Settings.fromConfig(config))
   }
   def this(command: String, defaultValue: R, settings: Settings) = {
     this(splitBySpaces(command), defaultValue, settings)
   }
   def this(command: String, defaultValue: R, config: Config) = {
-    this(command, defaultValue, new Settings(config))
+    this(command, defaultValue, Settings.fromConfig(config))
   }
   def this(command: String, defaultValue: R) = {
     this(command, defaultValue, new Settings())
@@ -76,9 +76,9 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
       block(w)
     }
   }
-  def send(text: String): Unit = newAction(_.send(text))
+  def send(text: String, sensitive: Boolean = false): Unit = newAction(_.send(text, sensitive))
   def send(text: Match => String): Unit = newRegexAction(_.send(text))
-  def sendln(text: String): Unit = newAction(_.sendln(text))
+  def sendln(text: String, sensitive: Boolean = false): Unit = newAction(_.sendln(text, sensitive))
   def sendln(text: Match => String): Unit = newRegexAction(_.sendln(text))
   def returning(result: => R): Unit = newAction(_.returning(result))
   def returning(result: Match => R): Unit = newRegexAction(_.returning(result))
