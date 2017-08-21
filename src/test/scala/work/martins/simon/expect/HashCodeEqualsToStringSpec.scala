@@ -130,7 +130,6 @@ class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
       settingsToString should include ("Settings")
       settingsToString should include (settings.timeout.toString)
       settingsToString should include (settings.charset.toString)
-      settingsToString should include (settings.redirectStdErrToStdOut.toString)
 
       for (block <- expect.toCore.expectBlocks) {
         expectToString should include (block.toString.indent())

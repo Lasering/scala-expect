@@ -129,12 +129,11 @@ case class NuProcessRichProcess(command: Seq[String], settings: Settings) extend
   }
 
   /**
-    * The corresponding queue for `from`. In the case the `StdErr` is being redirected to `StdOut`
-    * this method will always return the queue of `StdOut`.
+    * The corresponding queue for `from`.
     * @param from which InputStream to get the queue of.
     */
   def queueOf(from: FromInputStream = StdOut): BlockingDeque[Either[EOFException, String]] = from match {
-    case StdErr if !settings.redirectStdErrToStdOut => stdErrQueue
+    case StdErr => stdErrQueue
     case _ => stdOutQueue
   }
 

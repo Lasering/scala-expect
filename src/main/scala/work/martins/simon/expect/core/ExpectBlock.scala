@@ -4,7 +4,7 @@ import java.io.EOFException
 
 import com.typesafe.scalalogging.LazyLogging
 import work.martins.simon.expect.StringUtils._
-import work.martins.simon.expect.{FromInputStream, StdErr, StdOut}
+import work.martins.simon.expect.{StdErr, StdOut}
 
 import scala.concurrent.duration.Deadline
 import scala.concurrent.{ExecutionContext, Future, TimeoutException}
@@ -34,12 +34,8 @@ final case class ExpectBlock[+R](whens: When[R]*) extends LazyLogging {
 
   private def obtainMatchingWhen[RR >: R](runContext: RunContext[RR])(readFunction: RunContext[RR] => RunContext[RR])
                                 (implicit ex: ExecutionContext, deadline: Deadline): Future[(When[RR], RunContext[RR])] = {
-    def matchFrom(from: FromInputStream): Boolean = {
-      if (runContext.settings.redirectStdErrToStdOut) true else from == runContext.readFrom
-    }
-    
     // Try to match against the output we have so far
-    whens.find(w => w.matches(runContext.output) && matchFrom(w.readFrom)) match {
+    whens.find(w => w.matches(runContext.output) && w.readFrom == runContext.readFrom) match {
       case Some(when) =>
         // The existing output was enough to get a matching when
         Future.successful((when, runContext))
@@ -53,7 +49,7 @@ final case class ExpectBlock[+R](whens: When[R]*) extends LazyLogging {
           case e: EOFException =>
             logger.info(runContext.withId(s"Read returned EndOfFile."))
             whens.collectFirst {
-              case when @ EndOfFileWhen(from) if matchFrom(from) => (when, runContext)
+              case when @ EndOfFileWhen(from) if from == runContext.readFrom => (when, runContext)
             }.getOrElse(throw e)
           case _: TimeoutException =>
             timeout(runContext)
@@ -78,34 +74,29 @@ final case class ExpectBlock[+R](whens: When[R]*) extends LazyLogging {
   def run[RR >: R](runContext: RunContext[RR])(implicit ex: ExecutionContext): Future[RunContext[RR]] = {
     implicit val deadline: Deadline = runContext.settings.timeout.fromNow
 
-    val matchingWhen = if (runContext.settings.redirectStdErrToStdOut) {
-      logger.debug(runContext.withId(s"Now running (reading from StdOut because redirectStdErrToStdOut is true):\n$this"))
-      obtainMatchingWhen(runContext.readingFrom(StdOut))(read)
-    } else {
-      whens.map(_.readFrom).distinct match {
-        case Seq(from) =>
-          logger.debug(runContext.withId(s"Now running (reading from $from):\n$this"))
-          obtainMatchingWhen(runContext.readingFrom(from))(read)
-        case _ =>
-          logger.debug(runContext.withId(s"Now running (reading from StdOut and StdErr concurrently):\n$this"))
-          logger.debug(runContext.withId("Going to try and match with last StdErr output."))
-          whens.find(w => w.matches(runContext.stdErrOutput) && w.readFrom == StdErr) match {
-            case Some(when) => Future.successful((when, runContext))
-            case None =>
-              logger.debug(runContext.withId("Did not match with last StdErr output. Going to try and match with last StdOut output."))
-              obtainMatchingWhen(runContext.readingFrom(StdOut)) { innerContext =>
-                logger.debug(innerContext.withId(s"Did not match with last ${innerContext.readFrom} output." +
-                  s" Going to concurrently read from StdOut and StdErr."))
-                logger.trace(innerContext.withId(s"Time left in deadline ${deadline.timeLeft}"))
+    val matchingWhen = whens.map(_.readFrom).distinct match {
+      case Seq(from) =>
+        logger.debug(runContext.withId(s"Now running (reading from $from):\n$this"))
+        obtainMatchingWhen(runContext.readingFrom(from))(read)
+      case _ =>
+        logger.debug(runContext.withId(s"Now running (reading from StdOut and StdErr concurrently):\n$this"))
+        logger.debug(runContext.withId("Going to try and match with last StdErr output."))
+        whens.find(w => w.matches(runContext.stdErrOutput) && w.readFrom == StdErr) match {
+          case Some(when) => Future.successful((when, runContext))
+          case None =>
+            logger.debug(runContext.withId("Did not match with last StdErr output. Going to try and match with last StdOut output."))
+            obtainMatchingWhen(runContext.readingFrom(StdOut)) { innerContext =>
+              logger.debug(innerContext.withId(s"Did not match with last ${innerContext.readFrom} output." +
+                s" Going to concurrently read from StdOut and StdErr."))
+              logger.trace(innerContext.withId(s"Time left in deadline ${deadline.timeLeft}"))
 
-                val (from, text) = innerContext.process.readOnFirstInputStream()
-                val newRunContext = innerContext.readingFrom(from).withOutput(_ + text)
-                logger.info(innerContext.withId(s"Newly read text from $from:\n$text"))
-                logger.debug(innerContext.withId(s"New $from output:\n${newRunContext.output}"))
-                newRunContext
-              }
-          }
-      }
+              val (from, text) = innerContext.process.readOnFirstInputStream()
+              val newRunContext = innerContext.readingFrom(from).withOutput(_ + text)
+              logger.info(innerContext.withId(s"Newly read text from $from:\n$text"))
+              logger.debug(innerContext.withId(s"New $from output:\n${newRunContext.output}"))
+              newRunContext
+            }
+        }
     }
 
     matchingWhen map { case (when, newRunContext) =>

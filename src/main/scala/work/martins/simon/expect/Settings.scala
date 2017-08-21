@@ -22,8 +22,7 @@ object Settings {
 
     Settings(
       getDuration("timeout", TimeUnit.SECONDS).seconds,
-      Charset.forName(getString("charset")),
-      getBoolean("redirect-std-err-to-std-out"))
+      Charset.forName(getString("charset")))
   }
 }
 
@@ -35,7 +34,5 @@ object Settings {
   *
   * @param timeout How much time to wait when performing a read.
   * @param charset The charset used for encoding and decoding the read text and the to be printed text.
-  * @param redirectStdErrToStdOut Whether to redirect stdErr to stdOut.
   */
-case class Settings(timeout: FiniteDuration = 1.second, charset: Charset = StandardCharsets.UTF_8,
-                    redirectStdErrToStdOut: Boolean = false)
+case class Settings(timeout: FiniteDuration = 1.second, charset: Charset = StandardCharsets.UTF_8)

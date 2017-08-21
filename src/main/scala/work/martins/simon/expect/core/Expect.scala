@@ -90,10 +90,9 @@ final class Expect[+R](val command: Seq[String], val defaultValue: R, val settin
 
   require(command.nonEmpty, "Expect must have a command to run.")
 
-  def run(timeout: FiniteDuration = settings.timeout, charset: Charset = settings.charset,
-          redirectStdErrToStdOut: Boolean = settings.redirectStdErrToStdOut)
+  def run(timeout: FiniteDuration = settings.timeout, charset: Charset = settings.charset)
          (implicit ex: ExecutionContext): Future[R] = {
-    run(new Settings(timeout, charset, redirectStdErrToStdOut))
+    run(new Settings(timeout, charset))
   }
   def run(settings: Settings)(implicit ex: ExecutionContext): Future[R] = {
     run(NuProcessRichProcess(command, settings))

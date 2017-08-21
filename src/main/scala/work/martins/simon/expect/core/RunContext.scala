@@ -32,12 +32,12 @@ final case class RunContext[+R](process: RichProcess, value: R, executionAction:
 
   def output: String = outputOf(readFrom)
   def outputOf(from: FromInputStream): String = from match {
-    case StdErr if !settings.redirectStdErrToStdOut => stdErrOutput
+    case StdErr => stdErrOutput
     case _ => stdOutOutput
   }
 
   def withOutput(f: String => String): RunContext[R] = readFrom match {
-    case StdErr if !settings.redirectStdErrToStdOut => this.copy(stdErrOutput = f(stdErrOutput))
+    case StdErr => this.copy(stdErrOutput = f(stdErrOutput))
     case _ => this.copy(stdOutOutput = f(stdOutOutput))
   }
 
