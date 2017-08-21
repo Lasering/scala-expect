@@ -9,7 +9,6 @@ name := "scala-expect"
 //======================================================================================================================
 javacOptions ++= Seq("-Xlint", "-encoding", "UTF-8", "-Dfile.encoding=utf-8")
 scalaVersion := "2.12.3"
-//https://tpolecat.github.io/2017/04/25/scalac-flags.html
 scalacOptions ++= Seq(
   "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
   "-encoding", "utf-8",                // Specify character encoding used by source files.
@@ -71,9 +70,9 @@ scalacOptions in (Compile, doc) ++= Seq(
 //link against the API documentation using autoAPIMappings.
 apiURL := Some(url(s"${homepage.value.get}/${latestReleasedVersion.value}/api/"))
 
-//enablePlugins(GhpagesPlugin)
-//enablePlugins(SiteScaladocPlugin)
-//git.remoteRepo := s"git@github.com:Lasering/${name.value}.git"
+enablePlugins(GhpagesPlugin)
+enablePlugins(SiteScaladocPlugin)
+git.remoteRepo := s"git@github.com:Lasering/${name.value}.git"
 
 //======================================================================================================================
 //==== Deployment ======================================================================================================

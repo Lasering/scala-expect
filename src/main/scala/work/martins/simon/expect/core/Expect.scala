@@ -104,13 +104,11 @@ final class Expect[+R](val command: Seq[String], val defaultValue: R, val settin
     logger.info(runContext.withId("Running command: " + command.mkString("\"", " ", "\"")))
     logger.debug(runContext.withId(runContext.settings.toString))
 
-    def success(runContext: RunContext[R]): Future[R] = {
-      Future {
-        runContext.process.destroy()
-      } map { _ =>
-        logger.info(runContext.withId(s"Finished returning: ${runContext.value}"))
-        runContext.value
-      }
+    def success(runContext: RunContext[R]): Future[R] = Future {
+      runContext.process.destroy()
+    } map { _ =>
+      logger.info(runContext.withId(s"Finished returning: ${runContext.value}"))
+      runContext.value
     }
 
     def innerRun(expectBlocks: Seq[ExpectBlock[R]], runContext: RunContext[R]): Future[R] = {
@@ -124,21 +122,21 @@ final class Expect[+R](val command: Seq[String], val defaultValue: R, val settin
             case Terminate =>
               success(innerRunContext)
             case ChangeToNewExpect(newExpect) =>
-              process.destroy()
-              newExpect.asInstanceOf[Expect[R]].run(process.withCommand(newExpect.command))
+              innerRunContext.process.destroy()
+              newExpect.asInstanceOf[Expect[R]].run(innerRunContext.process.withCommand(newExpect.command))
           }
         }
         //If we get an exception while running the head expect block we want to make sure the rich process is destroyed.
         result.transformWith {
-          case Success(r) => Future{ process.destroy() }.map(_ => r)
-          case Failure(t) => Future{ process.destroy() }.map(_ => throw t)
+          case Success(r) => Future.successful(r) // The success function already destroys the process
+          case Failure(t) => Future { runContext.process.destroy() }.map(_ => throw t)
         }
       } getOrElse {
         //No more expect blocks. Just return the success value.
         success(runContext)
       }
     }
-  
+
     innerRun(expectBlocks, runContext)
   }
   

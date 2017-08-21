@@ -23,8 +23,11 @@ class EmptySpec extends AsyncFlatSpec with Matchers with TestUtils {
     val defaultValue = "some nice default value"
     val expect = new Expect("ls", defaultValue, ConfigFactory.load())()
     //This is one a cheat to cover the overloaded run method
-    expect.run(expect.settings).futureValue shouldBe defaultValue
+    expect.run(expect.settings).map {
+      _ shouldBe defaultValue
+    }
   }
+
   it should "map just the default value" in {
     val defaultValue = "some nice default value"
     val e = new Expect("ls", defaultValue)().map(_ * 2)

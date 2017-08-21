@@ -177,14 +177,21 @@ case class NuProcessRichProcess(command: Seq[String], settings: Settings) extend
   }
 
   /** @inheritdoc */
-  def destroy(): Unit = {
-    // NuProcess already closes the streams for us.
-    blocking {
+  def destroy(): Unit = if (process.isRunning) {
+    try {
+      // First allow the process to terminate gracefully
       process.destroy(false)
-      val returnCode = process.waitFor(settings.timeout.toMillis, TimeUnit.MILLISECONDS)
+      // Check whether it terminated or not
+      val returnCode = blocking(process.waitFor(settings.timeout.toMillis, TimeUnit.MILLISECONDS))
       if (returnCode == Integer.MIN_VALUE) {
+        // The waitFor timed out. Ensure the process terminates by forcing it.
         process.destroy(true)
       }
+    } catch {
+      case e: RuntimeException if e.getMessage.contains("Sending signal failed") =>
+        // There is a bug in NuProcess where sometimes `process.destroy(false)` throws a RuntimeException
+        // with the message "Sending signal failed, return code: -1, last error: 3".
+        // In this case we assume the process already finished
     }
   }
 
