@@ -10,10 +10,11 @@ import work.martins.simon.expect.core.RunContext.{ChangeToNewExpect, Continue, T
 
 import scala.concurrent._
 import scala.concurrent.duration.FiniteDuration
+import scala.util.{Failure, Success}
 
 /**
   * Expect allows you to invoke CLIs and ensure they return what you expect.
-  * You can describe an interaction with the cli which will be executed when the `run` is invoked.
+  * You can describe a cli interaction which will be executed when `run` is invoked.
   *
   * Each interaction is described inside an `ExpectBlock` using `When`s. Each `When` states under which
   * circumstances the corresponding actions are to be executed. For example:
@@ -103,9 +104,13 @@ final class Expect[+R](val command: Seq[String], val defaultValue: R, val settin
     logger.info(runContext.withId("Running command: " + command.mkString("\"", " ", "\"")))
     logger.debug(runContext.withId(runContext.settings.toString))
 
-    def success(value: R): Future[R] = {
-      logger.info(runContext.withId(s"Finished returning: $value"))
-      Future.successful(value)
+    def success(runContext: RunContext[R]): Future[R] = {
+      Future {
+        runContext.process.destroy()
+      } map { _ =>
+        logger.info(runContext.withId(s"Finished returning: ${runContext.value}"))
+        runContext.value
+      }
     }
 
     def innerRun(expectBlocks: Seq[ExpectBlock[R]], runContext: RunContext[R]): Future[R] = {
@@ -117,18 +122,20 @@ final class Expect[+R](val command: Seq[String], val defaultValue: R, val settin
               //Continue with the remaining expect blocks
               innerRun(expectBlocks.tail, innerRunContext)
             case Terminate =>
-              success(innerRunContext.value)
+              success(innerRunContext)
             case ChangeToNewExpect(newExpect) =>
               process.destroy()
               newExpect.asInstanceOf[Expect[R]].run(process.withCommand(newExpect.command))
           }
         }
         //If we get an exception while running the head expect block we want to make sure the rich process is destroyed.
-        result onComplete (_ => process.destroy())
-        result
+        result.transformWith {
+          case Success(r) => Future{ process.destroy() }.map(_ => r)
+          case Failure(t) => Future{ process.destroy() }.map(_ => throw t)
+        }
       } getOrElse {
         //No more expect blocks. Just return the success value.
-        success(runContext.value)
+        success(runContext)
       }
     }
   

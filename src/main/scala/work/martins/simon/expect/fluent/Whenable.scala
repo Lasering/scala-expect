@@ -22,7 +22,7 @@ trait Whenable[R] extends Expectable[R] {
     * @return the new `StringWhen`.
     */
   def when(pattern: String, readFrom: FromInputStream): StringWhen[R] = whenableParent.when(pattern, readFrom)
-  
+
   /**
    * Adds a new `RegexWhen` that matches whenever the regex `pattern` successfully matches
    * against the text read from `FromInputStream` specified in the parent ExpectBlock.
@@ -38,7 +38,7 @@ trait Whenable[R] extends Expectable[R] {
     * @return the new `RegexWhen`.
     */
   def when(pattern: Regex, readFrom: FromInputStream): RegexWhen[R] = whenableParent.when(pattern, readFrom)
-  
+
   /**
     * Adds a new `EndOfFileWhen` that matches whenever the EndOfFile in read from `FromInputStream`
     * specified in the parent ExpectBlock.
@@ -53,7 +53,7 @@ trait Whenable[R] extends Expectable[R] {
     * @return the new `EndOfFileWhen`.
     */
   def when(pattern: EndOfFile.type, readFrom: FromInputStream): EndOfFileWhen[R] = whenableParent.when(pattern, readFrom)
-  
+
   /**
    * Adds a new `TimeoutWhen` that matches whenever the read from any of the `FromStreamInput`s times out.
    * @param pattern the pattern to match against.

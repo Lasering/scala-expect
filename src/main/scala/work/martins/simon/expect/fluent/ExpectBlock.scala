@@ -10,7 +10,8 @@ import work.martins.simon.expect.StringUtils._
   */
 final class ExpectBlock[R](val parent: Expect[R], val readFrom: FromInputStream = StdOut) extends Whenable[R] {
   protected val whenableParent: ExpectBlock[R] = this
-  private var whens = Seq.empty[When[R]]
+
+  protected var whens = Seq.empty[When[R]]
   protected def newWhen[W <: When[R]](when: W): W = {
     whens :+= when
     when

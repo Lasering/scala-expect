@@ -22,28 +22,8 @@ scalacOptions ++= Seq(
   "-Xfuture",                          // Turn on future language features.
   "-Ypartial-unification",             // Enable partial unification in type constructor inference
   "-Yno-adapted-args",                 // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
-  "-Xlint:adapted-args",               // Warn if an argument list is modified to match the receiver.
-  "-Ywarn-adapted-args",               // Warn if an argument list is modified to match the receiver.
-  "-Xlint:nullary-unit",               // Warn when nullary methods return Unit.
-  "-Ywarn-nullary-unit",               // Warn when nullary methods return Unit.
-  "-Xlint:inaccessible",               // Warn about inaccessible types in method signatures.
-  "-Ywarn-inaccessible",               // Warn about inaccessible types in method signatures.
-  "-Xlint:nullary-override",           // Warn when non-nullary `def f()' overrides nullary `def f'.
-  "-Ywarn-nullary-override",           // Warn when non-nullary `def f()' overrides nullary `def f'.
-  "-Xlint:infer-any",                  // Warn when a type argument is inferred to be `Any`.
-  "-Ywarn-infer-any",                  // Warn when a type argument is inferred to be `Any`.
-  "-Xlint:missing-interpolator",       // A string literal appears to be missing an interpolator id.
-  "-Xlint:doc-detached",               // A Scaladoc comment appears to be detached from its element.
-  "-Xlint:private-shadow",             // A private field (or class parameter) shadows a superclass field.
-  "-Xlint:type-parameter-shadow",      // A local type parameter shadows a type already in scope.
-  "-Xlint:poly-implicit-overload",     // Parameterized overloaded implicit methods are not visible as view bounds.
-  "-Xlint:option-implicit",            // Option.apply used implicit view.
-  "-Xlint:delayedinit-select",         // Selecting member of DelayedInit.
-  "-Xlint:by-name-right-associative",  // By-name parameter of right associative operator.
-  "-Xlint:package-object-classes",     // Class or object defined in package object.
-  "-Xlint:unsound-match",              // Pattern match may not be typesafe.
-  "-Xlint:stars-align",                // Pattern sequence wildcard must align with sequence component.
-  "-Xlint:constant",                   // Evaluation of a constant arithmetic expression results in an error.
+  "-Xlint",                            // Enables every warning. scala -Xlint:help for a list and explanation
+  //"-Xlint:-unused,_",                  // Enables every warning except "unused"
   "-Ywarn-dead-code",                  // Warn when dead code is identified.
   "-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined.
   "-Ywarn-numeric-widen",              // Warn when numerics are widened.
@@ -70,8 +50,10 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.3.1",
   "com.zaxxer" % "nuprocess" % "1.1.2",
   "ch.qos.logback" % "logback-classic" % "1.2.3" % Test,
-  "org.scalatest" %% "scalatest" % "3.0.3" % Test,
+  "org.scalatest" %% "scalatest" % "3.0.4" % Test,
 )
+// Needed for scoverage snapshot
+resolvers += Opts.resolver.sonatypeSnapshots
 
 //======================================================================================================================
 //==== Scaladoc ========================================================================================================

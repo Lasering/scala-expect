@@ -13,7 +13,7 @@ import scala.language.higherKinds
   *                     Note however that every returning action will still be executed.
   * @tparam W the concrete When type constructor to which this action can be applied.
   */
-trait Action[+R, -W[X] <: When[X]] {
+trait Action[+R, -W[+X] <: When[X]] {
   def run[RR >: R](when: W[RR], runContext: RunContext[RR]): RunContext[RR]
 
   protected[expect] def map[T](f: R => T): Action[T, W]
@@ -42,5 +42,5 @@ trait Action[+R, -W[X] <: When[X]] {
     *
     * @param other the other $type to campare this $type to.
     */
-  def structurallyEquals[RR >: R, WW[X] <: W[X]](other: Action[RR, WW]): Boolean
+  def structurallyEquals[RR >: R, WW[+X] <: W[X]](other: Action[RR, WW]): Boolean
 }

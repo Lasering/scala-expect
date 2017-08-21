@@ -48,7 +48,7 @@ case class Returning[+R](result: Unit => R) extends AbstractReturning[R] {
     ActionReturningAction(this, computeAction)
   }
 
-  def structurallyEquals[RR >: R, WW[X] <: When[X]](other: Action[RR, WW]): Boolean = other.isInstanceOf[Returning[RR]]
+  def structurallyEquals[RR >: R, W[+X] <: When[X]](other: Action[RR, W]): Boolean = other.isInstanceOf[Returning[RR]]
 }
 
 
@@ -86,7 +86,7 @@ case class ReturningExpect[+R](result: Unit => Expect[R]) extends AbstractReturn
     this.copy(result.andThen(_.transform(flatMapPF, mapPF)))
   }
 
-  def structurallyEquals[RR >: R, WW[X] <: When[X]](other: Action[RR, WW]): Boolean = this.isInstanceOf[ReturningExpect[RR]]
+  def structurallyEquals[RR >: R, W[+X] <: When[X]](other: Action[RR, W]): Boolean = this.isInstanceOf[ReturningExpect[RR]]
 }
 
 case class ActionReturningAction[R, +T](parent: Returning[R], resultAction: R => AbstractReturning[T]) extends AbstractReturning[T] {
@@ -105,5 +105,5 @@ case class ActionReturningAction[R, +T](parent: Returning[R], resultAction: R =>
     this.copy(parent, resultAction.andThen(_.transform(flatMapPF, mapPF)))
   }
 
-  def structurallyEquals[TT >: T, WW[X] <: When[X]](other: Action[TT, WW]): Boolean = other.isInstanceOf[ActionReturningAction[R, TT]]
+  def structurallyEquals[TT >: T, W[+X] <: When[X]](other: Action[TT, W]): Boolean = other.isInstanceOf[ActionReturningAction[R, TT]]
 }

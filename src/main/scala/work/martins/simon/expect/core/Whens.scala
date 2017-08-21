@@ -17,7 +17,7 @@ import work.martins.simon.expect.{FromInputStream, StdOut}
   */
 sealed trait When[+R] extends LazyLogging {
   /** The concrete $type type constructor to which the actions will be applied. */
-  type This[X] <: When[X]
+  type This[+X] <: When[X]
 
   // Because a core When does not have access to its parent (an ExpectBlock) we cannot implement the same
   // strategy of the fluent When, which uses by default for the `readFrom` its parent `readFrom`.
@@ -95,8 +95,8 @@ sealed trait When[+R] extends LazyLogging {
        |}""".stripMargin
 }
 
-case class StringWhen[R](pattern: String, readFrom: FromInputStream = StdOut)(val actions: Action[R, StringWhen]*) extends When[R] {
-  final type This[X] = StringWhen[X]
+case class StringWhen[+R](pattern: String, readFrom: FromInputStream = StdOut)(val actions: Action[R, StringWhen]*) extends When[R] {
+  final type This[+X] = StringWhen[X]
 
   override def matches(output: String): Boolean = output.contains(pattern)
   override def trimToMatchedText(output: String): String = {
@@ -118,8 +118,8 @@ case class StringWhen[R](pattern: String, readFrom: FromInputStream = StdOut)(va
 
   val patternString: String = escape(pattern)
 }
-case class RegexWhen[R](pattern: Regex, readFrom: FromInputStream = StdOut)(val actions: Action[R, RegexWhen]*) extends When[R] {
-  final type This[X] = RegexWhen[X]
+case class RegexWhen[+R](pattern: Regex, readFrom: FromInputStream = StdOut)(val actions: Action[R, RegexWhen]*) extends When[R] {
+  final type This[+X] = RegexWhen[X]
 
   override def matches(output: String): Boolean = pattern.findFirstIn(output).isDefined
   override def trimToMatchedText(output: String): String = output.substring(regexMatch(output).end(0))
@@ -172,8 +172,8 @@ case class RegexWhen[R](pattern: Regex, readFrom: FromInputStream = StdOut)(val 
 // (the one with the timeout when) will never be executed.
 // TODO: explain this caveat in their scaladoc
 
-case class EndOfFileWhen[R](readFrom: FromInputStream = StdOut)(val actions: Action[R, EndOfFileWhen]*) extends When[R] {
-  final type This[X] = EndOfFileWhen[X]
+case class EndOfFileWhen[+R](readFrom: FromInputStream = StdOut)(val actions: Action[R, EndOfFileWhen]*) extends When[R] {
+  final type This[+X] = EndOfFileWhen[X]
 
   override def matches(output: String) = false
 
@@ -186,8 +186,8 @@ case class EndOfFileWhen[R](readFrom: FromInputStream = StdOut)(val actions: Act
 
   val patternString: String = "EndOfFile"
 }
-case class TimeoutWhen[R]()(val actions: Action[R, TimeoutWhen]*) extends When[R] {
-  final type This[X] = TimeoutWhen[X]
+case class TimeoutWhen[+R]()(val actions: Action[R, TimeoutWhen]*) extends When[R] {
+  final type This[+X] = TimeoutWhen[X]
 
   override def matches(output: String) = false
 

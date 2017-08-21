@@ -12,7 +12,7 @@ import scala.language.higherKinds
   */
 sealed trait When[R] extends Whenable[R] {
   /** The concrete core.When type constructor which this fluent.When is a builder for. */
-  type CW[X] <: core.When[X]
+  type CW[+X] <: core.When[X]
 
   /** The concrete When type constructor to which the actions will be applied. */
   type This[X] <: When[X]
@@ -111,7 +111,7 @@ sealed trait When[R] extends Whenable[R] {
 }
 
 case class StringWhen[R](parent: ExpectBlock[R], pattern: String, readFrom: FromInputStream = StdOut) extends When[R]{
-  type CW[X] = core.StringWhen[X]
+  type CW[+X] = core.StringWhen[X]
   type This[X] = StringWhen[X]
 
   def toCore: core.StringWhen[R] = new core.StringWhen[R](pattern, readFrom)(actions:_*)
@@ -127,7 +127,7 @@ case class StringWhen[R](parent: ExpectBlock[R], pattern: String, readFrom: From
   }
 }
 case class RegexWhen[R](parent: ExpectBlock[R], pattern: Regex, readFrom: FromInputStream = StdOut) extends When[R] {
-  type CW[X] = core.RegexWhen[X]
+  type CW[+X] = core.RegexWhen[X]
   type This[X] = RegexWhen[X]
 
   /**
@@ -170,7 +170,7 @@ case class RegexWhen[R](parent: ExpectBlock[R], pattern: Regex, readFrom: FromIn
   }
 }
 case class EndOfFileWhen[R](parent: ExpectBlock[R], readFrom: FromInputStream = StdOut) extends When[R] {
-  type CW[X] = core.EndOfFileWhen[X]
+  type CW[+X] = core.EndOfFileWhen[X]
   type This[X] = EndOfFileWhen[X]
 
   def toCore: core.EndOfFileWhen[R] = new core.EndOfFileWhen[R](readFrom)(actions:_*)
@@ -183,7 +183,7 @@ case class EndOfFileWhen[R](parent: ExpectBlock[R], readFrom: FromInputStream = 
   override def hashCode(): Int = actions.hashCode()
 }
 case class TimeoutWhen[R](parent: ExpectBlock[R]) extends When[R] {
-  type CW[X] = core.TimeoutWhen[X]
+  type CW[+X] = core.TimeoutWhen[X]
   type This[X] = TimeoutWhen[X]
   
   // The readFrom of a TimeoutWhen is not used but to keep the implementation simple we also include it

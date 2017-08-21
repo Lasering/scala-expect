@@ -1,19 +1,15 @@
-sudo: required
-
-dist: trusty
-
 language: scala
+scala: 2.12.3
+jdk: oraclejdk8
+
+sudo: required
+dist: trusty
 
 addons:
   apt:
     packages:
     - bc
 
-scala:
-  - 2.12.0
-jdk:
-  - oraclejdk8
-  
 script:
   - sbt clean coverage test
 

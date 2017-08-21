@@ -20,7 +20,7 @@ trait Expectable[R] {
   def expect(readFrom: FromInputStream): ExpectBlock[R] = expectableParent.expect(readFrom)
   
   // Shortcuts
-  
+
   /**
    * Adds, in a new `ExpectBlock`, a `StringWhen` that matches whenever `pattern` is contained
    * in the text read from the StdOut output. This is a shortcut to `expect.when(pattern)`.
@@ -52,7 +52,7 @@ trait Expectable[R] {
     * @return the new `RegexWhen`.
     */
   def expect(pattern: Regex, readFrom: FromInputStream): RegexWhen[R] = expect.when(pattern, readFrom)
-  
+
   /**
    * Adds, in a new `ExpectBlock`, a `EndOfFileWhen` that matches whenever the end of file is reached while trying to
    * read from the StdOut output. This is a shortcut to `expect.when(pattern)`.

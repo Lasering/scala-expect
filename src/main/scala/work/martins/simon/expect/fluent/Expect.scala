@@ -24,13 +24,15 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
   require(command.nonEmpty, "Expect must have a command to run.")
 
   protected val expectableParent: Expect[R] = this
-  private var expectBlocks = Seq.empty[ExpectBlock[R]]
-  override def expect: ExpectBlock[R] = expect(StdOut)
-  override def expect(from: FromInputStream): ExpectBlock[R] = {
-    val block = new ExpectBlock(this, from)
+
+  protected var expectBlocks = Seq.empty[ExpectBlock[R]]
+  protected def newExpectBlock(block: ExpectBlock[R]): ExpectBlock[R] = {
     expectBlocks :+= block
     block
   }
+
+  override def expect: ExpectBlock[R] = newExpectBlock(new ExpectBlock(this, StdOut))
+  override def expect(from: FromInputStream): ExpectBlock[R] = newExpectBlock(new ExpectBlock(this, from))
   override def addExpectBlock(f: Expect[R] => Unit): Expect[R] = {
     f(this)
     this

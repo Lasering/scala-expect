@@ -27,7 +27,7 @@ final case class Send[+R](text: String, sensitive: Boolean = false) extends Acti
   protected[expect] def flatMap[T](f: R => Expect[T]): Action[T, When] = this.asInstanceOf[Send[T]]
   protected[expect] def transform[T](flatMapPF: R =/> Expect[T], mapPF: R =/> T): Action[T, When] = this.asInstanceOf[Send[T]]
 
-  def structurallyEquals[RR >: R, WW[X] <: When[X]](other: Action[RR, WW]): Boolean = other.isInstanceOf[Send[RR]]
+  def structurallyEquals[RR >: R, W[+X] <: When[X]](other: Action[RR, W]): Boolean = other.isInstanceOf[Send[RR]]
 
   override def toString: String = if (sensitive) {
     s"Send(<omitted sensitive output>)"

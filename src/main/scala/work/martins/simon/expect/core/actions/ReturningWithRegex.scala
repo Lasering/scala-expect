@@ -42,7 +42,7 @@ case class ReturningWithRegex[+R](result: Match => R) extends AbstractReturningW
     ActionReturningActionWithRegex(this, computeAction)
   }
 
-  def structurallyEquals[RR >: R, WW[X] <: RegexWhen[X]](other: Action[RR, WW]): Boolean = other.isInstanceOf[ReturningWithRegex[RR]]
+  def structurallyEquals[RR >: R, W[+X] <: RegexWhen[X]](other: Action[RR, W]): Boolean = other.isInstanceOf[ReturningWithRegex[RR]]
 }
 
 /**
@@ -78,7 +78,7 @@ case class ReturningExpectWithRegex[+R](result: Match => Expect[R]) extends Abst
     this.copy(result.andThen(_.transform(flatMapPF, mapPF)))
   }
 
-  def structurallyEquals[RR >: R, WW[X] <: RegexWhen[X]](other: Action[RR, WW]): Boolean = other.isInstanceOf[ReturningExpectWithRegex[RR]]
+  def structurallyEquals[RR >: R, W[+X] <: RegexWhen[X]](other: Action[RR, W]): Boolean = other.isInstanceOf[ReturningExpectWithRegex[RR]]
 }
 
 case class ActionReturningActionWithRegex[R, +T](parent: ReturningWithRegex[R], resultAction: R => AbstractReturningWithRegex[T])
@@ -100,5 +100,5 @@ case class ActionReturningActionWithRegex[R, +T](parent: ReturningWithRegex[R], 
     this.copy(parent, resultAction.andThen(_.transform(flatMapPF, mapPF)))
   }
 
-  def structurallyEquals[TT >: T, WW[X] <: RegexWhen[X]](other: Action[TT, WW]): Boolean = other.isInstanceOf[ActionReturningActionWithRegex[R, TT]]
+  def structurallyEquals[TT >: T, W[+X] <: RegexWhen[X]](other: Action[TT, W]): Boolean = other.isInstanceOf[ActionReturningActionWithRegex[R, TT]]
 }

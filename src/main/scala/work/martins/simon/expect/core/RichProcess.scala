@@ -18,11 +18,14 @@ trait RichProcess {
 
   /**
     * Tries to read from the selected InputStream of the process.
-    * If no bytes are read within `timeout` a `TimeoutException` will be thrown.
+    * If no bytes are read within `deadline` a `TimeoutException` will be thrown.
     * If the end of file is reached an `EOFException` is thrown.
     * Otherwise, a String encoded with `settings.charset` is created from the read bytes.
     *
     * This method may block up until the deadline expires.
+    *
+    * Only one read operation, read or readOnFirstInputStream, is performed at the same time.
+    * No concurrent reads will be made.
     *
     * @return a String created from the read bytes encoded with `charset`.
     */
@@ -34,6 +37,9 @@ trait RichProcess {
     * Otherwise, a String encoded with `settings.charset` is created from the read bytes.
     *
     * This method may block up until the deadline expires.
+    *
+    * Only one read operation, read or readOnFirstInputStream, is performed at the same time.
+    * No concurrent reads will be made.
     *
     * @return from which `InputStream` the output read from, and a String created from the read bytes encoded with `charset`.
     */
@@ -55,7 +61,7 @@ case class NuProcessRichProcess(command: Seq[String], settings: Settings) extend
   protected val stdInQueue = new LinkedBlockingDeque[String]()
   protected val stdOutQueue = new LinkedBlockingDeque[Either[EOFException, String]]()
   protected val stdErrQueue = new LinkedBlockingDeque[Either[EOFException, String]]()
-  protected val readAvailableOnInputStream = new LinkedBlockingDeque[FromInputStream]()
+  protected val dequeReadAvailableOn = new LinkedBlockingDeque[FromInputStream]()
 
   protected val handler = new ProcessHandler()
   val process: NuProcess = new NuProcessBuilder(handler, command:_*).start()
@@ -109,8 +115,8 @@ case class NuProcessRichProcess(command: Seq[String], settings: Settings) extend
     private def read(buffer: ByteBuffer, closed: Boolean, readFrom: FromInputStream): Unit = {
       val toQueue = queueOf(readFrom)
 
-      readAvailableOnInputStream.put(readFrom)
-      logger.trace(s"Read available on $readFrom. ReadAvailableOnInputStream: ${readAvailableOnInputStream.asScala.mkString(", ")}")
+      dequeReadAvailableOn.putLast(readFrom)
+      logger.trace(s"Read available on $readFrom. DequeReadAvailableOn: ${dequeReadAvailableOn.asScala.mkString(", ")}")
 
       if (closed) {
         toQueue.put(Left(new EOFException()))
@@ -134,26 +140,33 @@ case class NuProcessRichProcess(command: Seq[String], settings: Settings) extend
 
   /** @inheritdoc */
   def read(from: FromInputStream = StdOut)(implicit deadline: Deadline): String = {
-    Option(blocking {
-      queueOf(from).pollFirst(deadline.timeLeft.toMillis, TimeUnit.MILLISECONDS)
-    }).map { result =>
-      val from = readAvailableOnInputStream.take()
-      logger.trace(s"Took read available $from. ReadAvailableOnInputStream: ${readAvailableOnInputStream.asScala.mkString(", ")}")
+    Option {
+      blocking {
+        queueOf(from).pollFirst(deadline.timeLeft.toMillis, TimeUnit.MILLISECONDS)
+      }
+    }.map { result =>
+      // Because we were able to get an element from `queueOf(from)` we know
+      // `dequeReadAvailableOn` will have a `from`. We need to remove to ensure that if a
+      // later `readOnFirstInputStream` is performed it will get the correct value.
+      dequeReadAvailableOn.removeFirstOccurrence(from)
+      logger.trace(s"Read: took ReadAvailableOn $from. DequeReadAvailableOn: ${dequeReadAvailableOn.asScala.mkString(", ")}")
 
       result.fold(throw _, identity)
     }.getOrElse(throw new TimeoutException())
   }
   /** @inheritdoc */
   def readOnFirstInputStream()(implicit deadline: Deadline): (FromInputStream, String) = {
-    Option(blocking {
-      readAvailableOnInputStream.pollFirst(deadline.timeLeft.toMillis, TimeUnit.MILLISECONDS)
-    }).flatMap { from =>
-      logger.trace(s"Took read available $from. ReadAvailableOnInputStream: ${readAvailableOnInputStream.asScala.mkString(", ")}")
-      Option(blocking {
-        queueOf(from).pollFirst(deadline.timeLeft.toMillis, TimeUnit.MILLISECONDS)
-      }).map { result =>
-        result.fold(throw _, (from, _))
+    Option{
+      blocking {
+        dequeReadAvailableOn.pollFirst(deadline.timeLeft.toMillis, TimeUnit.MILLISECONDS)
       }
+    }.flatMap { from =>
+      logger.trace(s"ReadOnFirstInputStream: took ReadAvailableOn $from. DequeReadAvailableOn: ${dequeReadAvailableOn.asScala.mkString(", ")}")
+      Option {
+        blocking {
+          queueOf(from).pollFirst(deadline.timeLeft.toMillis, TimeUnit.MILLISECONDS)
+        }
+      }.map(_.fold(throw _, (from, _)))
     }.getOrElse(throw new TimeoutException())
   }
 
@@ -164,9 +177,15 @@ case class NuProcessRichProcess(command: Seq[String], settings: Settings) extend
   }
 
   /** @inheritdoc */
-  def destroy(): Unit = if (process.isRunning) {
+  def destroy(): Unit = {
     // NuProcess already closes the streams for us.
-    process.destroy(true)
+    blocking {
+      process.destroy(false)
+      val returnCode = process.waitFor(settings.timeout.toMillis, TimeUnit.MILLISECONDS)
+      if (returnCode == Integer.MIN_VALUE) {
+        process.destroy(true)
+      }
+    }
   }
 
   def withCommand(command: Seq[String] = this.command): RichProcess = this.copy(command = command)
