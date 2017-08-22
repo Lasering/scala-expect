@@ -170,7 +170,7 @@ case class NuProcessRichProcess(command: Seq[String], settings: Settings) extend
   }
 
   /** @inheritdoc */
-  def write(text: String): Unit = {
+  def write(text: String): Unit = if (process.isRunning) {
     stdInQueue.put(text)
     process.wantWrite()
   }
