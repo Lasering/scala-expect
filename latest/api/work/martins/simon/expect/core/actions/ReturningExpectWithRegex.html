@@ -292,7 +292,7 @@ last value, if there is a ReturningAction, or the default value otherwise.">
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">ReturningExpectWithRegex</span><span class="tparams">[<span name="R">R</span>]</span><span class="params">(<span name="result">result: (<span class="extype" name="scala.util.matching.Regex.Match">Match</span>) ⇒ <a href="../Expect.html" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]</span>)</span><span class="result"> extends <a href="AbstractReturningWithRegex.html" class="extype" name="work.martins.simon.expect.core.actions.AbstractReturningWithRegex">AbstractReturningWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <span class="name">ReturningExpectWithRegex</span><span class="tparams">[<span name="R">+R</span>]</span><span class="params">(<span name="result">result: (<span class="extype" name="scala.util.matching.Regex.Match">Match</span>) ⇒ <a href="../Expect.html" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]</span>)</span><span class="result"> extends <a href="AbstractReturningWithRegex.html" class="extype" name="work.martins.simon.expect.core.actions.AbstractReturningWithRegex">AbstractReturningWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>] with <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a> with <a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></span>
       </span>
       </h4>
 
@@ -305,16 +305,16 @@ resources allocated by the current expect. And the result of the <code>Returning
 executing the received expect.</p><p>This allows to construct the Expect based on the regex Match.
 This Action can only be added to a RegexWhen.
 Any action or expect block added after this will not be executed.
-</p></div><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/Lasering/scala-expect/tree/v6.0.0/src/main/scala/work/martins/simon/expect/core/actions/ReturningWithRegex.scala" target="_blank">ReturningWithRegex.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <span class="extype" name="scala.Product">Product</span>, <span class="extype" name="scala.Equals">Equals</span>, <a href="AbstractReturningWithRegex.html" class="extype" name="work.martins.simon.expect.core.actions.AbstractReturningWithRegex">AbstractReturningWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>], <a href="Action.html" class="extype" name="work.martins.simon.expect.core.actions.Action">Action</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>, <a href="../RegexWhen.html" class="extype" name="work.martins.simon.expect.core.RegexWhen">RegexWhen</a>], <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a>, <span class="extype" name="java.io.Serializable">Serializable</span>, <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a>, <a href="http://www.scala-lang.org/api/2.12.3/scala/Equals.html#scala.Equals" class="extype" name="scala.Equals">Equals</a>, <a href="AbstractReturningWithRegex.html" class="extype" name="work.martins.simon.expect.core.actions.AbstractReturningWithRegex">AbstractReturningWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>], <a href="Action.html" class="extype" name="work.martins.simon.expect.core.actions.Action">Action</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>, <a href="../RegexWhen.html" class="extype" name="work.martins.simon.expect.core.RegexWhen">RegexWhen</a>], <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div><div class="toggleContainer block diagram-container" id="inheritance-diagram-container">
                 <span class="toggle diagram-link">
                   Type Hierarchy
                 </span>
-                <div class="diagram" id="inheritance-diagram"><svg class="class-diagram" id="graph1" viewBox="0.00 0.00 393.00 118.00" height="118pt" width="393pt" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"><g transform="scale(1 1) rotate(0) translate(4 114)" class="graph" id="graph0"><polygon points="-4,4 -4,-114 389,-114 389,4 -4,4" stroke="none" fill="white"></polygon><g class="cluster" id="clust1"></g><g class="cluster" id="clust2"></g><!-- node0 --><g class="node this class" id="graph1_0"><g id="a_this class|graph1_0"><a xlink:title="work.martins.simon.expect.core.actions.ReturningExpectWithRegex (this class)" xlink:href="#inheritance-diagram"><path d="M313.167,-49C313.167,-49 157.833,-49 157.833,-49 153.667,-49 149.5,-44.8333 149.5,-40.6667 149.5,-40.6667 149.5,-32.3333 149.5,-32.3333 149.5,-28.1667 153.667,-24 157.833,-24 157.833,-24 313.167,-24 313.167,-24 317.333,-24 321.5,-28.1667 321.5,-32.3333 321.5,-32.3333 321.5,-40.6667 321.5,-40.6667 321.5,-44.8333 317.333,-49 313.167,-49" stroke="#418565" fill="#418565"></path><image xlink:href="../../../../../../lib/class_diagram.png" y="-43.5" x="159.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="8.00" font-family="Source Code Pro" y="-34.1" x="180.5" text-anchor="start">ReturningExpectWithRegex[R]</text></a></g></g><!-- node1 --><g class="node trait" id="graph1_1"><g id="a_trait|graph1_1"><a xlink:title="work.martins.simon.expect.core.actions.AbstractReturningWithRegex" xlink:href="AbstractReturningWithRegex.html#inheritance-diagram"><path d="M170.667,-110C170.667,-110 8.33333,-110 8.33333,-110 4.16667,-110 0,-105.833 0,-101.667 0,-101.667 0,-93.3333 0,-93.3333 0,-89.1667 4.16667,-85 8.33333,-85 8.33333,-85 170.667,-85 170.667,-85 174.833,-85 179,-89.1667 179,-93.3333 179,-93.3333 179,-101.667 179,-101.667 179,-105.833 174.833,-110 170.667,-110" stroke="#2e6d82" fill="#2e6d82"></path><image xlink:href="../../../../../../lib/trait_diagram.png" y="-104.5" x="10.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="8.00" font-family="Source Code Pro" y="-95.1" x="31.5" text-anchor="start">AbstractReturningWithRegex[R]</text></a></g></g><!-- node1&#45;&gt;node0 --><g class="edge inheritance" id="graph1_1_0"><g id="a_inheritance|graph1_1_0"><a xlink:title="ReturningExpectWithRegex[R] is a subtype of AbstractReturningWithRegex[R]"><path d="M124.512,-82.3515C149.603,-72.212 182.994,-58.7183 206.576,-49.1884" stroke="#d4d4d4" fill="none"></path><polygon points="123.569,-80.0898 117.997,-84.9841 125.405,-84.6329 123.569,-80.0898" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node2 --><g class="node trait" id="graph1_2"><g id="a_trait|graph1_2"><a xlink:title="scala.Product"><path d="M265.667,-110C265.667,-110 205.333,-110 205.333,-110 201.167,-110 197,-105.833 197,-101.667 197,-101.667 197,-93.3333 197,-93.3333 197,-89.1667 201.167,-85 205.333,-85 205.333,-85 265.667,-85 265.667,-85 269.833,-85 274,-89.1667 274,-93.3333 274,-93.3333 274,-101.667 274,-101.667 274,-105.833 269.833,-110 265.667,-110" stroke="#2e6d82" fill="#2e6d82"></path><image xlink:href="../../../../../../lib/trait_diagram.png" y="-104.5" x="207.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="8.00" font-family="Source Code Pro" y="-95.1" x="228.5" text-anchor="start">Product</text></a></g></g><!-- node2&#45;&gt;node0 --><g class="edge inheritance" id="graph1_2_0"><g id="a_inheritance|graph1_2_0"><a xlink:title="ReturningExpectWithRegex[R] is a subtype of Product"><path d="M235.5,-77.7603C235.5,-68.3675 235.5,-57.2882 235.5,-49.1323" stroke="#d4d4d4" fill="none"></path><polygon points="233.05,-77.8435 235.5,-84.8435 237.95,-77.8435 233.05,-77.8435" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node3 --><g class="node trait" id="graph1_3"><g id="a_trait|graph1_3"><a xlink:title="scala.Serializable"><path d="M376.667,-110C376.667,-110 300.333,-110 300.333,-110 296.167,-110 292,-105.833 292,-101.667 292,-101.667 292,-93.3333 292,-93.3333 292,-89.1667 296.167,-85 300.333,-85 300.333,-85 376.667,-85 376.667,-85 380.833,-85 385,-89.1667 385,-93.3333 385,-93.3333 385,-101.667 385,-101.667 385,-105.833 380.833,-110 376.667,-110" stroke="#2e6d82" fill="#2e6d82"></path><image xlink:href="../../../../../../lib/trait_diagram.png" y="-104.5" x="302.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="8.00" font-family="Source Code Pro" y="-95.1" x="323.5" text-anchor="start">Serializable</text></a></g></g><!-- node3&#45;&gt;node0 --><g class="edge inheritance" id="graph1_3_0"><g id="a_inheritance|graph1_3_0"><a xlink:title="ReturningExpectWithRegex[R] is a subtype of Serializable"><path d="M311.953,-81.2936C294.451,-71.268 271.878,-58.338 255.807,-49.1323" stroke="#d4d4d4" fill="none"></path><polygon points="310.859,-83.4901 318.151,-84.8435 313.294,-79.2382 310.859,-83.4901" stroke="#d4d4d4" fill="none"></polygon></a></g></g></g></svg></div>
+                <div class="diagram" id="inheritance-diagram"><svg class="class-diagram" id="graph1" viewBox="0.00 0.00 393.00 118.00" height="118pt" width="393pt" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"><g transform="scale(1 1) rotate(0) translate(4 114)" class="graph" id="page0,1_graph0"><polygon points="-4,4 -4,-114 389,-114 389,4 -4,4" stroke="transparent" fill="#ffffff"></polygon><g class="cluster" id="clust1"></g><g class="cluster" id="clust2"></g><!-- node0 --><g class="node this class" id="graph1_0"><g id="a_this class|graph1_0"><a xlink:title="work.martins.simon.expect.core.actions.ReturningExpectWithRegex (this class)" xlink:href="#inheritance-diagram"><path d="M313.1667,-49C313.1667,-49 157.8333,-49 157.8333,-49 153.6667,-49 149.5,-44.8333 149.5,-40.6667 149.5,-40.6667 149.5,-32.3333 149.5,-32.3333 149.5,-28.1667 153.6667,-24 157.8333,-24 157.8333,-24 313.1667,-24 313.1667,-24 317.3333,-24 321.5,-28.1667 321.5,-32.3333 321.5,-32.3333 321.5,-40.6667 321.5,-40.6667 321.5,-44.8333 317.3333,-49 313.1667,-49" stroke="#418565" fill="#418565"></path><image xlink:href="../../../../../../lib/class_diagram.png" y="-43.5" x="159.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="8.00" font-family="Source Code Pro" y="-34.1" x="180.5" text-anchor="start">ReturningExpectWithRegex[R]</text></a></g></g><!-- node1 --><g class="node trait" id="graph1_1"><g id="a_trait|graph1_1"><a xlink:title="work.martins.simon.expect.core.actions.AbstractReturningWithRegex" xlink:href="AbstractReturningWithRegex.html#inheritance-diagram"><path d="M170.6667,-110C170.6667,-110 8.3333,-110 8.3333,-110 4.1667,-110 0,-105.8333 0,-101.6667 0,-101.6667 0,-93.3333 0,-93.3333 0,-89.1667 4.1667,-85 8.3333,-85 8.3333,-85 170.6667,-85 170.6667,-85 174.8333,-85 179,-89.1667 179,-93.3333 179,-93.3333 179,-101.6667 179,-101.6667 179,-105.8333 174.8333,-110 170.6667,-110" stroke="#2e6d82" fill="#2e6d82"></path><image xlink:href="../../../../../../lib/trait_diagram.png" y="-104.5" x="10.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="8.00" font-family="Source Code Pro" y="-95.1" x="31.5" text-anchor="start">AbstractReturningWithRegex[R]</text></a></g></g><!-- node1&#45;&gt;node0 --><g class="edge inheritance" id="graph1_1_0"><g id="a_inheritance|graph1_1_0"><a xlink:title="ReturningExpectWithRegex[R] is a subtype of AbstractReturningWithRegex[R]"><path d="M126.4281,-82.0712C150.8218,-71.8793 182.3934,-58.6884 205.2875,-49.123" stroke="#d4d4d4" fill="none"></path><polygon points="125.2657,-79.9015 119.7513,-84.8608 127.1547,-84.4227 125.2657,-79.9015" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node2 --><g class="node trait" id="graph1_2"><g id="a_trait|graph1_2"><a xlink:title="scala.Product"><path d="M265.6667,-110C265.6667,-110 205.3333,-110 205.3333,-110 201.1667,-110 197,-105.8333 197,-101.6667 197,-101.6667 197,-93.3333 197,-93.3333 197,-89.1667 201.1667,-85 205.3333,-85 205.3333,-85 265.6667,-85 265.6667,-85 269.8333,-85 274,-89.1667 274,-93.3333 274,-93.3333 274,-101.6667 274,-101.6667 274,-105.8333 269.8333,-110 265.6667,-110" stroke="#2e6d82" fill="#2e6d82"></path><image xlink:href="../../../../../../lib/trait_diagram.png" y="-104.5" x="207.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="8.00" font-family="Source Code Pro" y="-95.1" x="228.5" text-anchor="start">Product</text></a></g></g><!-- node2&#45;&gt;node0 --><g class="edge inheritance" id="graph1_2_0"><g id="a_inheritance|graph1_2_0"><a xlink:title="ReturningExpectWithRegex[R] is a subtype of Product"><path d="M235.5,-77.7386C235.5,-68.3393 235.5,-57.3803 235.5,-49.123" stroke="#d4d4d4" fill="none"></path><polygon points="233.0501,-77.8607 235.5,-84.8608 237.9501,-77.8608 233.0501,-77.8607" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node3 --><g class="node trait" id="graph1_3"><g id="a_trait|graph1_3"><a xlink:title="scala.Serializable"><path d="M376.6667,-110C376.6667,-110 300.3333,-110 300.3333,-110 296.1667,-110 292,-105.8333 292,-101.6667 292,-101.6667 292,-93.3333 292,-93.3333 292,-89.1667 296.1667,-85 300.3333,-85 300.3333,-85 376.6667,-85 376.6667,-85 380.8333,-85 385,-89.1667 385,-93.3333 385,-93.3333 385,-101.6667 385,-101.6667 385,-105.8333 380.8333,-110 376.6667,-110" stroke="#2e6d82" fill="#2e6d82"></path><image xlink:href="../../../../../../lib/trait_diagram.png" y="-104.5" x="302.5" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="8.00" font-family="Source Code Pro" y="-95.1" x="323.5" text-anchor="start">Serializable</text></a></g></g><!-- node3&#45;&gt;node0 --><g class="edge inheritance" id="graph1_3_0"><g id="a_inheritance|graph1_3_0"><a xlink:title="ReturningExpectWithRegex[R] is a subtype of Serializable"><path d="M311.1144,-81.2814C294.1006,-71.2052 272.5515,-58.4431 256.8143,-49.123" stroke="#d4d4d4" fill="none"></path><polygon points="309.8869,-83.4017 317.1583,-84.8608 312.3838,-79.1856 309.8869,-83.4017" stroke="#d4d4d4" fill="none"></polygon></a></g></g></g></svg></div>
                 <div id="diagram-controls" class="hiddenContent">
                   <button id="diagram-zoom-out" class="diagram-btn"><i class="material-icons"></i></button>
                   <button id="diagram-zoom-in" class="diagram-btn"><i class="material-icons"></i></button>
@@ -403,7 +403,7 @@ Any action or expect block added after this will not be executed.
         <span class="kind">type</span>
       </span>
       <span class="symbol">
-        <span title="gt4s: $eq$div$greater" class="name">=/&gt;</span><span class="tparams">[<span name="A">-A</span>, <span name="B">+B</span>]</span><span class="result alias"> = <span class="extype" name="scala.PartialFunction">PartialFunction</span>[<span class="extype" name="work.martins.simon.expect.core.actions.Action.=/&gt;.A">A</span>, <span class="extype" name="work.martins.simon.expect.core.actions.Action.=/&gt;.B">B</span>]</span>
+        <span title="gt4s: $eq$div$greater" class="name">=/&gt;</span><span class="tparams">[<span name="A">-A</span>, <span name="B">+B</span>]</span><span class="result alias"> = <a href="http://www.scala-lang.org/api/2.12.3/scala/PartialFunction.html#scala.PartialFunction" class="extype" name="scala.PartialFunction">PartialFunction</a>[<span class="extype" name="work.martins.simon.expect.core.actions.Action.=/&gt;.A">A</span>, <span class="extype" name="work.martins.simon.expect.core.actions.Action.=/&gt;.B">B</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Action.html" class="extype" name="work.martins.simon.expect.core.actions.Action">Action</a></dd></dl></div>
@@ -427,7 +427,7 @@ Any action or expect block added after this will not be executed.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
@@ -443,7 +443,7 @@ Any action or expect block added after this will not be executed.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
@@ -502,7 +502,7 @@ Any action or expect block added after this will not be executed.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
@@ -537,7 +537,7 @@ Any action or expect block added after this will not be executed.
         <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
@@ -556,7 +556,7 @@ Any action or expect block added after this will not be executed.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="implicit">ensuring</span><span class="params">(<span name="cond">cond: (<a href="" class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex">ReturningExpectWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="msg">msg: ⇒ <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex">ReturningExpectWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]</span>
+        <span class="implicit">ensuring</span><span class="params">(<span name="cond">cond: (<a href="" class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex">ReturningExpectWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]) ⇒ <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>, <span name="msg">msg: ⇒ <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex">ReturningExpectWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt class="implicit">Implicit</dt><dd>
@@ -576,7 +576,7 @@ Any action or expect block added after this will not be executed.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="implicit">ensuring</span><span class="params">(<span name="cond">cond: (<a href="" class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex">ReturningExpectWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex">ReturningExpectWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]</span>
+        <span class="implicit">ensuring</span><span class="params">(<span name="cond">cond: (<a href="" class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex">ReturningExpectWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]) ⇒ <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex">ReturningExpectWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt class="implicit">Implicit</dt><dd>
@@ -596,7 +596,7 @@ Any action or expect block added after this will not be executed.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="implicit">ensuring</span><span class="params">(<span name="cond">cond: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="msg">msg: ⇒ <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex">ReturningExpectWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]</span>
+        <span class="implicit">ensuring</span><span class="params">(<span name="cond">cond: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>, <span name="msg">msg: ⇒ <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex">ReturningExpectWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt class="implicit">Implicit</dt><dd>
@@ -616,7 +616,7 @@ Any action or expect block added after this will not be executed.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="implicit">ensuring</span><span class="params">(<span name="cond">cond: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex">ReturningExpectWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]</span>
+        <span class="implicit">ensuring</span><span class="params">(<span name="cond">cond: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex">ReturningExpectWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt class="implicit">Implicit</dt><dd>
@@ -636,26 +636,10 @@ Any action or expect block added after this will not be executed.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex#execute" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="execute(when:work.martins.simon.expect.core.RegexWhen[R],process:work.martins.simon.expect.core.RichProcess,intermediateResult:work.martins.simon.expect.core.IntermediateResult[R]):work.martins.simon.expect.core.IntermediateResult[R]"></a><a id="execute(RegexWhen[R],RichProcess,IntermediateResult[R]):IntermediateResult[R]"></a>
-      <span class="permalink">
-      <a href="../../../../../../work/martins/simon/expect/core/actions/ReturningExpectWithRegex.html#execute(when:work.martins.simon.expect.core.RegexWhen[R],process:work.martins.simon.expect.core.RichProcess,intermediateResult:work.martins.simon.expect.core.IntermediateResult[R]):work.martins.simon.expect.core.IntermediateResult[R]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">execute</span><span class="params">(<span name="when">when: <a href="../RegexWhen.html" class="extype" name="work.martins.simon.expect.core.RegexWhen">RegexWhen</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]</span>, <span name="process">process: <a href="../RichProcess.html" class="extype" name="work.martins.simon.expect.core.RichProcess">RichProcess</a></span>, <span name="intermediateResult">intermediateResult: <a href="../IntermediateResult.html" class="extype" name="work.martins.simon.expect.core.IntermediateResult">IntermediateResult</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]</span>)</span><span class="result">: <a href="../IntermediateResult.html" class="extype" name="work.martins.simon.expect.core.IntermediateResult">IntermediateResult</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]</span>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex">ReturningExpectWithRegex</a> → <a href="Action.html" class="extype" name="work.martins.simon.expect.core.actions.Action">Action</a></dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <span class="permalink">
@@ -668,10 +652,10 @@ Any action or expect block added after this will not be executed.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="symbol">classOf[java.lang.Throwable]</span>
@@ -745,7 +729,7 @@ Any action or expect block added after this will not be executed.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
@@ -777,7 +761,7 @@ Any action or expect block added after this will not be executed.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
@@ -793,7 +777,7 @@ Any action or expect block added after this will not be executed.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
@@ -809,14 +793,14 @@ Any action or expect block added after this will not be executed.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="work.martins.simon.expect.core.actions.Action#pfNotDefined" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="pfNotDefined[T](r:R):T"></a><a id="pfNotDefined[T](R):T"></a>
+      <a id="pfNotDefined[RR&gt;:R,T](r:RR):T"></a><a id="pfNotDefined[RR&gt;:R,T](RR):T"></a>
       <span class="permalink">
-      <a href="../../../../../../work/martins/simon/expect/core/actions/ReturningExpectWithRegex.html#pfNotDefined[T](r:R):T" title="Permalink">
+      <a href="../../../../../../work/martins/simon/expect/core/actions/ReturningExpectWithRegex.html#pfNotDefined[RR&gt;:R,T](r:RR):T" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -825,7 +809,7 @@ Any action or expect block added after this will not be executed.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">pfNotDefined</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="r">r: <span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span></span>)</span><span class="result">: <span class="extype" name="work.martins.simon.expect.core.actions.Action.pfNotDefined.T">T</span></span>
+        <span class="name">pfNotDefined</span><span class="tparams">[<span name="RR">RR &gt;: <span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span></span>, <span name="T">T</span>]</span><span class="params">(<span name="r">r: <span class="extype" name="work.martins.simon.expect.core.actions.Action.pfNotDefined.RR">RR</span></span>)</span><span class="result">: <span class="extype" name="work.martins.simon.expect.core.actions.Action.pfNotDefined.T">T</span></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd><a href="Action.html" class="extype" name="work.martins.simon.expect.core.actions.Action">Action</a></dd></dl></div>
@@ -845,10 +829,10 @@ Any action or expect block added after this will not be executed.
       </span>
       
       
-    </li><li name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex#structurallyEquals" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="structurallyEquals[WW[X]&lt;:work.martins.simon.expect.core.RegexWhen[X]](other:work.martins.simon.expect.core.actions.Action[R,WW]):Boolean"></a><a id="structurallyEquals[WW[X]&lt;:RegexWhen[X]](Action[R,WW]):Boolean"></a>
+    </li><li name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex#run" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="run[RR&gt;:R](when:work.martins.simon.expect.core.RegexWhen[RR],runContext:work.martins.simon.expect.core.RunContext[RR]):work.martins.simon.expect.core.RunContext[RR]"></a><a id="run[RR&gt;:R](RegexWhen[RR],RunContext[RR]):RunContext[RR]"></a>
       <span class="permalink">
-      <a href="../../../../../../work/martins/simon/expect/core/actions/ReturningExpectWithRegex.html#structurallyEquals[WW[X]&lt;:work.martins.simon.expect.core.RegexWhen[X]](other:work.martins.simon.expect.core.actions.Action[R,WW]):Boolean" title="Permalink">
+      <a href="../../../../../../work/martins/simon/expect/core/actions/ReturningExpectWithRegex.html#run[RR&gt;:R](when:work.martins.simon.expect.core.RegexWhen[RR],runContext:work.martins.simon.expect.core.RunContext[RR]):work.martins.simon.expect.core.RunContext[RR]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -857,7 +841,23 @@ Any action or expect block added after this will not be executed.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">structurallyEquals</span><span class="tparams">[<span name="WW">WW<span class="tparams">[<span name="X">X</span>]</span> &lt;: <a href="../RegexWhen.html" class="extype" name="work.martins.simon.expect.core.RegexWhen">RegexWhen</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.structurallyEquals.WW.X">X</span>]</span>]</span><span class="params">(<span name="other">other: <a href="Action.html" class="extype" name="work.martins.simon.expect.core.actions.Action">Action</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>, <span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.structurallyEquals.WW">WW</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span class="name">run</span><span class="tparams">[<span name="RR">RR &gt;: <span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span></span>]</span><span class="params">(<span name="when">when: <a href="../RegexWhen.html" class="extype" name="work.martins.simon.expect.core.RegexWhen">RegexWhen</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.run.RR">RR</span>]</span>, <span name="runContext">runContext: <a href="../RunContext.html" class="extype" name="work.martins.simon.expect.core.RunContext">RunContext</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.run.RR">RR</span>]</span>)</span><span class="result">: <a href="../RunContext.html" class="extype" name="work.martins.simon.expect.core.RunContext">RunContext</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.run.RR">RR</span>]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex">ReturningExpectWithRegex</a> → <a href="Action.html" class="extype" name="work.martins.simon.expect.core.actions.Action">Action</a></dd></dl></div>
+    </li><li name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex#structurallyEquals" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="structurallyEquals[RR&gt;:R,W[+X]&lt;:work.martins.simon.expect.core.RegexWhen[X]](other:work.martins.simon.expect.core.actions.Action[RR,W]):Boolean"></a><a id="structurallyEquals[RR&gt;:R,W[+X]&lt;:RegexWhen[X]](Action[RR,W]):Boolean"></a>
+      <span class="permalink">
+      <a href="../../../../../../work/martins/simon/expect/core/actions/ReturningExpectWithRegex.html#structurallyEquals[RR&gt;:R,W[+X]&lt;:work.martins.simon.expect.core.RegexWhen[X]](other:work.martins.simon.expect.core.actions.Action[RR,W]):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">structurallyEquals</span><span class="tparams">[<span name="RR">RR &gt;: <span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span></span>, <span name="W">W<span class="tparams">[<span name="X">+X</span>]</span> &lt;: <a href="../RegexWhen.html" class="extype" name="work.martins.simon.expect.core.RegexWhen">RegexWhen</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.structurallyEquals.W.X">X</span>]</span>]</span><span class="params">(<span name="other">other: <a href="Action.html" class="extype" name="work.martins.simon.expect.core.actions.Action">Action</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.structurallyEquals.RR">RR</span>, <span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.structurallyEquals.W">W</span>]</span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <p class="shortcomment cmt">Returns whether the other Action is structurally equal to this Action.</p><div class="fullcomment"><div class="comment cmt"><p>Returns whether the other Action is structurally equal to this Action.
@@ -887,9 +887,9 @@ two actions we created this function.</p></li></ol>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex#transform" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="transform[T](flatMapPF:ReturningExpectWithRegex.this.=/&gt;[R,work.martins.simon.expect.core.Expect[T]])(mapPF:ReturningExpectWithRegex.this.=/&gt;[R,T]):work.martins.simon.expect.core.actions.AbstractReturningWithRegex[T]"></a><a id="transform[T](=/&gt;[R,Expect[T]])(=/&gt;[R,T]):AbstractReturningWithRegex[T]"></a>
+      <a id="transform[T](flatMapPF:R=/&gt;work.martins.simon.expect.core.Expect[T],mapPF:R=/&gt;T):work.martins.simon.expect.core.actions.AbstractReturningWithRegex[T]"></a><a id="transform[T](=/&gt;[R,Expect[T]],=/&gt;[R,T]):AbstractReturningWithRegex[T]"></a>
       <span class="permalink">
-      <a href="../../../../../../work/martins/simon/expect/core/actions/ReturningExpectWithRegex.html#transform[T](flatMapPF:ReturningExpectWithRegex.this.=/&gt;[R,work.martins.simon.expect.core.Expect[T]])(mapPF:ReturningExpectWithRegex.this.=/&gt;[R,T]):work.martins.simon.expect.core.actions.AbstractReturningWithRegex[T]" title="Permalink">
+      <a href="../../../../../../work/martins/simon/expect/core/actions/ReturningExpectWithRegex.html#transform[T](flatMapPF:R=/&gt;work.martins.simon.expect.core.Expect[T],mapPF:R=/&gt;T):work.martins.simon.expect.core.actions.AbstractReturningWithRegex[T]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -898,7 +898,7 @@ two actions we created this function.</p></li></ol>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">transform</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="flatMapPF">flatMapPF: <a href="#=/&gt;[-A,+B]=PartialFunction[A,B]" class="extmbr" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.=/&gt;">=/&gt;</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>, <a href="../Expect.html" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.transform.T">T</span>]]</span>)</span><span class="params">(<span name="mapPF">mapPF: <a href="#=/&gt;[-A,+B]=PartialFunction[A,B]" class="extmbr" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.=/&gt;">=/&gt;</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>, <span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.transform.T">T</span>]</span>)</span><span class="result">: <a href="AbstractReturningWithRegex.html" class="extype" name="work.martins.simon.expect.core.actions.AbstractReturningWithRegex">AbstractReturningWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.transform.T">T</span>]</span>
+        <span class="name">transform</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="flatMapPF">flatMapPF: <a href="#=/&gt;[-A,+B]=PartialFunction[A,B]" class="extmbr" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.=/&gt;">=/&gt;</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>, <a href="../Expect.html" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.transform.T">T</span>]]</span>, <span name="mapPF">mapPF: <a href="#=/&gt;[-A,+B]=PartialFunction[A,B]" class="extmbr" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.=/&gt;">=/&gt;</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>, <span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.transform.T">T</span>]</span>)</span><span class="result">: <a href="AbstractReturningWithRegex.html" class="extype" name="work.martins.simon.expect.core.actions.AbstractReturningWithRegex">AbstractReturningWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.transform.T">T</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../index.html" class="extype" name="work.martins.simon.expect">work.martins.simon.expect</a>] </dd><dt>Definition Classes</dt><dd><a href="" class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex">ReturningExpectWithRegex</a> → <a href="AbstractReturningWithRegex.html" class="extype" name="work.martins.simon.expect.core.actions.AbstractReturningWithRegex">AbstractReturningWithRegex</a> → <a href="Action.html" class="extype" name="work.martins.simon.expect.core.actions.Action">Action</a></dd></dl></div>
@@ -914,7 +914,7 @@ two actions we created this function.</p></li></ol>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
@@ -936,7 +936,7 @@ two actions we created this function.</p></li></ol>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.3/scala/Long.html#scala.Long" class="extype" name="scala.Long">Long</a></span>, <span name="arg1">arg1: <a href="http://www.scala-lang.org/api/2.12.3/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
@@ -958,7 +958,7 @@ two actions we created this function.</p></li></ol>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.3/scala/Long.html#scala.Long" class="extype" name="scala.Long">Long</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
@@ -999,13 +999,13 @@ two actions we created this function.</p></li></ol>
 
         <div id="inheritedMembers">
         <div class="parent" name="scala.Serializable">
-              <h3>Inherited from <span class="extype" name="scala.Serializable">Serializable</span></h3>
+              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.3/scala/Serializable.html#scala.Serializable" class="extype" name="scala.Serializable">Serializable</a></h3>
             </div><div class="parent" name="java.io.Serializable">
               <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
             </div><div class="parent" name="scala.Product">
-              <h3>Inherited from <span class="extype" name="scala.Product">Product</span></h3>
+              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.3/scala/Product.html#scala.Product" class="extype" name="scala.Product">Product</a></h3>
             </div><div class="parent" name="scala.Equals">
-              <h3>Inherited from <span class="extype" name="scala.Equals">Equals</span></h3>
+              <h3>Inherited from <a href="http://www.scala-lang.org/api/2.12.3/scala/Equals.html#scala.Equals" class="extype" name="scala.Equals">Equals</a></h3>
             </div><div class="parent" name="work.martins.simon.expect.core.actions.AbstractReturningWithRegex">
               <h3>Inherited from <a href="AbstractReturningWithRegex.html" class="extype" name="work.martins.simon.expect.core.actions.AbstractReturningWithRegex">AbstractReturningWithRegex</a>[<span class="extype" name="work.martins.simon.expect.core.actions.ReturningExpectWithRegex.R">R</span>]</h3>
             </div><div class="parent" name="work.martins.simon.expect.core.actions.Action">

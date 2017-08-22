@@ -181,32 +181,14 @@
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="work.martins.simon.expect.core">core</a></dd></dl></div>
     </li><li class="current-entities indented5">
                         <span class="separator"></span>
-                        <a class="class" href="ChangeToNewExpect.html" title=""></a>
-                        <a href="ChangeToNewExpect.html" title="">
-                          ChangeToNewExpect
-                        </a>
-                      </li><li class="current-entities indented5">
-                        <span class="separator"></span>
-                        <a class="object" href="Continue$.html" title=""></a>
-                        <a href="Continue$.html" title="">
-                          Continue
-                        </a>
-                      </li><li class="current-entities indented5">
-                        <span class="separator"></span>
                         <a class="class" href="EndOfFileWhen.html" title=""></a>
                         <a href="EndOfFileWhen.html" title="">
                           EndOfFileWhen
                         </a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
-                        <a class="trait" href="ExecutionAction.html" title=""></a>
-                        <a href="ExecutionAction.html" title="">
-                          ExecutionAction
-                        </a>
-                      </li><li class="current-entities indented5">
-                        <span class="separator"></span>
-                        <a class="class" href="" title=""></a>
-                        <a href="" title="">
+                        <a class="class" href="" title="Expect allows you to invoke CLIs and ensure they return what you expect."></a>
+                        <a href="" title="Expect allows you to invoke CLIs and ensure they return what you expect.">
                           Expect
                         </a>
                       </li><li class="current-entities indented5">
@@ -217,9 +199,9 @@
                         </a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
-                        <a class="class" href="IntermediateResult.html" title=""></a>
-                        <a href="IntermediateResult.html" title="">
-                          IntermediateResult
+                        <a class="class" href="NuProcessRichProcess.html" title=""></a>
+                        <a href="NuProcessRichProcess.html" title="">
+                          NuProcessRichProcess
                         </a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
@@ -228,22 +210,22 @@
                           RegexWhen
                         </a>
                       </li><li class="current-entities indented5">
-                        <a class="object" href="RichProcess$.html" title=""></a>
-                        <a class="class" href="RichProcess.html" title="Launches a java.lang.Process with methods to read and print from its stdout and stdin respectively."></a>
-                        <a href="RichProcess.html" title="Launches a java.lang.Process with methods to read and print from its stdout and stdin respectively.">
+                        <span class="separator"></span>
+                        <a class="trait" href="RichProcess.html" title=""></a>
+                        <a href="RichProcess.html" title="">
                           RichProcess
+                        </a>
+                      </li><li class="current-entities indented5">
+                        <a class="object" href="RunContext$.html" title=""></a>
+                        <a class="class" href="RunContext.html" title=""></a>
+                        <a href="RunContext.html" title="">
+                          RunContext
                         </a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
                         <a class="class" href="StringWhen.html" title=""></a>
                         <a href="StringWhen.html" title="">
                           StringWhen
-                        </a>
-                      </li><li class="current-entities indented5">
-                        <span class="separator"></span>
-                        <a class="object" href="Terminate$.html" title=""></a>
-                        <a href="Terminate$.html" title="">
-                          Terminate
                         </a>
                       </li><li class="current-entities indented5">
                         <span class="separator"></span>
@@ -280,12 +262,49 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">Expect</span><span class="tparams">[<span name="R">R</span>]</span><span class="result"> extends <span class="extype" name="com.typesafe.scalalogging.LazyLogging">LazyLogging</span></span>
+        <span class="name">Expect</span><span class="tparams">[<span name="R">+R</span>]</span><span class="result"> extends <span class="extype" name="com.typesafe.scalalogging.LazyLogging">LazyLogging</span></span>
       </span>
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"></div><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Expect allows you to invoke CLIs and ensure they return what you expect.
+You can describe a cli interaction which will be executed when <code>run</code> is invoked.</p><p>Each interaction is described inside an <code>ExpectBlock</code> using <code>When</code>s. Each <code>When</code> states under which
+circumstances the corresponding actions are to be executed. For example:</p><pre><span class="kw">import</span> work.martins.simon.core._
+<span class="kw">import</span> scala.concurrent.ExecutionContext.Implicits.global
+
+<span class="kw">val</span> e = <span class="kw">new</span> Expect(<span class="lit">"bc -i"</span>, defaultValue = <span class="num">5</span>)(
+  ExpectBlock(
+    StringWhen(<span class="lit">"For details type `warranty'."</span>)(
+      Sendln(<span class="lit">"1 + 2"</span>)
+    )
+  ),
+  ExpectBlock(
+    RegexWhen(<span class="lit">""</span><span class="lit">"\n(\d+)\n"</span><span class="lit">""</span>.r)(
+      SendlnWithRegex { m <span class="kw">=&gt;</span>
+        <span class="kw">val</span> previousAnswer = m.group(<span class="num">1</span>)
+        println(s<span class="lit">"Got $$previousAnswer"</span>)
+        s<span class="lit">"$$previousAnswer + 3"</span>
+      }
+    )
+  ),
+  ExpectBlock(
+    RegexWhen(<span class="lit">""</span><span class="lit">"\n(\d+)\n"</span><span class="lit">""</span>.r)(
+      ReturningWithRegex(_.group(<span class="num">1</span>).toInt)
+    )
+  )
+)
+e.run() <span class="cmt">//Returns 6 inside a Future[Int]</span></pre><p>We are executing the command <code>bc -i</code> which is a cli calculator.
+<code>bc</code>, when it starts, writes to the terminal (more precisely to the standard out):
+  &quot;For details type <code>warranty'.&quot;
+The expect we created reacts to it and sends to the terminal (more precisely to the standard in) the string &quot;1 + 2&quot;.
+However it only does so when the expect in ran, until then it does nothing, or in other words,
+it only saves that it has to send &quot;1 + 2&quot; when the string &quot;For details type </code>warranty'.&quot; appears on the StdOut.</p><p>If this interaction is successful it then proceeds to the next one defined by the next <code>ExpectBlock</code>. This
+interaction states that when <code>bc</code> outputs text that matches the regex &quot;&quot;&quot;\n(\d+)\n&quot;&quot;&quot; the expect should react by
+sending the string &quot;3 + 3&quot; where the first 3 is obtained by inspecting the regex match and extracting the first group.</p><p>Finally the last interaction is very similar to the second one, with the only difference being the matched digit is
+not used to send more text to <code>bc</code> but rather to set the value the expect will return in the end of the execution.</p><p>If you find the syntax used to create the <code>Expect</code> too verbose you should look at <a href="../fluent/Expect.html" class="extype" name="work.martins.simon.expect.fluent.Expect">work.martins.simon.expect.fluent.Expect</a>
+or <a href="../dsl/Expect.html" class="extype" name="work.martins.simon.expect.dsl.Expect">work.martins.simon.expect.dsl.Expect</a> which provide a more terse syntax, especially <code>dsl.Expect</code> which provides
+a syntax very similar to Tcl Expect.
+</p></div><dl class="paramcmts block"><dt class="tparam">R</dt><dd class="cmt"><p>the type this <code>Expect</code> returns.</p></dd></dl><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/Lasering/scala-expect/tree/v6.0.0/src/main/scala/work/martins/simon/expect/core/Expect.scala" target="_blank">Expect.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
@@ -294,7 +313,7 @@
                 <span class="toggle diagram-link">
                   Type Hierarchy
                 </span>
-                <div class="diagram" id="inheritance-diagram"><svg class="class-diagram" id="graph1" viewBox="0.00 0.00 443.00 125.00" height="125pt" width="443pt" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"><g transform="scale(1 1) rotate(0) translate(4 121)" class="graph" id="graph0"><polygon points="-4,4 -4,-121 439,-121 439,4 -4,4" stroke="none" fill="white"></polygon><g class="cluster" id="clust1"></g><g class="cluster" id="clust2"></g><g class="cluster" id="clust3"></g><!-- node0 --><g class="node this class" id="graph1_0"><g id="a_this class|graph1_0"><a xlink:title="work.martins.simon.expect.core.Expect (this class)" xlink:href="#inheritance-diagram"><path d="M402.167,-49C402.167,-49 333.833,-49 333.833,-49 329.667,-49 325.5,-44.8333 325.5,-40.6667 325.5,-40.6667 325.5,-32.3333 325.5,-32.3333 325.5,-28.1667 329.667,-24 333.833,-24 333.833,-24 402.167,-24 402.167,-24 406.333,-24 410.5,-28.1667 410.5,-32.3333 410.5,-32.3333 410.5,-40.6667 410.5,-40.6667 410.5,-44.8333 406.333,-49 402.167,-49" stroke="#418565" fill="#418565"></path><image xlink:href="../../../../../lib/class_diagram.png" y="-43.5" x="336" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="8.00" font-family="Source Code Pro" y="-34.1" x="357" text-anchor="start">Expect[R]</text></a></g></g><!-- node3 --><g class="node implicit-incoming class" id="graph1_3"><g id="a_implicit-incoming class|graph1_3"><a xlink:title="work.martins.simon.expect.dsl.Expect can be implicitly converted to core.Expect[R] by the implicit method dslToCoreExpect in package work.martins.simon.expect.dsl" xlink:href="../dsl/Expect.html#inheritance-diagram"><path d="M245.667,-49C245.667,-49 162.333,-49 162.333,-49 158.167,-49 154,-44.8333 154,-40.6667 154,-40.6667 154,-32.3333 154,-32.3333 154,-28.1667 158.167,-24 162.333,-24 162.333,-24 245.667,-24 245.667,-24 249.833,-24 254,-28.1667 254,-32.3333 254,-32.3333 254,-40.6667 254,-40.6667 254,-44.8333 249.833,-49 245.667,-49" stroke="#ababab" fill="#e1e1e1"></path><image xlink:href="../../../../../lib/class_diagram.png" y="-43.5" x="164" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#7d7d7d" font-size="8.00" font-family="Source Code Pro" y="-34.1" x="185" text-anchor="start">dsl.Expect[R]</text></a></g></g><!-- node3&#45;&gt;node0 --><g class="edge implicit-incoming" id="3_0"><g id="a_implicit-incoming|3_0"><a xlink:title="fluent.Expect[R], dsl.Expect[R] can be implicitly converted to Expect[R]"><path d="M261.701,-36.5C277.429,-36.5 294.468,-36.5 310.201,-36.5" stroke="#d4d4d4" fill="none"></path><polygon points="310.389,-38.9501 317.389,-36.5 310.389,-34.0501 310.389,-38.9501" stroke="#d4d4d4" fill="#d4d4d4"></polygon></a></g><text fill="#aaaaaa" font-size="9.00" font-family="Source Code Pro" y="-42.3" x="289.75" text-anchor="middle">implicitly</text></g><!-- node2 --><g class="node implicit-incoming class" id="graph1_2"><g id="a_implicit-incoming class|graph1_2"><a xlink:title="work.martins.simon.expect.fluent.Expect can be implicitly converted to core.Expect[R] by the implicit method fluentToCoreExpect in package work.martins.simon.expect.fluent" xlink:href="../fluent/Expect.html#inheritance-diagram"><path d="M127.667,-49C127.667,-49 32.3333,-49 32.3333,-49 28.1667,-49 24,-44.8333 24,-40.6667 24,-40.6667 24,-32.3333 24,-32.3333 24,-28.1667 28.1667,-24 32.3333,-24 32.3333,-24 127.667,-24 127.667,-24 131.833,-24 136,-28.1667 136,-32.3333 136,-32.3333 136,-40.6667 136,-40.6667 136,-44.8333 131.833,-49 127.667,-49" stroke="#ababab" fill="#e1e1e1"></path><image xlink:href="../../../../../lib/class_diagram.png" y="-43.5" x="34" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#7d7d7d" font-size="8.00" font-family="Source Code Pro" y="-34.1" x="55" text-anchor="start">fluent.Expect[R]</text></a></g></g><!-- node2&#45;&gt;node3 --><!-- node1 --><g class="node trait" id="graph1_1"><g id="a_trait|graph1_1"><a xlink:title="com.typesafe.scalalogging.LazyLogging"><path d="M408.167,-117C408.167,-117 327.833,-117 327.833,-117 323.667,-117 319.5,-112.833 319.5,-108.667 319.5,-108.667 319.5,-100.333 319.5,-100.333 319.5,-96.1667 323.667,-92 327.833,-92 327.833,-92 408.167,-92 408.167,-92 412.333,-92 416.5,-96.1667 416.5,-100.333 416.5,-100.333 416.5,-108.667 416.5,-108.667 416.5,-112.833 412.333,-117 408.167,-117" stroke="#2e6d82" fill="#2e6d82"></path><image xlink:href="../../../../../lib/trait_diagram.png" y="-111.5" x="330" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="8.00" font-family="Source Code Pro" y="-102.1" x="351" text-anchor="start">LazyLogging</text></a></g></g><!-- node1&#45;&gt;node0 --><g class="edge inheritance" id="graph1_1_0"><g id="a_inheritance|graph1_1_0"><a xlink:title="Expect[R] is a subtype of LazyLogging"><path d="M368,-84.6706C368,-73.245 368,-59.0216 368,-49.1973" stroke="#d4d4d4" fill="none"></path><polygon points="365.55,-84.7005 368,-91.7005 370.45,-84.7006 365.55,-84.7005" stroke="#d4d4d4" fill="none"></polygon></a></g></g></g></svg></div>
+                <div class="diagram" id="inheritance-diagram"><svg class="class-diagram" id="graph1" viewBox="0.00 0.00 515.00 125.00" height="125pt" width="515pt" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"><g transform="scale(1 1) rotate(0) translate(4 121)" class="graph" id="page0,1_graph0"><polygon points="-4,4 -4,-121 511,-121 511,4 -4,4" stroke="transparent" fill="#ffffff"></polygon><g class="cluster" id="clust1"></g><g class="cluster" id="clust2"></g><g class="cluster" id="clust3"></g><!-- node0 --><g class="node this class" id="graph1_0"><g id="a_this class|graph1_0"><a xlink:title="work.martins.simon.expect.core.Expect (this class)" xlink:href="#inheritance-diagram"><path d="M474.1667,-49C474.1667,-49 405.8333,-49 405.8333,-49 401.6667,-49 397.5,-44.8333 397.5,-40.6667 397.5,-40.6667 397.5,-32.3333 397.5,-32.3333 397.5,-28.1667 401.6667,-24 405.8333,-24 405.8333,-24 474.1667,-24 474.1667,-24 478.3333,-24 482.5,-28.1667 482.5,-32.3333 482.5,-32.3333 482.5,-40.6667 482.5,-40.6667 482.5,-44.8333 478.3333,-49 474.1667,-49" stroke="#418565" fill="#418565"></path><image xlink:href="../../../../../lib/class_diagram.png" y="-43.5" x="408" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="8.00" font-family="Source Code Pro" y="-34.1" x="429" text-anchor="start">Expect[R]</text></a></g></g><!-- node3 --><g class="node implicit-incoming class" id="graph1_3"><g id="a_implicit-incoming class|graph1_3"><a xlink:title="work.martins.simon.expect.dsl.Expect can be implicitly converted to core.Expect[R] by the implicit method dslToCoreExpect in package work.martins.simon.expect.dsl" xlink:href="../dsl/Expect.html#inheritance-diagram"><path d="M245.6667,-49C245.6667,-49 162.3333,-49 162.3333,-49 158.1667,-49 154,-44.8333 154,-40.6667 154,-40.6667 154,-32.3333 154,-32.3333 154,-28.1667 158.1667,-24 162.3333,-24 162.3333,-24 245.6667,-24 245.6667,-24 249.8333,-24 254,-28.1667 254,-32.3333 254,-32.3333 254,-40.6667 254,-40.6667 254,-44.8333 249.8333,-49 245.6667,-49" stroke="#ababab" fill="#e1e1e1"></path><image xlink:href="../../../../../lib/class_diagram.png" y="-43.5" x="164" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#7d7d7d" font-size="8.00" font-family="Source Code Pro" y="-34.1" x="185" text-anchor="start">dsl.Expect[R]</text></a></g></g><!-- node3&#45;&gt;node0 --><g class="edge implicit-incoming" id="3_0"><g id="a_implicit-incoming|3_0"><a xlink:title="fluent.Expect[R], dsl.Expect[R] can be implicitly converted to Expect[R]"><path d="M261.9982,-36.5C298.4584,-36.5 345.3323,-36.5 381.8259,-36.5" stroke="#d4d4d4" fill="none"></path><polygon points="382.0012,-38.9501 389.0011,-36.5 382.0011,-34.0501 382.0012,-38.9501" stroke="#d4d4d4" fill="#d4d4d4"></polygon></a></g><text fill="#aaaaaa" font-size="9.00" font-family="Source Code Pro" y="-42.3" x="325.75" text-anchor="middle">implicitly</text></g><!-- node2 --><g class="node implicit-incoming class" id="graph1_2"><g id="a_implicit-incoming class|graph1_2"><a xlink:title="work.martins.simon.expect.fluent.Expect can be implicitly converted to core.Expect[R] by the implicit method fluentToCoreExpect in package work.martins.simon.expect.fluent" xlink:href="../fluent/Expect.html#inheritance-diagram"><path d="M127.6667,-49C127.6667,-49 32.3333,-49 32.3333,-49 28.1667,-49 24,-44.8333 24,-40.6667 24,-40.6667 24,-32.3333 24,-32.3333 24,-28.1667 28.1667,-24 32.3333,-24 32.3333,-24 127.6667,-24 127.6667,-24 131.8333,-24 136,-28.1667 136,-32.3333 136,-32.3333 136,-40.6667 136,-40.6667 136,-44.8333 131.8333,-49 127.6667,-49" stroke="#ababab" fill="#e1e1e1"></path><image xlink:href="../../../../../lib/class_diagram.png" y="-43.5" x="34" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#7d7d7d" font-size="8.00" font-family="Source Code Pro" y="-34.1" x="55" text-anchor="start">fluent.Expect[R]</text></a></g></g><!-- node2&#45;&gt;node3 --><!-- node1 --><g class="node trait" id="graph1_1"><g id="a_trait|graph1_1"><a xlink:title="com.typesafe.scalalogging.LazyLogging"><path d="M480.1667,-117C480.1667,-117 399.8333,-117 399.8333,-117 395.6667,-117 391.5,-112.8333 391.5,-108.6667 391.5,-108.6667 391.5,-100.3333 391.5,-100.3333 391.5,-96.1667 395.6667,-92 399.8333,-92 399.8333,-92 480.1667,-92 480.1667,-92 484.3333,-92 488.5,-96.1667 488.5,-100.3333 488.5,-100.3333 488.5,-108.6667 488.5,-108.6667 488.5,-112.8333 484.3333,-117 480.1667,-117" stroke="#2e6d82" fill="#2e6d82"></path><image xlink:href="../../../../../lib/trait_diagram.png" y="-111.5" x="402" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="8.00" font-family="Source Code Pro" y="-102.1" x="423" text-anchor="start">LazyLogging</text></a></g></g><!-- node1&#45;&gt;node0 --><g class="edge inheritance" id="graph1_1_0"><g id="a_inheritance|graph1_1_0"><a xlink:title="Expect[R] is a subtype of LazyLogging"><path d="M440,-84.6427C440,-73.2137 440,-59.1902 440,-49.2329" stroke="#d4d4d4" fill="none"></path><polygon points="437.5501,-84.7097 440,-91.7097 442.4501,-84.7098 437.5501,-84.7097" stroke="#d4d4d4" fill="none"></polygon></a></g></g></g></svg></div>
                 <div id="diagram-controls" class="hiddenContent">
                   <button id="diagram-zoom-out" class="diagram-btn"><i class="material-icons"></i></button>
                   <button id="diagram-zoom-in" class="diagram-btn"><i class="material-icons"></i></button>
@@ -316,7 +335,7 @@
           <div id="order">
             <span class="filtertype">Ordering</span>
             <ol>
-              
+              <li class="group out"><span>Grouped</span></li>
               <li class="alpha in"><span>Alphabetic</span></li>
               <li class="inherit out"><span>By Inheritance</span></li>
             </ol>
@@ -414,7 +433,7 @@
       </span>
       
       
-    </li><li name="work.martins.simon.expect.core.Expect#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="work.martins.simon.expect.core.Expect#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="&lt;init&gt;(command:Seq[String],defaultValue:R,settings:work.martins.simon.expect.Settings)(expectBlocks:work.martins.simon.expect.core.ExpectBlock[R]*):work.martins.simon.expect.core.Expect[R]"></a><a id="&lt;init&gt;:Expect[R]"></a>
       <span class="permalink">
       <a href="../../../../../work/martins/simon/expect/core/Expect.html#&lt;init&gt;(command:Seq[String],defaultValue:R,settings:work.martins.simon.expect.Settings)(expectBlocks:work.martins.simon.expect.core.ExpectBlock[R]*):work.martins.simon.expect.core.Expect[R]" title="Permalink">
@@ -426,10 +445,10 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Expect</span><span class="params">(<span name="command">command: <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="defaultValue">defaultValue: <span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span></span>, <span name="settings">settings: <a href="../Settings.html" class="extype" name="work.martins.simon.expect.Settings">Settings</a> = <span class="symbol"><span class="name"><a href="../../../../index.html">new Settings()</a></span></span></span>)</span><span class="params">(<span name="expectBlocks">expectBlocks: <a href="ExpectBlock.html" class="extype" name="work.martins.simon.expect.core.ExpectBlock">ExpectBlock</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]*</span>)</span>
+        <span class="name">Expect</span><span class="params">(<span name="command">command: <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="defaultValue">defaultValue: <span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span></span>, <span name="settings">settings: <a href="../Settings.html" class="extype" name="work.martins.simon.expect.Settings">Settings</a> = <span class="symbol"><span class="name"><a href="../Settings$.html">new Settings()</a></span></span></span>)</span><span class="params">(<span name="expectBlocks">expectBlocks: <a href="ExpectBlock.html" class="extype" name="work.martins.simon.expect.core.ExpectBlock">ExpectBlock</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]*</span>)</span>
       </span>
       
-      
+      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">command</dt><dd class="cmt"><p>the command this <code>Expect</code> will execute.</p></dd><dt class="param">defaultValue</dt><dd class="cmt"><p>the value that will be returned if no <code>Returning</code> action is executed.</p></dd><dt class="param">settings</dt><dd class="cmt"><p>the settings that parameterize the execution of this <code>Expect</code>.</p></dd><dt class="param">expectBlocks</dt><dd class="cmt"><p>the <code>ExpectBlock</code>s that describe the interactions this <code>Expect</code> will execute.</p></dd></dl></div>
     </li></ol>
             </div>
 
@@ -452,7 +471,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
@@ -468,7 +487,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
@@ -527,7 +546,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
@@ -562,13 +581,31 @@
         <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="work.martins.simon.expect.core.Expect#collect" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Transformations">
+      <a id="collect[T](pf:PartialFunction[R,T]):work.martins.simon.expect.core.Expect[T]"></a><a id="collect[T](PartialFunction[R,T]):Expect[T]"></a>
+      <span class="permalink">
+      <a href="../../../../../work/martins/simon/expect/core/Expect.html#collect[T](pf:PartialFunction[R,T]):work.martins.simon.expect.core.Expect[T]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">collect</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="pf">pf: <a href="http://www.scala-lang.org/api/2.12.3/scala/PartialFunction.html#scala.PartialFunction" class="extype" name="scala.PartialFunction">PartialFunction</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>, <span class="extype" name="work.martins.simon.expect.core.Expect.collect.T">T</span>]</span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.collect.T">T</span>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Creates a new <code>Expect</code> by mapping the result of the current <code>Expect</code>, if the given partial function is defined at that value.</p><div class="fullcomment"><div class="comment cmt"><p>Creates a new <code>Expect</code> by mapping the result of the current <code>Expect</code>, if the given partial function is defined at that value.</p><p> If the current <code>Expect</code> contains a value for which the partial function is defined, the new <code>Expect</code> will also hold that value.
+ Otherwise, the resulting <code>Expect</code> will fail with a <code>NoSuchElementException</code>.
+</p></div><dl class="paramcmts block"><dt class="tparam">T</dt><dd class="cmt"><p>the type of the returned <code>Expect</code></p></dd><dt class="param">pf</dt><dd class="cmt"><p>the <code>PartialFunction</code> to apply to the result of this <code>Expect</code></p></dd><dt>returns</dt><dd class="cmt"><p>an <code>Expect</code> holding the result of application of the <code>PartialFunction</code> or a <code>NoSuchElementException</code></p></dd></dl></div>
     </li><li name="work.martins.simon.expect.core.Expect#command" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="command:Seq[String]"></a>
       <span class="permalink">
@@ -613,7 +650,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="implicit">ensuring</span><span class="params">(<span name="cond">cond: (<a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="msg">msg: ⇒ <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>
+        <span class="implicit">ensuring</span><span class="params">(<span name="cond">cond: (<a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]) ⇒ <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>, <span name="msg">msg: ⇒ <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt class="implicit">Implicit</dt><dd>
@@ -633,7 +670,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="implicit">ensuring</span><span class="params">(<span name="cond">cond: (<a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]) ⇒ <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>
+        <span class="implicit">ensuring</span><span class="params">(<span name="cond">cond: (<a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]) ⇒ <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt class="implicit">Implicit</dt><dd>
@@ -653,7 +690,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="implicit">ensuring</span><span class="params">(<span name="cond">cond: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="msg">msg: ⇒ <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>
+        <span class="implicit">ensuring</span><span class="params">(<span name="cond">cond: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>, <span name="msg">msg: ⇒ <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt class="implicit">Implicit</dt><dd>
@@ -673,7 +710,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="implicit">ensuring</span><span class="params">(<span name="cond">cond: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>
+        <span class="implicit">ensuring</span><span class="params">(<span name="cond">cond: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt class="implicit">Implicit</dt><dd>
@@ -693,7 +730,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
@@ -709,14 +746,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">equals</span><span class="params">(<span name="other">other: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span class="name">equals</span><span class="params">(<span name="other">other: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
-      <p class="shortcomment cmt">Returns whether <code>other</code> is an Expect with the same <code>command</code>, the same <code>defaultValue</code>, the same <code>settings</code> and
-the same <code>expects</code> as this <code>Expect</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Returns whether <code>other</code> is an Expect with the same <code>command</code>, the same <code>defaultValue</code>, the same <code>settings</code> and
+      <p class="shortcomment cmt">Returns whether <code>other</code> is an <code>Expect</code> with the same <code>command</code>, the same <code>defaultValue</code>, the same <code>settings</code> and
+the same <code>expects</code> as this <code>Expect</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Returns whether <code>other</code> is an <code>Expect</code> with the same <code>command</code>, the same <code>defaultValue</code>, the same <code>settings</code> and
 the same <code>expects</code> as this <code>Expect</code>.</p><p>In the cases that <code>expects</code> contains an Action with a function, eg. Returning, this method will return false,
 because equality is not defined for functions.</p><p>The method <code>structurallyEqual</code> can be used to test that two expects contain the same structure.
-</p></div><dl class="paramcmts block"><dt class="param">other</dt><dd class="cmt"><p>the other Expect to campare this Expect to.</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a> → AnyRef → Any</dd></dl></div>
+</p></div><dl class="paramcmts block"><dt class="param">other</dt><dd class="cmt"><p>the other <code>Expect</code> to compare this <code>Expect</code> to.</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a> → AnyRef → Any</dd></dl></div>
     </li><li name="work.martins.simon.expect.core.Expect#expectBlocks" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="expectBlocks:work.martins.simon.expect.core.ExpectBlock[R]*"></a><a id="expectBlocks:ExpectBlock[R]*"></a>
       <span class="permalink">
@@ -733,6 +770,24 @@ because equality is not defined for functions.</p><p>The method <code>structural
       </span>
       
       
+    </li><li name="work.martins.simon.expect.core.Expect#filter" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Transformations">
+      <a id="filter(p:R=&gt;Boolean):work.martins.simon.expect.core.Expect[R]"></a><a id="filter((R)⇒Boolean):Expect[R]"></a>
+      <span class="permalink">
+      <a href="../../../../../work/martins/simon/expect/core/Expect.html#filter(p:R=&gt;Boolean):work.martins.simon.expect.core.Expect[R]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">filter</span><span class="params">(<span name="p">p: (<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>) ⇒ <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Creates a new <code>Expect</code> by filtering its result with a predicate.</p><div class="fullcomment"><div class="comment cmt"><p>Creates a new <code>Expect</code> by filtering its result with a predicate.</p><p> If the current <code>Expect</code> result satisfies the predicate, the new <code>Expect</code> will also hold that result.
+ Otherwise, the resulting <code>Expect</code> will fail with a <code>NoSuchElementException</code>.
+</p></div><dl class="paramcmts block"><dt class="param">p</dt><dd class="cmt"><p>the predicate to apply to the result of this <code>Expect</code></p></dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <span class="permalink">
@@ -745,17 +800,17 @@ because equality is not defined for functions.</p><p>The method <code>structural
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="symbol">classOf[java.lang.Throwable]</span>
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="work.martins.simon.expect.core.Expect#flatMap" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="work.martins.simon.expect.core.Expect#flatMap" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Transformations">
       <a id="flatMap[T](f:R=&gt;work.martins.simon.expect.core.Expect[T]):work.martins.simon.expect.core.Expect[T]"></a><a id="flatMap[T]((R)⇒Expect[T]):Expect[T]"></a>
       <span class="permalink">
       <a href="../../../../../work/martins/simon/expect/core/Expect.html#flatMap[T](f:R=&gt;work.martins.simon.expect.core.Expect[T]):work.martins.simon.expect.core.Expect[T]" title="Permalink">
@@ -770,8 +825,26 @@ because equality is not defined for functions.</p><p>The method <code>structural
         <span class="name">flatMap</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>) ⇒ <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.flatMap.T">T</span>]</span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.flatMap.T">T</span>]</span>
       </span>
       
-      <p class="shortcomment cmt">Creates a new Expect by applying a function to the returned result of this Expect, and returns the result
-of the function as the new Expect.</p>
+      <p class="shortcomment cmt">Creates a new <code>Expect</code> by applying a function to the returned result of this <code>Expect</code>, and returns the result
+of the function as the new <code>Expect</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Creates a new <code>Expect</code> by applying a function to the returned result of this <code>Expect</code>, and returns the result
+of the function as the new <code>Expect</code>.
+</p></div><dl class="paramcmts block"><dt class="tparam">T</dt><dd class="cmt"><p>the type of the returned <code>Expect</code></p></dd><dt class="param">f</dt><dd class="cmt"><p>the function which will be applied to the returned result of this <code>Expect</code></p></dd><dt>returns</dt><dd class="cmt"><p>the <code>Expect</code> returned as the result of the application of the function <code>f</code></p></dd></dl></div>
+    </li><li name="work.martins.simon.expect.core.Expect#flatten" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Transformations">
+      <a id="flatten[T](implicitev:R&lt;:&lt;work.martins.simon.expect.core.Expect[T]):work.martins.simon.expect.core.Expect[T]"></a><a id="flatten[T](&lt;:&lt;[R,Expect[T]]):Expect[T]"></a>
+      <span class="permalink">
+      <a href="../../../../../work/martins/simon/expect/core/Expect.html#flatten[T](implicitev:R&lt;:&lt;work.martins.simon.expect.core.Expect[T]):work.martins.simon.expect.core.Expect[T]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">flatten</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="ev">ev: <span class="extype" name="scala.Predef.&lt;:&lt;">&lt;:&lt;</span>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>, <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.flatten.T">T</span>]]</span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.flatten.T">T</span>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Creates a new <code>Expect</code> with one level of nesting flattened, this method is equivalent to <code>flatMap(identity)</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Creates a new <code>Expect</code> with one level of nesting flattened, this method is equivalent to <code>flatMap(identity)</code>.</p></div><dl class="paramcmts block"><dt class="tparam">T</dt><dd class="cmt"><p>the type of the returned <code>Expect</code></p></dd><dt>returns</dt><dd class="cmt"><p>an <code>Expect</code> with one level of nesting flattened</p></dd></dl></div>
     </li><li name="scala.Predef.StringFormat#formatted" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="formatted(fmtstr:String):String"></a><a id="formatted(String):String"></a>
       <span class="permalink">
@@ -823,7 +896,7 @@ of the function as the new Expect.</p>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a> → AnyRef → Any</dd></dl></div>
@@ -839,7 +912,7 @@ of the function as the new Expect.</p>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
@@ -858,11 +931,8 @@ of the function as the new Expect.</p>
         <span class="name">logger</span><span class="result">: <span class="extype" name="com.typesafe.scalalogging.Logger">Logger</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>LazyLogging</dd><dt>Annotations</dt><dd>
-                <span class="name">@volatile</span><span class="args">()</span>
-              
-        </dd></dl></div>
-    </li><li name="work.martins.simon.expect.core.Expect#map" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected </dd><dt>Definition Classes</dt><dd>LazyLogging</dd></dl></div>
+    </li><li name="work.martins.simon.expect.core.Expect#map" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Transformations">
       <a id="map[T](f:R=&gt;T):work.martins.simon.expect.core.Expect[T]"></a><a id="map[T]((R)⇒T):Expect[T]"></a>
       <span class="permalink">
       <a href="../../../../../work/martins/simon/expect/core/Expect.html#map[T](f:R=&gt;T):work.martins.simon.expect.core.Expect[T]" title="Permalink">
@@ -877,7 +947,8 @@ of the function as the new Expect.</p>
         <span class="name">map</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="f">f: (<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>) ⇒ <span class="extype" name="work.martins.simon.expect.core.Expect.map.T">T</span></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.map.T">T</span>]</span>
       </span>
       
-      <p class="shortcomment cmt">Creates a new Expect by applying a function to the returned result of this Expect.</p>
+      <p class="shortcomment cmt">Creates a new <code>Expect</code> by applying a function to the returned result of this <code>Expect</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Creates a new <code>Expect</code> by applying a function to the returned result of this <code>Expect</code>.
+</p></div><dl class="paramcmts block"><dt class="tparam">T</dt><dd class="cmt"><p>the type of the returned <code>Expect</code></p></dd><dt class="param">f</dt><dd class="cmt"><p>the function which will be applied to the returned result of this <code>Expect</code></p></dd><dt>returns</dt><dd class="cmt"><p>an <code>Expect</code> which will return the result of the application of the function <code>f</code></p></dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
       <span class="permalink">
@@ -890,7 +961,7 @@ of the function as the new Expect.</p>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
@@ -906,7 +977,7 @@ of the function as the new Expect.</p>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
@@ -922,14 +993,14 @@ of the function as the new Expect.</p>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="work.martins.simon.expect.core.Expect#run" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="run(richProcess:work.martins.simon.expect.core.RichProcess)(implicitex:scala.concurrent.ExecutionContext):scala.concurrent.Future[R]"></a><a id="run(RichProcess)(ExecutionContext):Future[R]"></a>
+      <a id="run(process:work.martins.simon.expect.core.RichProcess)(implicitex:scala.concurrent.ExecutionContext):scala.concurrent.Future[R]"></a><a id="run(RichProcess)(ExecutionContext):Future[R]"></a>
       <span class="permalink">
-      <a href="../../../../../work/martins/simon/expect/core/Expect.html#run(richProcess:work.martins.simon.expect.core.RichProcess)(implicitex:scala.concurrent.ExecutionContext):scala.concurrent.Future[R]" title="Permalink">
+      <a href="../../../../../work/martins/simon/expect/core/Expect.html#run(process:work.martins.simon.expect.core.RichProcess)(implicitex:scala.concurrent.ExecutionContext):scala.concurrent.Future[R]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -938,7 +1009,7 @@ of the function as the new Expect.</p>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">run</span><span class="params">(<span name="richProcess">richProcess: <a href="RichProcess.html" class="extype" name="work.martins.simon.expect.core.RichProcess">RichProcess</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ex">ex: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>
+        <span class="name">run</span><span class="params">(<span name="process">process: <a href="RichProcess.html" class="extype" name="work.martins.simon.expect.core.RichProcess">RichProcess</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ex">ex: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/ExecutionContext.html#scala.concurrent.ExecutionContext" class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>
       </span>
       
       
@@ -954,14 +1025,14 @@ of the function as the new Expect.</p>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">run</span><span class="params">(<span name="settings">settings: <a href="../Settings.html" class="extype" name="work.martins.simon.expect.Settings">Settings</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ex">ex: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>
+        <span class="name">run</span><span class="params">(<span name="settings">settings: <a href="../Settings.html" class="extype" name="work.martins.simon.expect.Settings">Settings</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ex">ex: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/ExecutionContext.html#scala.concurrent.ExecutionContext" class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>
       </span>
       
       
     </li><li name="work.martins.simon.expect.core.Expect#run" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="run(timeout:scala.concurrent.duration.FiniteDuration,charset:java.nio.charset.Charset,bufferSize:Int,redirectStdErrToStdOut:Boolean)(implicitex:scala.concurrent.ExecutionContext):scala.concurrent.Future[R]"></a><a id="run(FiniteDuration,Charset,Int,Boolean)(ExecutionContext):Future[R]"></a>
+      <a id="run(timeout:scala.concurrent.duration.FiniteDuration,charset:java.nio.charset.Charset)(implicitex:scala.concurrent.ExecutionContext):scala.concurrent.Future[R]"></a><a id="run(FiniteDuration,Charset)(ExecutionContext):Future[R]"></a>
       <span class="permalink">
-      <a href="../../../../../work/martins/simon/expect/core/Expect.html#run(timeout:scala.concurrent.duration.FiniteDuration,charset:java.nio.charset.Charset,bufferSize:Int,redirectStdErrToStdOut:Boolean)(implicitex:scala.concurrent.ExecutionContext):scala.concurrent.Future[R]" title="Permalink">
+      <a href="../../../../../work/martins/simon/expect/core/Expect.html#run(timeout:scala.concurrent.duration.FiniteDuration,charset:java.nio.charset.Charset)(implicitex:scala.concurrent.ExecutionContext):scala.concurrent.Future[R]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -970,7 +1041,7 @@ of the function as the new Expect.</p>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">run</span><span class="params">(<span name="timeout">timeout: <span class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</span> = <span class="symbol"><span class="name"><a href="#settings:work.martins.simon.expect.Settings">settings.timeout</a></span></span></span>, <span name="charset">charset: <span class="extype" name="java.nio.charset.Charset">Charset</span> = <span class="symbol"><span class="name"><a href="#settings:work.martins.simon.expect.Settings">settings.charset</a></span></span></span>, <span name="bufferSize">bufferSize: <span class="extype" name="scala.Int">Int</span> = <span class="symbol"><span class="name"><a href="#settings:work.martins.simon.expect.Settings">settings.bufferSize</a></span></span></span>, <span name="redirectStdErrToStdOut">redirectStdErrToStdOut: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol"><span class="name"><a href="#settings:work.martins.simon.expect.Settings">settings.redirectStdErrToStdOut</a></span></span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ex">ex: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>
+        <span class="name">run</span><span class="params">(<span name="timeout">timeout: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/duration/FiniteDuration.html#scala.concurrent.duration.FiniteDuration" class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</a> = <span class="symbol"><span class="name"><a href="#settings:work.martins.simon.expect.Settings">settings.timeout</a></span></span></span>, <span name="charset">charset: <span class="extype" name="java.nio.charset.Charset">Charset</span> = <span class="symbol"><span class="name"><a href="#settings:work.martins.simon.expect.Settings">settings.charset</a></span></span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ex">ex: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/ExecutionContext.html#scala.concurrent.ExecutionContext" class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/concurrent/Future.html#scala.concurrent.Future" class="extype" name="scala.concurrent.Future">Future</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>
       </span>
       
       
@@ -991,9 +1062,9 @@ of the function as the new Expect.</p>
       
       
     </li><li name="work.martins.simon.expect.core.Expect#structurallyEquals" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="structurallyEquals(other:work.martins.simon.expect.core.Expect[R]):Boolean"></a><a id="structurallyEquals(Expect[R]):Boolean"></a>
+      <a id="structurallyEquals[RR&gt;:R](other:work.martins.simon.expect.core.Expect[RR]):Boolean"></a><a id="structurallyEquals[RR&gt;:R](Expect[RR]):Boolean"></a>
       <span class="permalink">
-      <a href="../../../../../work/martins/simon/expect/core/Expect.html#structurallyEquals(other:work.martins.simon.expect.core.Expect[R]):Boolean" title="Permalink">
+      <a href="../../../../../work/martins/simon/expect/core/Expect.html#structurallyEquals[RR&gt;:R](other:work.martins.simon.expect.core.Expect[RR]):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -1002,7 +1073,7 @@ of the function as the new Expect.</p>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">structurallyEquals</span><span class="params">(<span name="other">other: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span class="name">structurallyEquals</span><span class="tparams">[<span name="RR">RR &gt;: <span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span></span>]</span><span class="params">(<span name="other">other: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.structurallyEquals.RR">RR</span>]</span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>
       </span>
       
       <p class="shortcomment cmt"></p>
@@ -1038,10 +1109,10 @@ of the function as the new Expect.</p>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a> → AnyRef → Any</dd></dl></div>
-    </li><li name="work.martins.simon.expect.core.Expect#transform" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="transform[T](flatMapPF:PartialFunction[R,work.martins.simon.expect.core.Expect[T]])(mapPF:PartialFunction[R,T]):work.martins.simon.expect.core.Expect[T]"></a><a id="transform[T](PartialFunction[R,Expect[T]])(PartialFunction[R,T]):Expect[T]"></a>
+    </li><li name="work.martins.simon.expect.core.Expect#transform" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Transformations">
+      <a id="transform[T](flatMapPF:PartialFunction[R,work.martins.simon.expect.core.Expect[T]],mapPF:PartialFunction[R,T]):work.martins.simon.expect.core.Expect[T]"></a><a id="transform[T](PartialFunction[R,Expect[T]],PartialFunction[R,T]):Expect[T]"></a>
       <span class="permalink">
-      <a href="../../../../../work/martins/simon/expect/core/Expect.html#transform[T](flatMapPF:PartialFunction[R,work.martins.simon.expect.core.Expect[T]])(mapPF:PartialFunction[R,T]):work.martins.simon.expect.core.Expect[T]" title="Permalink">
+      <a href="../../../../../work/martins/simon/expect/core/Expect.html#transform[T](flatMapPF:PartialFunction[R,work.martins.simon.expect.core.Expect[T]],mapPF:PartialFunction[R,T]):work.martins.simon.expect.core.Expect[T]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -1050,13 +1121,13 @@ of the function as the new Expect.</p>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">transform</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="flatMapPF">flatMapPF: <span class="extype" name="scala.PartialFunction">PartialFunction</span>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>, <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.transform.T">T</span>]]</span>)</span><span class="params">(<span name="mapPF">mapPF: <span class="extype" name="scala.PartialFunction">PartialFunction</span>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>, <span class="extype" name="work.martins.simon.expect.core.Expect.transform.T">T</span>]</span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.transform.T">T</span>]</span>
+        <span class="name">transform</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="flatMapPF">flatMapPF: <a href="http://www.scala-lang.org/api/2.12.3/scala/PartialFunction.html#scala.PartialFunction" class="extype" name="scala.PartialFunction">PartialFunction</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>, <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.transform.T">T</span>]]</span>, <span name="mapPF">mapPF: <a href="http://www.scala-lang.org/api/2.12.3/scala/PartialFunction.html#scala.PartialFunction" class="extype" name="scala.PartialFunction">PartialFunction</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>, <span class="extype" name="work.martins.simon.expect.core.Expect.transform.T">T</span>]</span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.transform.T">T</span>]</span>
       </span>
       
-      <p class="shortcomment cmt">Transform this Expect result using the following strategy:</p><div class="fullcomment"><div class="comment cmt"><p>Transform this Expect result using the following strategy:</p><ul><li>if <code>flatMapPF</code> <code>isDefinedAt</code> for this expect result then the result is flatMapped using flatMapPF.</li><li>otherwise, if <code>mapPF</code> <code>isDefinedAt</code> for this expect result then the result is mapped using mapPF.</li><li>otherwise a NoSuchElementException is thrown where the result would be expected.</li></ul><p>This function is very useful when we need to flatMap this Expect for some values of its result type and map
-this Expect for some other values of its result type.</p><p>To ensure you don't get NoSuchElementException you should take special care in ensuring:</p><pre>domain(flatMapPF) ∪ domain(mapPF) == domain(R)</pre><p>Remember that in the domain of R the <code>defaultValue</code> is also included.
-</p></div><dl class="paramcmts block"><dt class="tparam">T</dt><dd class="cmt"><p>the type of the returned Expect.</p></dd><dt class="param">flatMapPF</dt><dd class="cmt"><p>the function that will be applied when a flatMap is needed.</p></dd><dt class="param">mapPF</dt><dd class="cmt"><p>the function that will be applied when a map is needed.</p></dd><dt>returns</dt><dd class="cmt"><p>a new Expect whose result is either flatMapped or mapped according to whether flatMapPF or
-        mapPF is defined for the given result.</p></dd></dl><dl class="attributes block"> <div class="block">Example:
+      <p class="shortcomment cmt">Transform this <code>Expect</code> result using the following strategy:</p><div class="fullcomment"><div class="comment cmt"><p>Transform this <code>Expect</code> result using the following strategy:</p><ul><li>if <code>flatMapPF</code> <code>isDefinedAt</code> for this expect result then the result is flatMapped using flatMapPF.</li><li>otherwise, if <code>mapPF</code> <code>isDefinedAt</code> for this expect result then the result is mapped using mapPF.</li><li>otherwise a NoSuchElementException is thrown where the result would be expected.</li></ul><p>This function is very useful when we need to flatMap this <code>Expect</code> for some values of its result type and map
+this <code>Expect</code> for some other values of its result type.</p><p>To ensure you don't get NoSuchElementException you should take special care in ensuring:</p><pre>domain(flatMapPF) ∪ domain(mapPF) == domain(R)</pre><p>Remember that in the domain of R the <code>defaultValue</code> is also included.
+</p></div><dl class="paramcmts block"><dt class="tparam">T</dt><dd class="cmt"><p>the type of the returned <code>Expect</code></p></dd><dt class="param">flatMapPF</dt><dd class="cmt"><p>the function that will be applied when a flatMap is needed</p></dd><dt class="param">mapPF</dt><dd class="cmt"><p>the function that will be applied when a map is needed</p></dd><dt>returns</dt><dd class="cmt"><p>a new <code>Expect</code> whose result is either flatMapped or mapped according to whether flatMapPF or
+        mapPF is defined for the given result</p></dd></dl><dl class="attributes block"> <div class="block">Example:
                <ol><li class="cmt"><p></p><pre><span class="kw">def</span> countFilesInFolder(folder: <span class="std">String</span>): Expect[Either[<span class="std">String</span>, <span class="std">Int</span>]] = {
   <span class="kw">val</span> e = <span class="kw">new</span> Expect(s<span class="lit">"ls -1 $$folder"</span>, Left(<span class="lit">"unknownError"</span>): Either[<span class="std">String</span>, <span class="std">Int</span>])(
     ExpectBlock(
@@ -1072,7 +1143,7 @@ this Expect for some other values of its result type.</p><p>To ensure you don't 
 }
 
 <span class="kw">def</span> ensureFolderIsEmpty(folder: <span class="std">String</span>): Expect[Either[<span class="std">String</span>, <span class="std">Unit</span>]] = {
-  countFilesInFolder(folder).transform {
+  countFilesInFolder(folder).transform({
     <span class="kw">case</span> Right(numberOfFiles) <span class="kw">=&gt;</span>
       Expect(s<span class="lit">"rm -r $$folder"</span>, Left(<span class="lit">"unknownError"</span>): Either[<span class="std">String</span>, <span class="std">Unit</span>])(
         ExpectBlock(
@@ -1084,10 +1155,10 @@ this Expect for some other values of its result type.</p><p>To ensure you don't 
           )
         )
       )
-  }{
+  }, {
     <span class="kw">case</span> Left(l) <span class="kw">=&gt;</span> Left(l)
     <span class="kw">case</span> Right(numberOfFiles) <span class="kw">if</span> numberOfFiles == <span class="num">0</span> <span class="kw">=&gt;</span> Right(())
-  }
+  })
 }</pre></li></ol>
             </div></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -1102,7 +1173,7 @@ this Expect for some other values of its result type.</p><p>To ensure you don't 
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
@@ -1124,7 +1195,7 @@ this Expect for some other values of its result type.</p><p>To ensure you don't 
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.3/scala/Long.html#scala.Long" class="extype" name="scala.Long">Long</a></span>, <span name="arg1">arg1: <a href="http://www.scala-lang.org/api/2.12.3/scala/Int.html#scala.Int" class="extype" name="scala.Int">Int</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
@@ -1146,7 +1217,7 @@ this Expect for some other values of its result type.</p><p>To ensure you don't 
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <a href="http://www.scala-lang.org/api/2.12.3/scala/Long.html#scala.Long" class="extype" name="scala.Long">Long</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.3/scala/Unit.html#scala.Unit" class="extype" name="scala.Unit">Unit</a></span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
@@ -1156,6 +1227,60 @@ this Expect for some other values of its result type.</p><p>To ensure you don't 
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="work.martins.simon.expect.core.Expect#withFilter" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Transformations">
+      <a id="withFilter(p:R=&gt;Boolean):work.martins.simon.expect.core.Expect[R]"></a><a id="withFilter((R)⇒Boolean):Expect[R]"></a>
+      <span class="permalink">
+      <a href="../../../../../work/martins/simon/expect/core/Expect.html#withFilter(p:R=&gt;Boolean):work.martins.simon.expect.core.Expect[R]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">withFilter</span><span class="params">(<span name="p">p: (<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>) ⇒ <a href="http://www.scala-lang.org/api/2.12.3/scala/Boolean.html#scala.Boolean" class="extype" name="scala.Boolean">Boolean</a></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Used by for-comprehensions.</p>
+    </li><li name="work.martins.simon.expect.core.Expect#zip" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Transformations">
+      <a id="zip[T](that:work.martins.simon.expect.core.Expect[T]):work.martins.simon.expect.core.Expect[(R,T)]"></a><a id="zip[T](Expect[T]):Expect[(R,T)]"></a>
+      <span class="permalink">
+      <a href="../../../../../work/martins/simon/expect/core/Expect.html#zip[T](that:work.martins.simon.expect.core.Expect[T]):work.martins.simon.expect.core.Expect[(R,T)]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">zip</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="that">that: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.zip.T">T</span>]</span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[(<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>, <span class="extype" name="work.martins.simon.expect.core.Expect.zip.T">T</span>)]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Zips the results of <code>this</code> and <code>that</code> <code>Expect</code>, and creates
+ a new <code>Expect</code> holding the tuple of their results.</p><div class="fullcomment"><div class="comment cmt"><p>Zips the results of <code>this</code> and <code>that</code> <code>Expect</code>, and creates
+ a new <code>Expect</code> holding the tuple of their results.
+</p></div><dl class="paramcmts block"><dt class="tparam">T</dt><dd class="cmt"><p>the type of the returned <code>Expect</code></p></dd><dt class="param">that</dt><dd class="cmt"><p>the other <code>Expect</code></p></dd><dt>returns</dt><dd class="cmt"><p>an <code>Expect</code> with the results of both <code>Expect</code>s</p></dd></dl></div>
+    </li><li name="work.martins.simon.expect.core.Expect#zipWith" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Transformations">
+      <a id="zipWith[T,U](that:work.martins.simon.expect.core.Expect[T])(f:(R,T)=&gt;U):work.martins.simon.expect.core.Expect[U]"></a><a id="zipWith[T,U](Expect[T])((R,T)⇒U):Expect[U]"></a>
+      <span class="permalink">
+      <a href="../../../../../work/martins/simon/expect/core/Expect.html#zipWith[T,U](that:work.martins.simon.expect.core.Expect[T])(f:(R,T)=&gt;U):work.martins.simon.expect.core.Expect[U]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">zipWith</span><span class="tparams">[<span name="T">T</span>, <span name="U">U</span>]</span><span class="params">(<span name="that">that: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.zipWith.T">T</span>]</span>)</span><span class="params">(<span name="f">f: (<span class="extype" name="work.martins.simon.expect.core.Expect.R">R</span>, <span class="extype" name="work.martins.simon.expect.core.Expect.zipWith.T">T</span>) ⇒ <span class="extype" name="work.martins.simon.expect.core.Expect.zipWith.U">U</span></span>)</span><span class="result">: <a href="" class="extype" name="work.martins.simon.expect.core.Expect">Expect</a>[<span class="extype" name="work.martins.simon.expect.core.Expect.zipWith.U">U</span>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Zips the results of <code>this</code> and <code>that</code> <code>Expect</code> using a function <code>f</code>,
+ and creates a new <code>Expect</code> holding the result.</p><div class="fullcomment"><div class="comment cmt"><p>Zips the results of <code>this</code> and <code>that</code> <code>Expect</code> using a function <code>f</code>,
+ and creates a new <code>Expect</code> holding the result.
+</p></div><dl class="paramcmts block"><dt class="tparam">T</dt><dd class="cmt"><p>the type of the other <code>Expect</code></p></dd><dt class="tparam">U</dt><dd class="cmt"><p>the type of the resulting <code>Expect</code></p></dd><dt class="param">that</dt><dd class="cmt"><p>the other <code>Expect</code></p></dd><dt class="param">f</dt><dd class="cmt"><p>the function to apply to the results of <code>this</code> and <code>that</code></p></dd><dt>returns</dt><dd class="cmt"><p>an <code>Expect</code> with the result of the application of <code>f</code> to the results of <code>this</code> and <code>that</code></p></dd></dl></div>
     </li><li name="scala.Predef.ArrowAssoc#→" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="→[B](y:B):(A,B)"></a><a id="→[B](B):(Expect[R],B)"></a>
       <span class="permalink">
@@ -1213,7 +1338,10 @@ this Expect for some other values of its result type.</p><p>To ensure you don't 
         </div>
 
         <div id="groupedMembers">
-        <div class="group" name="Ungrouped">
+        <div class="group" name="Transformations">
+              <h3>Transformations</h3>
+              
+            </div><div class="group" name="Ungrouped">
               <h3>Ungrouped</h3>
               
             </div>
