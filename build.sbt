@@ -102,5 +102,5 @@ releaseProcess := Seq[ReleaseStep](
   releaseStepCommand("publishSigned"),
   releaseStepCommand("sonatypeRelease"),
   pushChanges,
-  setNextVersion
+  writeVersions
 )
