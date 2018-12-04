@@ -1,12 +1,11 @@
-# Scala Expect
+# Scala Expect [![license](http://img.shields.io/:license-MIT-blue.svg)](LICENSE)
+[![Scaladoc](http://javadoc-badge.appspot.com/work.martins.simon/scala-expect_2.12.svg?label=scaladoc&style=plastic&maxAge=604800)](https://lasering.github.io/scala-expect/latest/api/work/martins/simon/expect/index.html)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/work.martins.simon/scala-expect_2.12/badge.svg?maxAge=604800)](https://maven-badges.herokuapp.com/maven-central/work.martins.simon/scala-expect_2.12)
-[![Dependency Status](https://www.versioneye.com/java/work.martins.simon:scala-expect_2.12/badge.svg?style=plastic&maxAge=604800)](https://www.versioneye.com/java/work.martins.simon:scala-expect_2.12/)
-[![Reference Status](https://www.versioneye.com/java/work.martins.simon:scala-expect_2.12/reference_badge.svg?style=plastic&maxAge=604800)](https://www.versioneye.com/java/work.martins.simon:scala-expect_2.12/references)
+
 [![Build Status](https://travis-ci.org/Lasering/scala-expect.svg?branch=master&style=plastic&maxAge=604800)](https://travis-ci.org/Lasering/scala-expect)
 [![Codacy Badge](https://api.codacy.com/project/badge/coverage/74ba0150f4034c8294e66f6b97a2f69f)](https://www.codacy.com/app/IST-DSI/scala-expect)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/74ba0150f4034c8294e66f6b97a2f69f)](https://www.codacy.com/app/IST-DSI/scala-expect)
-[![Scaladoc](http://javadoc-badge.appspot.com/work.martins.simon/scala-expect_2.12.svg?label=scaladoc&style=plastic&maxAge=604800)](https://lasering.github.io/scala-expect/latest/api/work/martins/simon/expect/index.html)
-[![license](http://img.shields.io/:license-MIT-blue.svg)](LICENSE)
+[![BCH compliance](https://bettercodehub.com/edge/badge/Lasering/scala-expect)](https://bettercodehub.com/results/Lasering/scala-expect)
 
 A Scala implementation of a very small subset of the widely known TCL expect.
 
@@ -49,9 +48,9 @@ val e = new Expect("bc -i", defaultValue = 5)(
     )
   ),
   ExpectBlock(
-	RegexWhen("""\n(\d+)\n""".r)(
-	  ReturningWithRegex(_.group(1).toInt)
-	)
+    RegexWhen("""\n(\d+)\n""".r)(
+      ReturningWithRegex(_.group(1).toInt)
+    )
   )
 )
 e.run() //Returns 6 inside a Future[Int]

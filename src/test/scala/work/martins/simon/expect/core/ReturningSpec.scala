@@ -1,8 +1,11 @@
 package work.martins.simon.expect.core
 
+
 import org.scalatest.{AsyncFlatSpec, BeforeAndAfterEach}
 import work.martins.simon.expect.TestUtils
 import work.martins.simon.expect.core.actions._
+
+import scala.util.matching.Regex.Match
 
 class ReturningSpec extends AsyncFlatSpec with TestUtils with BeforeAndAfterEach {
   val builder = new StringBuilder("")
@@ -12,10 +15,11 @@ class ReturningSpec extends AsyncFlatSpec with TestUtils with BeforeAndAfterEach
 
   "An Expect" should "only return the last returning action before an exit but still execute the previous actions" in {
     //should "not execute any action after an exit action"
-    val expect = constructExpect(StringWhen("LICENSE") (
-      Returning {
+    val expect = constructExpect(When("LICENSE".r)(
+      //Returning { _: Match => // Why isn't Scala able to infer the correct apply for Returning { _ => ...}
+      Returning { m: Match =>
         appendToBuilder(builder)
-        "a"
+        m.group(0)
       },
       Returning {
         appendToBuilder(builder)
@@ -33,21 +37,21 @@ class ReturningSpec extends AsyncFlatSpec with TestUtils with BeforeAndAfterEach
   it should "be able to interact with the spawned program" in {
     val e = new Expect("bc -i", defaultValue = 5)(
       ExpectBlock(
-        StringWhen("For details type `warranty'.")(
+        When("For details type `warranty'.")(
           Sendln("1 + 2")
         )
       ),
       ExpectBlock(
-        RegexWhen("""\n(\d+)\n""".r)(
-          SendlnWithRegex { m =>
+        When("""\n(\d+)\n""".r)(
+          Sendln { m =>
             val previousAnswer = m.group(1)
             s"$previousAnswer + 3"
           }
         )
       ),
       ExpectBlock(
-        RegexWhen("""\n(\d+)\n""".r)(
-          ReturningWithRegex(_.group(1).toInt)
+        When("""\n(\d+)\n""".r)(
+          Returning(_.group(1).toInt)
         )
       )
     )
@@ -57,12 +61,17 @@ class ReturningSpec extends AsyncFlatSpec with TestUtils with BeforeAndAfterEach
   }
 
   it should "fail if an exception is thrown inside an action" in {
-    val expect = constructExpect("", RegexWhen("(LICENSE)".r) (
-      Returning[String] { (u: Unit) =>
-        appendToBuilder(builder)
-        throw new NoSuchElementException()
-      }
-    ))
+    // Declaring it Returning[Nothing]{...} makes scala complain about ambiguous reference to overloaded definition
+    //  because Nothing is a subtype of both => R and Match => R.
+    // Declaring it Returning{...} makes scala complain about dead code following this construct:
+    //     val a = Returning {
+    //                       ^
+    // Declaring it @silent val a = Returning {...} throws the exception directly, somehow its not captured inside the closure => R. I don't understand why.
+    val a: Returning[Nothing] = Returning {
+      appendToBuilder(builder)
+      throw new NoSuchElementException()
+    }
+    val expect = constructExpect("", When("(LICENSE)".r)(a))
     testActionsAndFailedResult(expect, builder)
   }
 }

@@ -4,7 +4,7 @@ import java.io.EOFException
 import java.util.concurrent.TimeoutException
 
 import org.scalatest._
-import work.martins.simon.expect.TestUtils
+import work.martins.simon.expect.{EndOfFile, TestUtils, Timeout}
 import work.martins.simon.expect.core.actions._
 
 class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
@@ -13,10 +13,10 @@ class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
       "run the actions in the TimeoutWhen" in {
         val e = new Expect("bc -i", defaultValue = "")(
           ExpectBlock (
-            StringWhen("Is there anybody out there?") (
+            When("Is there anybody out there?") (
               Returning("Just nod if you can hear me.")
             ),
-            TimeoutWhen()(
+            When(Timeout)(
               Returning("Is there anyone at home?")
             )
           )
@@ -28,11 +28,12 @@ class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
       "fail with TimeoutException if no TimeoutWhen exists" in {
         val e = new Expect("bc -i", defaultValue = "")(
           ExpectBlock (
-            StringWhen("Come on, now,") (
+            When("Come on, now,") (
               Returning("I hear you're feeling down.")
             )
-          ), ExpectBlock (
-            TimeoutWhen()(
+          ),
+          ExpectBlock (
+            When(Timeout)(
               //The expect will never reach this because a TimeoutException will be thrown in the previous expect block
               Returning("can't reach this")
             )
@@ -42,16 +43,14 @@ class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
           _ shouldBe a[TimeoutException]
         }
       }
-      "fail if an exception is thrown inside the TimeoutWhen" in {
+      "fail with the exception thrown inside the TimeoutWhen" in {
         val e = new Expect("bc -i", defaultValue = "")(
           ExpectBlock (
-            StringWhen("Is there anybody out there?") (
+            When("Is there anybody out there?") (
               Returning("Just nod if you can hear me.")
             ),
-            TimeoutWhen()(
-              Returning { (u: Unit) =>
-                throw new IllegalArgumentException()
-              }
+            When(Timeout)(
+              Returning(throw new IllegalArgumentException())
             )
           )
         )
@@ -65,10 +64,10 @@ class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
       "run the actions in the EndOfFileWhen" in {
         val e = new Expect("ls", defaultValue = "")(
           ExpectBlock (
-            StringWhen("Well I can ease your pain") (
+            When("Well I can ease your pain") (
               Returning("Get you on your feet again.")
             ),
-            EndOfFileWhen()(
+            When(EndOfFile)(
               Returning("Relax.")
             )
           )
@@ -80,11 +79,12 @@ class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
       "fail with EOFException if no EndOfFileWhen exists" in {
         val e = new Expect("ls", defaultValue = "")(
           ExpectBlock (
-            StringWhen("I'll need some information first.") (
+            When("I'll need some information first.") (
               Returning("Just the basic facts.")
             )
-          ), ExpectBlock (
-            EndOfFileWhen()(
+          ),
+          ExpectBlock (
+            When(EndOfFile)(
               //The expect will never reach this because a EOFException will be thrown in the previous expect block
               Returning("can't reach this")
             )
@@ -94,16 +94,14 @@ class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
           _ shouldBe a[EOFException]
         }
       }
-      "fail if an exception is thrown inside the EndOfFileWhen" in {
+      "fail with the exception thrown inside the EndOfFileWhen" in {
         val e = new Expect("ls", defaultValue = "")(
           ExpectBlock (
-            StringWhen("Well I can ease your pain") (
+            When("Well I can ease your pain") (
               Returning("Get you on your feet again.")
             ),
-            EndOfFileWhen()(
-              Returning { (u: Unit) =>
-                throw new IllegalArgumentException()
-              }
+            When(EndOfFile)(
+              Returning(throw new IllegalArgumentException())
             )
           )
         )
@@ -117,10 +115,10 @@ class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
       "run the actions in the first matching when" in {
         val e = new Expect("bc -i", defaultValue = "")(
           ExpectBlock(
-            RegexWhen("""bc""".r)(
-              ReturningWithRegex(_.group(0))
+            When("""bc""".r)(
+              Returning(_.group(0))
             ),
-            StringWhen("bc")(
+            When("bc")(
               Returning("Ohh no")
             )
           )

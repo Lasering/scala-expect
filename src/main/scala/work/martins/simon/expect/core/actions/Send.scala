@@ -1,12 +1,18 @@
 package work.martins.simon.expect.core.actions
 
 import work.martins.simon.expect.StringUtils._
-import work.martins.simon.expect.core.{RunContext, Expect, When}
-
+import work.martins.simon.expect.core.{Expect, RunContext, When}
 import scala.language.higherKinds
+import scala.util.matching.Regex.Match
 
 object Sendln {
   def apply[R](text: String, sensitive: Boolean = false): Send[R] = Send(text + System.lineSeparator(), sensitive)
+  def apply[R](text: Match => String): SendWithRegex[R] = SendWithRegex(text.andThen(_ + System.lineSeparator()))
+}
+
+object Send {
+  def apply[R](text: String, sensitive: Boolean = false): Send[R] = new Send(text, sensitive)
+  def apply[R](text: Match => String): SendWithRegex[R] = SendWithRegex(text)
 }
 
 /**
@@ -23,15 +29,11 @@ final case class Send[+R](text: String, sensitive: Boolean = false) extends Acti
   //These methods just perform a cast because the type argument R is just used here,
   //so there isn't the need to allocate need objects.
 
-  protected[expect] def map[T](f: R => T): Action[T, When] = this.asInstanceOf[Send[T]]
-  protected[expect] def flatMap[T](f: R => Expect[T]): Action[T, When] = this.asInstanceOf[Send[T]]
-  protected[expect] def transform[T](flatMapPF: R =/> Expect[T], mapPF: R =/> T): Action[T, When] = this.asInstanceOf[Send[T]]
+  def map[T](f: R => T): Action[T, When] = this.asInstanceOf[Send[T]]
+  def flatMap[T](f: R => Expect[T]): Action[T, When] = this.asInstanceOf[Send[T]]
+  def transform[T](flatMapPF: R /=> Expect[T], mapPF: R /=> T): Action[T, When] = this.asInstanceOf[Send[T]]
 
   def structurallyEquals[RR >: R, W[+X] <: When[X]](other: Action[RR, W]): Boolean = other.isInstanceOf[Send[RR]]
 
-  override def toString: String = if (sensitive) {
-    s"Send(<omitted sensitive output>)"
-  } else {
-    s"Send(${escape(text)})"
-  }
+  override def toString: String = s"${this.getClass.getSimpleName}(${if (sensitive) "<omitted sensitive output>" else escape(text) })"
 }

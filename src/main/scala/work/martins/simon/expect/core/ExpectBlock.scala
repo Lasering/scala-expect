@@ -15,8 +15,8 @@ import scala.concurrent.{ExecutionContext, Future, TimeoutException}
 final case class ExpectBlock[+R](whens: When[R]*) extends LazyLogging {
   require(whens.nonEmpty, "ExpectBlock must have at least a When.")
   
-  private def timeout[RR >: R](runContext: RunContext[RR]): (When[RR], RunContext[RR]) = {
-    logger.info(runContext.withId(s"Read timed out after ${runContext.settings.timeout}."))
+  private def timeoutWhen[RR >: R](runContext: RunContext[RR])(implicit deadline: Deadline): (When[RR], RunContext[RR]) = {
+    logger.info(runContext.withId(s"Read timed out after ${deadline.time}."))
     whens.collectFirst { case when @ TimeoutWhen() => (when, runContext) }
       .getOrElse(throw new TimeoutException)
   }
@@ -35,7 +35,7 @@ final case class ExpectBlock[+R](whens: When[R]*) extends LazyLogging {
   private def obtainMatchingWhen[RR >: R](runContext: RunContext[RR])(readFunction: RunContext[RR] => RunContext[RR])
                                 (implicit ex: ExecutionContext, deadline: Deadline): Future[(When[RR], RunContext[RR])] = {
     // Try to match against the output we have so far
-    whens.find(w => w.matches(runContext.output) && w.readFrom == runContext.readFrom) match {
+    whens.find(w => w.readFrom == runContext.readFrom && w.matches(runContext.output)) match {
       case Some(when) =>
         // The existing output was enough to get a matching when
         Future.successful((when, runContext))
@@ -49,14 +49,14 @@ final case class ExpectBlock[+R](whens: When[R]*) extends LazyLogging {
           case e: EOFException =>
             logger.info(runContext.withId(s"Read returned EndOfFile."))
             whens.collectFirst {
-              case when @ EndOfFileWhen(from) if from == runContext.readFrom => (when, runContext)
+              case when @ EndOfFileWhen(runContext.readFrom) => (when, runContext)
             }.getOrElse(throw e)
           case _: TimeoutException =>
-            timeout(runContext)
+            timeoutWhen(runContext)
         }
       case _ =>
-        // We have no match nor time to read some more output, so we just timeout.
-        Future(timeout(runContext))
+        // We have no match nor time to read more output, so we just timeout.
+        Future(timeoutWhen(runContext))
     }
   }
 
@@ -71,8 +71,8 @@ final case class ExpectBlock[+R](whens: When[R]*) extends LazyLogging {
     * @return the result of executing the When that matches either `lastOutput` or the text read from `process`.
     *         Or a TimeoutException.
     */
-  def run[RR >: R](runContext: RunContext[RR])(implicit ex: ExecutionContext): Future[RunContext[RR]] = {
-    implicit val deadline: Deadline = runContext.settings.timeout.fromNow
+  private[core] def run[RR >: R](runContext: RunContext[RR])(implicit ex: ExecutionContext): Future[RunContext[RR]] = {
+    implicit val deadline: Deadline = runContext.settings.scaledTimeout.fromNow
 
     val matchingWhen = whens.map(_.readFrom).distinct match {
       case Seq(from) =>
@@ -105,13 +105,13 @@ final case class ExpectBlock[+R](whens: When[R]*) extends LazyLogging {
     }
   }
 
-  private[core] def map[T](f: R => T): ExpectBlock[T] = {
+  def map[T](f: R => T): ExpectBlock[T] = {
     ExpectBlock(whens.map(_.map(f)):_*)
   }
-  private[core] def flatMap[T](f: R => Expect[T]): ExpectBlock[T] = {
+  def flatMap[T](f: R => Expect[T]): ExpectBlock[T] = {
     ExpectBlock(whens.map(_.flatMap(f)):_*)
   }
-  private[core] def transform[T](flatMapPF: PartialFunction[R, Expect[T]], mapPF: PartialFunction[R, T]): ExpectBlock[T] = {
+  def transform[T](flatMapPF: PartialFunction[R, Expect[T]], mapPF: PartialFunction[R, T]): ExpectBlock[T] = {
     ExpectBlock(whens.map(_.transform(flatMapPF, mapPF)):_*)
   }
   
@@ -119,11 +119,7 @@ final case class ExpectBlock[+R](whens: When[R]*) extends LazyLogging {
     s"""expect {
         |${whens.mkString("\n").indent()}
         |}""".stripMargin
-  
-  override def equals(other: Any): Boolean = other match {
-    case that: ExpectBlock[R] => whens == that.whens
-    case _ => false
-  }
+
   /**
     * @define subtypes whens
     * Returns whether the other $type has the same number of $subtypes as this $type and
@@ -132,8 +128,7 @@ final case class ExpectBlock[+R](whens: When[R]*) extends LazyLogging {
     * @param other the other $type to campare this $type to.
     */
   def structurallyEquals[RR >: R](other: ExpectBlock[RR]): Boolean = {
-    whens.size == other.whens.size && whens.zip(other.whens).forall{ case (a, b) => a.structurallyEquals(b) }
+      whens.size == other.whens.size && /* Fail fast */
+      whens.zip(other.whens).forall{ case (a, b) => a.structurallyEquals(b) }
   }
-  
-  override def hashCode(): Int = whens.hashCode()
 }

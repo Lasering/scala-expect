@@ -10,39 +10,43 @@ import scala.collection.immutable.HashSet
 import scala.util.Random
 
 class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
-  def addSendAndExit[R](when: When[R]): Unit = {
+  def addSendAndExit[R](when: When[R]): When[R] = {
     when
       .send("text")
       .send("a password", sensitive = true)
       .exit()
   }
-  def addBlock(e: fluent.Expect[String]): Unit = {
+  def addBlock(e: fluent.Expect[String]): ExpectBlock[String] = {
     e.expect
       .addWhens(addWhensEOFAndTimeout)
   }
-  def addWhensEOFAndTimeout(eb: fluent.ExpectBlock[String]): Unit = {
+  def addWhensEOFAndTimeout(eb: fluent.ExpectBlock[String]): fluent.TimeoutWhen[String] = {
     eb.when(EndOfFile)
-      .exit()
+        .exit()
       .when(Timeout)
-      .exit()
+        .exit()
   }
 
-  val objects = Seq(
+  val objects: Seq[Any] = Seq(
     Timeout, //The curve ball to test that equals returns false
 
     //To test equals returns false on expectBlock
     core.ExpectBlock(StringWhen("1")()),
-    new ExpectBlock(new Expect("ls", "")),
+    ExpectBlock(new Expect("ls", "")),
 
     new Expect("ls", ""),
     new Expect("ls", "") {
-      expect("1")
+      expect
+        .when("1")
     },
     new Expect("ls", "") {
-      expect("2".r)
+      expect
+        .when("2".r)
     },
     new dsl.Expect("ls", "") {
-      expect(EndOfFile){}
+      expect{
+        when(EndOfFile){}
+      }
     },
     new Expect("ls", "") {
       expect
@@ -51,24 +55,29 @@ class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
         .when("")
     },
     new Expect("ls", "") {
-      expect(Timeout)
+      expect
+        .when(Timeout)
     },
     new Expect("ls", "") {
-      expect("1")
-        .addActions(addSendAndExit)
+      expect
+        .when("1")
+          .addActions(addSendAndExit)
     },
     new Expect("ls", "") {
-      expect("2".r)
-        .send("")
-        .exit()
+      expect
+        .when("2".r)
+          .send("")
+          .exit()
     },
     new Expect("ls", "") {
-      expect(EndOfFile)
-        .addActions(addSendAndExit)
+      expect
+        .when(EndOfFile)
+          .addActions(addSendAndExit)
     },
     new Expect("ls", "") {
-      expect(Timeout)
-        .addActions(addSendAndExit)
+      expect
+        .when(Timeout)
+          .addActions(addSendAndExit)
     },
     new dsl.Expect("ls", "") {
       expect {
@@ -77,14 +86,15 @@ class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
         }
       }
     },
-    new fluent.Expect("ls", "") {
+    new Expect("ls", "") {
       expect
         .when("a".r)
           .addActions(addSendAndExit)
         .addWhens(addWhensEOFAndTimeout)
     },
-    new fluent.Expect("ls", "") {
-      expect("c".r)
+    new Expect("ls", "") {
+      expect
+        .when("c".r)
       .addExpectBlock(addBlock)
     }
   )
@@ -170,7 +180,9 @@ class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
       }
     }
     val fluentExpect = new fluent.Expect("ls", "") {
-      expect("").send("")
+      expect
+        .when("")
+          .send("")
     }
 
     dslExpect.toString shouldEqual fluentExpect.toString

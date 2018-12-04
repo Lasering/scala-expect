@@ -1,9 +1,15 @@
-language: scala
-scala: 2.12.3
-jdk: oraclejdk8
+dist: xenial
 
-sudo: required
-dist: trusty
+jdk:
+  - oraclejdk8
+  - oraclejdk11
+  - openjdk8
+  - openjdk11
+
+language: scala
+scala:
+  - 2.12.7
+  - 2.13.0-M5
 
 addons:
   apt:

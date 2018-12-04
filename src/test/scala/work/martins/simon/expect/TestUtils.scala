@@ -8,7 +8,7 @@ import scala.concurrent.Future
 
 trait TestUtils extends ScalaFutures with Matchers { test: AsyncTestSuite =>
   val addedValue = "this is it"
-  def appendToBuilder(builder: StringBuilder): Unit = builder.append(addedValue)
+  def appendToBuilder(builder: StringBuilder): StringBuilder = builder.append(addedValue)
 
   def constructExpect[R](defaultValue: R, whens: When[R]*): Expect[R] = new Expect("ls", defaultValue)(ExpectBlock(whens:_*))
   def constructExpect(whens: When[String]*): Expect[String] = constructExpect("", whens:_*)
@@ -17,7 +17,7 @@ trait TestUtils extends ScalaFutures with Matchers { test: AsyncTestSuite =>
     //Ensure the actions were not executed while constructing and transforming the expect
     builder.result() shouldBe empty
     expect.run() map { obtainedResult =>
-      //Ensure the actions were executed
+      //Ensure the expected actions were executed
       builder.result() shouldBe (addedValue * numberOfAppends)
       obtainedResult shouldBe expectedResult
     }
@@ -27,7 +27,7 @@ trait TestUtils extends ScalaFutures with Matchers { test: AsyncTestSuite =>
     //Ensure the actions were not executed while constructing and transforming the expect
     builder.result() shouldBe empty
     expect.run().failed map { obtainedResult =>
-      //Ensure the actions were executed
+      //Ensure the expected actions were executed
       builder.result() shouldBe addedValue
       obtainedResult shouldBe a [NoSuchElementException]
     }

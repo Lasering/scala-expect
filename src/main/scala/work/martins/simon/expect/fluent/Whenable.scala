@@ -1,10 +1,10 @@
 package work.martins.simon.expect.fluent
 
-import work.martins.simon.expect.{EndOfFile, FromInputStream, Timeout}
+import work.martins.simon.expect.{EndOfFile, FromInputStream, StdOut, Timeout}
 import scala.util.matching.Regex
 
 trait Whenable[R] extends Expectable[R] {
-  protected val whenableParent: ExpectBlock[R] //The root of an Whenable must be an ExpectBlock
+  protected implicit val whenableParent: ExpectBlock[R] //The root of an Whenable must be an ExpectBlock
   protected lazy val expectableParent: Expect[R] = whenableParent.parent
 
   /**
@@ -13,7 +13,7 @@ trait Whenable[R] extends Expectable[R] {
    * @param pattern the pattern to match against.
    * @return the new `StringWhen`.
    */
-  def when(pattern: String): StringWhen[R] = when(pattern, whenableParent.readFrom)
+  def when(pattern: String): StringWhen[R] = when(pattern, StdOut)
   /**
     * Adds a new `StringWhen` that matches whenever `pattern` is contained
     * in the text read from the specified `FromInputStream`.
@@ -29,7 +29,7 @@ trait Whenable[R] extends Expectable[R] {
    * @param pattern the pattern to match against.
    * @return the new `RegexWhen`.
    */
-  def when(pattern: Regex): RegexWhen[R] = when(pattern, whenableParent.readFrom)
+  def when(pattern: Regex): RegexWhen[R] = when(pattern, StdOut)
   /**
     * Adds a new `RegexWhen` that matches whenever the regex `pattern` successfully matches
     * against the text read from the specified `FromInputStream`.
@@ -45,7 +45,7 @@ trait Whenable[R] extends Expectable[R] {
     * @param pattern the pattern to match against.
     * @return the new `EndOfFileWhen`.
     */
-  def when(pattern: EndOfFile.type): EndOfFileWhen[R] = when(pattern, whenableParent.readFrom)
+  def when(pattern: EndOfFile.type): EndOfFileWhen[R] = when(pattern, StdOut)
   /**
     * Adds a new `EndOfFileWhen` that matches whenever the EndOfFile in read from the specified `FromInputStream`.
     * @param pattern the pattern to match against.
@@ -132,5 +132,5 @@ trait Whenable[R] extends Expectable[R] {
     * @param f function that adds `When`s.
     * @return this ExpectBlock.
     */
-  def addWhens(f: ExpectBlock[R] => Unit): ExpectBlock[R] = whenableParent.addWhens(f)
+  def addWhens(f: ExpectBlock[R] => When[R]): ExpectBlock[R] = whenableParent.addWhens(f)
 }

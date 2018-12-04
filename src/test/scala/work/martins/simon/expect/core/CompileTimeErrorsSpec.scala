@@ -18,23 +18,23 @@ class CompileTimeErrorsSpec extends FlatSpec with Matchers {
   }
 
   "A RegexWhen" should "compile if it contains a SendWithRegex" in {
-    //This line of code is here as a fail fast mechanism
+    //This line is a fail fast mechanism
     RegexWhen("text".r)(SendWithRegex(m => m.group(1)))
     """RegexWhen("text".r)(SendWithRegex(m => m.group(1)))""" should compile
   }
   it should "compile if it contains a ReturningWithRegex" in {
-    //This line of code is here as a fail fast mechanism
+    //This line is a fail fast mechanism
     RegexWhen("text".r)(ReturningWithRegex(m => m.group(1)))
     """RegexWhen("text".r)(ReturningWithRegex(m => m.group(1)))""" should compile
   }
   it should "compile if it contains a ReturningExpectWithRegex" in {
-    //This line of code is here as a fail fast mechanism
+    //This line is a fail fast mechanism
     RegexWhen("text".r)(ReturningExpectWithRegex(m => new Expect(m.group(1), "")()))
     """RegexWhen("text".r)(ReturningExpectWithRegex(m => new Expect(m.group(1), "")()))""" should compile
   }
 
   "Actions without regex" should "compile in every When" in {
-    //These lines of code are here as a fail fast mechanism
+    //These lines are a fail fast mechanism
     val actions: Seq[Action[String, When]] = Seq(
       Send(""),
       Returning(""),

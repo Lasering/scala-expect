@@ -1,49 +1,37 @@
 package work.martins.simon.expect.dsl
 
-import com.typesafe.config.Config
-import work.martins.simon.expect._
 import work.martins.simon.expect.StringUtils._
+import work.martins.simon.expect._
+
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
-class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Settings = new Settings()) {
-  def this(command: Seq[String], defaultValue: R, config: Config) = {
-    this(command, defaultValue, Settings.fromConfig(config))
-  }
+case class Expect[R](command: Seq[String], defaultValue: R, settings: Settings = Settings.fromConfig()) {
   def this(command: String, defaultValue: R, settings: Settings) = {
     this(splitBySpaces(command), defaultValue, settings)
-  }
-  def this(command: String, defaultValue: R, config: Config) = {
-    this(command, defaultValue, Settings.fromConfig(config))
   }
   def this(command: String, defaultValue: R) = {
     this(command, defaultValue, new Settings())
   }
   require(command.nonEmpty, "Expect must have a command to run.")
 
-  private[expect] val fluentExpect = new fluent.Expect(command, defaultValue, settings)
+  private[expect] val fluentExpect = fluent.Expect(command, defaultValue, settings)
 
   protected var expectBlock: Option[fluent.ExpectBlock[R]] = None
   protected var when: Option[fluent.When[R]] = None
-
-  def expect(f: => Unit): Unit = expect(StdOut)(f)
-  def expect(readFrom: FromInputStream)(f: => Unit): Unit = {
+  
+  private def newExpect(block: fluent.Expect[R] => fluent.ExpectBlock[R])(f: => Unit): Unit = {
     require(expectBlock.isEmpty && when.isEmpty, "Expect block must be the top level object.")
-    val createdBlock = fluentExpect.expect(readFrom)
+    val createdBlock = block(fluentExpect)
     expectBlock = Some(createdBlock)
     f
     expectBlock = None
     require(createdBlock.containsWhens(), "Expect block cannot be empty.")
   }
-  def expect(pattern: String)(f: => Unit): Unit = expect { when(pattern)(f) }
-  def expect(pattern: String, readFrom: FromInputStream)(f: => Unit): Unit = expect { when(pattern, readFrom)(f) }
-  def expect(pattern: Regex)(f: => Unit): Unit = expect { when(pattern)(f) }
-  def expect(pattern: Regex, readFrom: FromInputStream)(f: => Unit): Unit = expect { when(pattern, readFrom)(f) }
-  def expect(pattern: EndOfFile.type)(f: => Unit): Unit = expect { when(pattern)(f) }
-  def expect(pattern: EndOfFile.type, readFrom: FromInputStream)(f: => Unit): Unit = expect { when(pattern, readFrom)(f) }
-  def expect(pattern: Timeout.type)(f: => Unit): Unit = expect { when(pattern)(f) }
+  def expect(f: => Unit): Unit = newExpect(_.expect)(f)
   def addExpectBlock(block: Expect[R] => Unit): Unit = block(this)
-
+  // TODO create scalafix rules to migrate the expect shortcuts to the new code
+  
   private def newWhen[W <: fluent.When[R]](block: fluent.ExpectBlock[R] => W)(f: => Unit): Unit = {
     require(expectBlock.isDefined && when.isEmpty, "When can only be added inside an Expect Block.")
     expectBlock.foreach { eb =>
@@ -62,18 +50,20 @@ class Expect[R](val command: Seq[String], val defaultValue: R, val settings: Set
   def addWhen(block: Expect[R] => Unit): Unit = block(this)
   def addWhens(block: Expect[R] => Unit): Unit = block(this)
 
-  private def newAction(block: fluent.When[R] => Unit): Unit = {
+  private def newAction(block: fluent.When[R] => fluent.When[R]): Unit = {
     require(expectBlock.isDefined && when.isDefined, "An Action can only be added inside a When.")
     when.foreach { w =>
       block(w)
+      ()
     }
   }
-  private def newRegexAction(block: fluent.RegexWhen[R] => Unit): Unit = {
+  private def newRegexAction(block: fluent.RegexWhen[R] => fluent.RegexWhen[R]): Unit = {
     val regexWhen: Option[fluent.RegexWhen[R]] = when.collect { case r: fluent.RegexWhen[R] => r }
     require(expectBlock.isDefined && when.isDefined, "An Action can only be added inside a When.")
     require(regexWhen.isDefined, "This action can only be invoked for RegexWhen")
     regexWhen.foreach { w =>
       block(w)
+      ()
     }
   }
   def send(text: String, sensitive: Boolean = false): Unit = newAction(_.send(text, sensitive))

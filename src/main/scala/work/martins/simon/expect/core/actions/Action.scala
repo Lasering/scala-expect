@@ -16,10 +16,10 @@ import scala.language.higherKinds
 trait Action[+R, -W[+X] <: When[X]] {
   def run[RR >: R](when: W[RR], runContext: RunContext[RR]): RunContext[RR]
 
-  protected[expect] def map[T](f: R => T): Action[T, W]
-  protected[expect] def flatMap[T](f: R => Expect[T]): Action[T, W]
-  type =/>[-A, +B] = PartialFunction[A, B]
-  protected[expect] def transform[T](flatMapPF: R =/> Expect[T], mapPF: R =/> T): Action[T, W]
+  def map[T](f: R => T): Action[T, W]
+  def flatMap[T](f: R => Expect[T]): Action[T, W]
+  type /=>[-A, +B] = PartialFunction[A, B]
+  def transform[T](flatMapPF: R /=> Expect[T], mapPF: R /=> T): Action[T, W]
 
   protected def pfNotDefined[RR >: R, T](r: RR): T = {
     throw new NoSuchElementException(s"Expect.transform neither flatMapPF nor mapPF are defined at $r (from ${this.getClass.getSimpleName})")

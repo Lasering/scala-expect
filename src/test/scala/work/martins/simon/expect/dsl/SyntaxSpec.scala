@@ -1,38 +1,48 @@
 package work.martins.simon.expect.dsl
 
-import com.typesafe.config.ConfigFactory
 import org.scalatest.{FlatSpec, Matchers}
-import work.martins.simon.expect.{EndOfFile, Timeout}
+import work.martins.simon.expect._
 
 class SyntaxSpec extends FlatSpec with Matchers {
   def illegalExpectBlocks(e: Expect[String]): Unit = {
-    an [IllegalArgumentException] should be thrownBy e.expect{}
-    an [IllegalArgumentException] should be thrownBy e.expect(""){}
-    an [IllegalArgumentException] should be thrownBy e.expect("".r){}
-    an [IllegalArgumentException] should be thrownBy e.expect(EndOfFile){}
-    an [IllegalArgumentException] should be thrownBy e.expect(Timeout){}
+    import e._
+    an [IllegalArgumentException] should be thrownBy expect{}
+    an [IllegalArgumentException] should be thrownBy expect{ when(""){} }
+    an [IllegalArgumentException] should be thrownBy expect{ when("", StdErr){} }
+    an [IllegalArgumentException] should be thrownBy expect{ when("".r){} }
+    an [IllegalArgumentException] should be thrownBy expect{ when("".r, StdErr){} }
+    an [IllegalArgumentException] should be thrownBy expect{ when(EndOfFile){} }
+    an [IllegalArgumentException] should be thrownBy expect{ when(EndOfFile, StdErr){} }
+    an [IllegalArgumentException] should be thrownBy expect{ when(Timeout){} }
+    ()
   }
   def illegalWhens(e: Expect[String]): Unit = {
     import e._
     an [IllegalArgumentException] should be thrownBy when(""){}
+    an [IllegalArgumentException] should be thrownBy when("", StdOut){}
     an [IllegalArgumentException] should be thrownBy when("".r){}
+    an [IllegalArgumentException] should be thrownBy when("".r, StdOut){}
     an [IllegalArgumentException] should be thrownBy when(EndOfFile){}
+    an [IllegalArgumentException] should be thrownBy when(EndOfFile, StdOut){}
     an [IllegalArgumentException] should be thrownBy when(Timeout){}
+    ()
   }
   def illegalWhenActions(e: Expect[String]): Unit = {
     import e._
     an [IllegalArgumentException] should be thrownBy send("")
     an [IllegalArgumentException] should be thrownBy sendln("")
     an [IllegalArgumentException] should be thrownBy returning("")
-    an [IllegalArgumentException] should be thrownBy returningExpect(new Expect("ls", "", ConfigFactory.load()))
+    an [IllegalArgumentException] should be thrownBy returningExpect(new Expect("ls", "", Settings.fromConfig()))
     an [IllegalArgumentException] should be thrownBy exit()
+    ()
   }
   def illegalRegexWhenActions(e: Expect[String]): Unit = {
     import e._
-    an [IllegalArgumentException] should be thrownBy send(m => "")
-    an [IllegalArgumentException] should be thrownBy sendln(m => "")
-    an [IllegalArgumentException] should be thrownBy returning(m => "")
-    an [IllegalArgumentException] should be thrownBy returningExpect(m => new Expect(Seq("ls"), "", ConfigFactory.load()))
+    an [IllegalArgumentException] should be thrownBy send(_ => "")
+    an [IllegalArgumentException] should be thrownBy sendln(_ => "")
+    an [IllegalArgumentException] should be thrownBy returning(_ => "")
+    an [IllegalArgumentException] should be thrownBy returningExpect(_ => Expect(Seq("ls"), "", Settings()))
+    ()
   }
 
   "An Expect being constructed illegally" should "throw IllegalArgumentException" in {
@@ -78,30 +88,38 @@ class SyntaxSpec extends FlatSpec with Matchers {
       e.expect {
         addWhens(addMultipleWhens)
       }
-      e.expect("") {
-        addActions(addWhenActions)
+      e.expect{
+        when("") {
+          addActions(addWhenActions)
+        }
       }
-      e.expect("".r) {
-        addActions(addWhenActions)
-        addActions(addRegexWhenActions)
+      e.expect{
+        when("".r) {
+          addActions(addWhenActions)
+          addActions(addRegexWhenActions)
+        }
       }
-      e.expect(EndOfFile) {
-        addActions(addWhenActions)
+      e.expect{
+        when(EndOfFile) {
+          addActions(addWhenActions)
+        }
       }
-      e.expect(Timeout) {
-        addActions(addWhenActions)
+      e.expect{
+        when(Timeout) {
+          addActions(addWhenActions)
+        }
       }
     }
     def addMultipleWhens(e: Expect[String]): Unit = {
       import e._
-      when(""){
+      when("", StdErr){
         addActions(addWhenActions)
       }
-      when("".r){
+      when("".r, StdOut){
         addActions(addWhenActions)
         addActions(addRegexWhenActions)
       }
-      when(EndOfFile){
+      when(EndOfFile, StdErr){
         addActions(addWhenActions)
       }
       when(Timeout){
@@ -113,15 +131,15 @@ class SyntaxSpec extends FlatSpec with Matchers {
       send("")
       sendln("")
       returning("")
-      returningExpect(new Expect("ls", "", ConfigFactory.load()))
+      returningExpect(new Expect("ls", "", Settings.fromConfig()))
       exit()
     }
     def addRegexWhenActions(e: Expect[String]): Unit = {
       import e._
-      send(m => "")
-      sendln(m => "")
-      returning(m => "")
-      returningExpect(m => new Expect(Seq("ls"), "", ConfigFactory.load()))
+      send(_ => "")
+      sendln(_ => "")
+      returning(_ => "")
+      returningExpect(_ => new Expect(Seq("ls"), "", Settings()))
     }
     def addEndOfFileWhen(e: Expect[String]): Unit = {
       import e._

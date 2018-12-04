@@ -12,9 +12,6 @@ object RunContext {
   case object Continue extends ExecutionAction
   case class ChangeToNewExpect[R](expect: Expect[R]) extends ExecutionAction
 }
-// The id is not the hashCode of the expect we are running because the user could be running the same expect twice
-// and at the same time. And by using the hash code the logs wouldn't be very helpful since it would not be possible
-// to distinguish between the two expects.
 final case class RunContext[+R](process: RichProcess, value: R, executionAction: ExecutionAction,
                                readFrom: FromInputStream = StdOut, stdOutOutput: String = "", stdErrOutput: String = "",
                                id: String = Random.nextInt.toString) extends LazyLogging {
@@ -24,8 +21,9 @@ final case class RunContext[+R](process: RichProcess, value: R, executionAction:
 
   /**
     * When running multiple Expects simultaneously its hard to differentiate them. The `id` helps to do so.
-    * Currently the `id` is computed as follows s"$${hashCode}-$${randomNumber}".
-    * @param message
+    * Currently the `id` is just a random number. It's not the Expect hashCode because we could be running the same
+    * expect simultaneously.
+    * @param message The messate to which the ID will be added.
     * @return
     */
   def withId(message: String): String = s"[ID:$id] $message"
@@ -33,12 +31,12 @@ final case class RunContext[+R](process: RichProcess, value: R, executionAction:
   def output: String = outputOf(readFrom)
   def outputOf(from: FromInputStream): String = from match {
     case StdErr => stdErrOutput
-    case _ => stdOutOutput
+    case StdOut => stdOutOutput
   }
 
   def withOutput(f: String => String): RunContext[R] = readFrom match {
     case StdErr => this.copy(stdErrOutput = f(stdErrOutput))
-    case _ => this.copy(stdOutOutput = f(stdOutOutput))
+    case StdOut => this.copy(stdOutOutput = f(stdOutOutput))
   }
 
   def readingFrom(readFrom: FromInputStream): RunContext[R] = this.copy(readFrom = readFrom)
