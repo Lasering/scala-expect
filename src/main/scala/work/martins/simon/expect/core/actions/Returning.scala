@@ -1,10 +1,8 @@
 package work.martins.simon.expect.core.actions
 
+import scala.util.matching.Regex.Match
 import work.martins.simon.expect.core.RunContext.ChangeToNewExpect
 import work.martins.simon.expect.core._
-
-import scala.language.higherKinds
-import scala.util.matching.Regex.Match
 
 sealed trait AbstractReturning[+WR] extends Action[WR, When] {
   override def map[T](f: WR => T): AbstractReturning[T]
@@ -30,18 +28,10 @@ object Returning {
   * $moreThanOne
   **/
 final case class Returning[+R] private (result: Unit => R) extends AbstractReturning[R] {
-  // The constructor is Unit => R so it does not collide with the apply.
-  
-  def run[RR >: R](when: When[RR], runContext: RunContext[RR]): RunContext[RR] = {
-    runContext.copy(value = result(()))
-  }
+  def run[RR >: R](when: When[RR], runContext: RunContext[RR]): RunContext[RR] = runContext.copy(value = result(()))
 
-  def map[T](f: R => T): AbstractReturning[T] = {
-    this.copy(result andThen f)
-  }
-  def flatMap[T](f: R => Expect[T]): AbstractReturning[T] = {
-    ReturningExpect(f(result(())))
-  }
+  def map[T](f: R => T): AbstractReturning[T] = this.copy(result andThen f)
+  def flatMap[T](f: R => Expect[T]): AbstractReturning[T] = ReturningExpect(f(result(())))
   def transform[T](flatMapPF: R /=> Expect[T], mapPF: R /=> T): AbstractReturning[T] = {
     val computeAction: R => AbstractReturning[T] = {
       // We cannot use the map/flatMap because if we did the returning result would be ran twice in the ActionReturningAction:
@@ -80,41 +70,25 @@ object ReturningExpect {
   * Any action or expect block added after this will not be executed.
   */
 final case class ReturningExpect[+R] private (result: Unit => Expect[R]) extends AbstractReturning[R] {
-  // The constructor is Unit => R so it does not collide with the apply.
+  def run[RR >: R](when: When[RR], runContext: RunContext[RR]): RunContext[RR] = runContext.copy(executionAction = ChangeToNewExpect(result(())))
 
-  def run[RR >: R](when: When[RR], runContext: RunContext[RR]): RunContext[RR] = {
-    val newExpect = result(())
-    runContext.copy(executionAction = ChangeToNewExpect(newExpect))
-  }
-
-  def map[T](f: R => T): AbstractReturning[T] = {
-    this.copy(result.andThen(_.map(f)))
-  }
-  def flatMap[T](f: R => Expect[T]): AbstractReturning[T] = {
-    this.copy(result.andThen(_.flatMap(f)))
-  }
-  def transform[T](flatMapPF: R /=> Expect[T], mapPF: R /=> T): AbstractReturning[T] = {
-    this.copy(result.andThen(_.transform(flatMapPF, mapPF)))
-  }
+  def map[T](f: R => T): AbstractReturning[T] = this.copy(result.andThen(_.map(f)))
+  def flatMap[T](f: R => Expect[T]): AbstractReturning[T] = this.copy(result.andThen(_.flatMap(f)))
+  def transform[T](flatMapPF: R /=> Expect[T], mapPF: R /=> T): AbstractReturning[T] = this.copy(result.andThen(_.transform(flatMapPF, mapPF)))
 
   def structurallyEquals[RR >: R, W[+X] <: When[X]](other: Action[RR, W]): Boolean = this.isInstanceOf[ReturningExpect[RR]]
 }
 
 final case class ActionReturningAction[R, +T](parent: Returning[R], resultAction: R => AbstractReturning[T]) extends AbstractReturning[T] {
   def run[TT >: T](when: When[TT], runContext: RunContext[TT]): RunContext[TT] = {
-    val parentResult: R = parent.result(())
+    val parentResult = parent.result(())
     resultAction(parentResult).run(when, runContext)
   }
 
-  def map[U](f: T => U): AbstractReturning[U] = {
-    this.copy(parent, resultAction.andThen(_.map(f)))
-  }
-  def flatMap[U](f: T => Expect[U]): AbstractReturning[U] = {
-    this.copy(parent, resultAction.andThen(_.flatMap(f)))
-  }
-  def transform[U](flatMapPF: T /=> Expect[U], mapPF: T /=> U): AbstractReturning[U] = {
+  def map[U](f: T => U): AbstractReturning[U] = this.copy(parent, resultAction.andThen(_.map(f)))
+  def flatMap[U](f: T => Expect[U]): AbstractReturning[U] = this.copy(parent, resultAction.andThen(_.flatMap(f)))
+  def transform[U](flatMapPF: T /=> Expect[U], mapPF: T /=> U): AbstractReturning[U] =
     this.copy(parent, resultAction.andThen(_.transform(flatMapPF, mapPF)))
-  }
 
   def structurallyEquals[TT >: T, W[+X] <: When[X]](other: Action[TT, W]): Boolean = other.isInstanceOf[ActionReturningAction[R, TT]]
 }

@@ -1,9 +1,8 @@
 package work.martins.simon.expect.fluent
 
+import scala.util.matching.Regex
 import work.martins.simon.expect.StringUtils._
 import work.martins.simon.expect._
-
-import scala.util.matching.Regex
 
 /**
   * @define type ExpectBlock

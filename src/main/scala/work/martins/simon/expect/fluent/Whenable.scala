@@ -1,7 +1,7 @@
 package work.martins.simon.expect.fluent
 
-import work.martins.simon.expect.{EndOfFile, FromInputStream, StdOut, Timeout}
 import scala.util.matching.Regex
+import work.martins.simon.expect.{EndOfFile, FromInputStream, StdOut, Timeout}
 
 trait Whenable[R] extends Expectable[R] {
   protected implicit val whenableParent: ExpectBlock[R] //The root of an Whenable must be an ExpectBlock

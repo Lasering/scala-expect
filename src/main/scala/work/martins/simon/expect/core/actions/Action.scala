@@ -1,8 +1,6 @@
 package work.martins.simon.expect.core.actions
 
-import work.martins.simon.expect.core.{RunContext, Expect, When}
-
-import scala.language.higherKinds
+import work.martins.simon.expect.core.{Expect, RunContext, When}
 
 /**
   * @define type Action

@@ -2,8 +2,9 @@ package work.martins.simon.expect.core
 
 import java.io.IOException
 
-import org.scalatest.{AsyncFlatSpec, Matchers}
 import work.martins.simon.expect.TestUtils
+import org.scalatest.flatspec.AsyncFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 class EmptySpec extends AsyncFlatSpec with Matchers with TestUtils {
   "An Expect without a command" should "throw IllegalArgumentException" in {

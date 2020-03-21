@@ -1,10 +1,9 @@
 package work.martins.simon.expect.core
 
+import scala.util.Random
 import com.typesafe.scalalogging.LazyLogging
 import work.martins.simon.expect.core.RunContext.ExecutionAction
 import work.martins.simon.expect.{FromInputStream, StdErr, StdOut}
-
-import scala.util.Random
 
 object RunContext {
   sealed trait ExecutionAction
@@ -14,7 +13,7 @@ object RunContext {
 }
 final case class RunContext[+R](process: RichProcess, value: R, executionAction: ExecutionAction,
                                readFrom: FromInputStream = StdOut, stdOutOutput: String = "", stdErrOutput: String = "",
-                               id: String = Random.nextInt.toString) extends LazyLogging {
+                               id: String = Random.nextInt().toString) extends LazyLogging {
 
   //Shortcut, because it makes sense
   val settings = process.settings

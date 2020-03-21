@@ -1,7 +1,5 @@
 package work.martins.simon.expect.core.actions
 
-import scala.language.higherKinds
-
 import work.martins.simon.expect.core.RunContext.Terminate
 import work.martins.simon.expect.core._
 
@@ -12,9 +10,7 @@ import work.martins.simon.expect.core._
   * Any action or expect block added after this will not be executed.
   */
 final case class Exit[+R]() extends Action[R, When] {
-  def run[RR >: R](when: When[RR], runContext: RunContext[RR]): RunContext[RR] = {
-    runContext.copy(executionAction = Terminate)
-  }
+  def run[RR >: R](when: When[RR], runContext: RunContext[RR]): RunContext[RR] = runContext.copy(executionAction = Terminate)
 
   //These methods just perform a cast because the type argument R is just used here,
   //so there isn't the need to allocate need objects.

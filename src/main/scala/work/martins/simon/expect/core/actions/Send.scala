@@ -1,9 +1,8 @@
 package work.martins.simon.expect.core.actions
 
+import scala.util.matching.Regex.Match
 import work.martins.simon.expect.StringUtils._
 import work.martins.simon.expect.core.{Expect, RunContext, When}
-import scala.language.higherKinds
-import scala.util.matching.Regex.Match
 
 object Sendln {
   def apply[R](text: String, sensitive: Boolean = false): Send[R] = Send(text + System.lineSeparator(), sensitive)

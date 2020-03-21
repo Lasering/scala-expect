@@ -6,6 +6,8 @@ import java.util.concurrent.TimeoutException
 import org.scalatest._
 import work.martins.simon.expect.{EndOfFile, TestUtils, Timeout}
 import work.martins.simon.expect.core.actions._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
 
 class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
   "An Expect" when {

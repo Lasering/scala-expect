@@ -1,10 +1,11 @@
 package work.martins.simon.expect
 
-import org.scalatest.{Assertion, AsyncTestSuite, Matchers}
+import org.scalatest.{Assertion, AsyncTestSuite}
 import org.scalatest.concurrent.ScalaFutures
 import work.martins.simon.expect.core.{Expect, ExpectBlock, When}
 
 import scala.concurrent.Future
+import org.scalatest.matchers.should.Matchers
 
 trait TestUtils extends ScalaFutures with Matchers { test: AsyncTestSuite =>
   val addedValue = "this is it"

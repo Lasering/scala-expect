@@ -51,6 +51,4 @@ trait Expectable[R] {
     * @return this `Expect`.
     */
   def addExpectBlock(f: Expect[R] => ExpectBlock[R]): Expect[R] = expectableParent.addExpectBlock(f)
-  
-  // TODO create scalafix rules to migrate the expect shortcuts to the new code
 }

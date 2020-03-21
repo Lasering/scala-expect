@@ -1,8 +1,9 @@
 package work.martins.simon.expect
 
-import org.scalatest.{Matchers, AsyncWordSpec}
 import work.martins.simon.expect.core._
 import work.martins.simon.expect.core.actions._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AsyncWordSpec
 
 
 class SettingsSpec extends AsyncWordSpec with Matchers {

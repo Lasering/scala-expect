@@ -3,14 +3,12 @@ package work.martins.simon.expect.core
 import java.io.{EOFException, IOException}
 import java.nio.ByteBuffer
 import java.util.concurrent.{BlockingDeque, LinkedBlockingDeque, TimeUnit}
-
+import scala.concurrent.duration.Deadline
+import scala.concurrent.{TimeoutException, blocking}
+import scala.jdk.CollectionConverters._
 import com.typesafe.scalalogging.LazyLogging
 import com.zaxxer.nuprocess.{NuAbstractProcessHandler, NuProcess, NuProcessBuilder}
 import work.martins.simon.expect.{FromInputStream, Settings, StdErr, StdOut}
-
-import scala.concurrent.duration.Deadline
-import scala.concurrent.{TimeoutException, blocking}
-import scala.collection.JavaConverters._
 
 trait RichProcess {
   val command: Seq[String]

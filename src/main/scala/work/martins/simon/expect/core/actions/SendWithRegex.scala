@@ -1,9 +1,7 @@
 package work.martins.simon.expect.core.actions
 
-import work.martins.simon.expect.core._
-
-import scala.language.higherKinds
 import scala.util.matching.Regex.Match
+import work.martins.simon.expect.core._
 
 /**
   * When this action is executed the result of evaluating `text` will be sent to the stdIn of the underlying process.

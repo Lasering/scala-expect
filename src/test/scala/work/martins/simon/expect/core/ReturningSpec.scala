@@ -1,11 +1,12 @@
 package work.martins.simon.expect.core
 
 
-import org.scalatest.{AsyncFlatSpec, BeforeAndAfterEach}
+import org.scalatest.BeforeAndAfterEach
 import work.martins.simon.expect.TestUtils
 import work.martins.simon.expect.core.actions._
 
 import scala.util.matching.Regex.Match
+import org.scalatest.flatspec.AsyncFlatSpec
 
 class ReturningSpec extends AsyncFlatSpec with TestUtils with BeforeAndAfterEach {
   val builder = new StringBuilder("")

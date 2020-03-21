@@ -1,11 +1,12 @@
 package work.martins.simon.expect.core
 
-import org.scalatest.{AsyncWordSpec, BeforeAndAfterEach}
+import org.scalatest.BeforeAndAfterEach
 import work.martins.simon.expect.{TestUtils, Timeout}
 import work.martins.simon.expect.core.actions._
 
 import scala.util.Random
 import scala.util.matching.Regex.Match
+import org.scalatest.wordspec.AsyncWordSpec
 
 class MapFlatmapTransformSpec extends AsyncWordSpec with BeforeAndAfterEach with TestUtils {
   val builders = Seq.fill(5)(new StringBuilder(""))

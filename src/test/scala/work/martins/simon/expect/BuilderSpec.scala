@@ -1,10 +1,11 @@
 package work.martins.simon.expect
 
-import org.scalatest.{Matchers, WordSpec}
 import work.martins.simon.expect.core.actions._
 import work.martins.simon.expect.dsl.dslToCoreExpect
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class BuilderSpec extends WordSpec with Matchers {
+class BuilderSpec extends AnyWordSpec with Matchers {
   def dslSendAndExit(e: dsl.Expect[String]): Unit = {
     import e._
     send("string1")

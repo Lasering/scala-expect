@@ -1,6 +1,5 @@
 package work.martins.simon.expect
 
-import org.scalatest.{FlatSpec, Matchers}
 import work.martins.simon.expect.StringUtils._
 import work.martins.simon.expect.core._
 import work.martins.simon.expect.core.actions.Send
@@ -8,8 +7,10 @@ import work.martins.simon.expect.fluent.{Expect, ExpectBlock, When}
 
 import scala.collection.immutable.HashSet
 import scala.util.Random
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
+class HashCodeEqualsToStringSpec extends AnyFlatSpec with Matchers {
   def addSendAndExit[R](when: When[R]): When[R] = {
     when
       .send("text")

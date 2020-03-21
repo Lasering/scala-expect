@@ -1,9 +1,10 @@
 package work.martins.simon.expect.dsl
 
-import org.scalatest.{FlatSpec, Matchers}
 import work.martins.simon.expect._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class SyntaxSpec extends FlatSpec with Matchers {
+class SyntaxSpec extends AnyFlatSpec with Matchers {
   def illegalExpectBlocks(e: Expect[String]): Unit = {
     import e._
     an [IllegalArgumentException] should be thrownBy expect{}

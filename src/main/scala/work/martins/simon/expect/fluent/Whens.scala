@@ -1,9 +1,7 @@
 package work.martins.simon.expect.fluent
 
-import scala.language.higherKinds
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
-
 import work.martins.simon.expect.StringUtils._
 import work.martins.simon.expect.core.actions._
 import work.martins.simon.expect.{FromInputStream, StdOut, core}
@@ -184,11 +182,10 @@ case class EndOfFileWhen[R](parent: ExpectBlock[R])(val readFrom: FromInputStrea
     case that: EndOfFileWhen[R] => readFrom == that.readFrom && actions == that.actions
     case _ => false
   }
-  override def hashCode(): Int = {
+  override def hashCode(): Int =
     Seq(readFrom, actions)
       .map(_.hashCode())
       .foldLeft(0)((a, b) => 31 * a + b)
-  }
 }
 case class TimeoutWhen[R](parent: ExpectBlock[R]) extends When[R] {
   type CW[+X] = core.TimeoutWhen[X]

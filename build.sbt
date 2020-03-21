@@ -5,69 +5,63 @@ name := "scala-expect"
 //==== Compile Options =================================================================================================
 //======================================================================================================================
 javacOptions ++= Seq("-Xlint", "-encoding", "UTF-8", "-Dfile.encoding=utf-8")
-scalaVersion := "2.13.0-M5"
-crossScalaVersions := Seq(scalaVersion.value, "2.12.8")
+scalaVersion := "2.13.1"
 
 scalacOptions ++= Seq(
-  "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
-  "-encoding", "utf-8",                // Specify character encoding used by source files.
-  "-explaintypes",                     // Explain type errors in more detail.
-  "-feature",                          // Emit warning and location for usages of features that should be imported explicitly.
-  "-language:implicitConversions",     // Explicitly enables the implicit conversions feature
-  "-unchecked",                        // Enable additional warnings where generated code depends on assumptions.
-  "-Xcheckinit",                       // Wrap field accessors to throw an exception on uninitialized access.
-  "-Xfatal-warnings",                  // Fail the compilation if there are any warnings.
-  "-Xfuture",                          // Turn on future language features.
-  "-Xsource:2.14",                     // Treat compiler input as Scala source for the specified version.
-  "-Xmigration:2.14.0",                // Warn about constructs whose behavior may have changed since version.
-  "-Xlint",                            // Enables every warning. scalac -Xlint:help for a list and explanation
-  "-Ywarn-dead-code",                  // Warn when dead code is identified.
-  "-Ywarn-numeric-widen",              // Warn when numerics are widened.
-  "-Ywarn-value-discard",              // Warn when non-Unit expression results are unused.
-  "-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined.
-  "-Ywarn-unused:imports",             // Warn if an import selector is not referenced.
-  "-Ywarn-unused:privates",            // Warn if a private member is unused.
-  "-Ywarn-unused:locals",              // Warn if a local definition is unused.
-  "-Ywarn-unused:params",              // Warn if a value parameter is unused. TODO this seams to not be working in 2.13
-  "-Ywarn-unused:patvars",             // Warn if a variable bound in a pattern is unused.
-  "-Ybackend-parallelism", "4",        // Maximum worker threads for backend
-) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
-  case Some((2, 12)) => Seq(
-    "-Xexperimental",                    // Enable experimental extensions.
-    "-Xsource:2.13",                     // Treat compiler input as Scala source for the specified version.
-    "-Xmigration:2.13.0",                // Warn about constructs whose behavior may have changed since version.
-    "-Ypartial-unification",             // Enable partial unification in type constructor inference
-    "-Yno-adapted-args",                 // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
-  )
-  case _ => Nil
-})
+  "-encoding", "utf-8",            // Specify character encoding used by source files.
+  "-explaintypes",                 // Explain type errors in more detail.
+  "-feature",                      // Emit warning and location for usages of features that should be imported explicitly.
+  "-language:implicitConversions", // Explicitly enables the implicit conversions feature
+  "-Ybackend-parallelism", "8",    // Maximum worker threads for backend.
+  "-Ybackend-worker-queue", "10",  // Backend threads worker queue size.
+  "-Ymacro-annotations",           // Enable support for macro annotations, formerly in macro paradise.
+  "-unchecked",                    // Enable additional warnings where generated code depends on assumptions.
+  "-Xcheckinit",                   // Wrap field accessors to throw an exception on uninitialized access.
+// Unfortunately this is causing to much false positives
+//"-Xsource:2.14",                 // Treat compiler input as Scala source for the specified version.
+  "-Xmigration:2.14",              // Warn about constructs whose behavior may have changed since version.
+  "-Werror",                       // Fail the compilation if there are any warnings.
+  "-Xlint:_",                      // Enables every warning. scalac -Xlint:help for a list and explanation
+  "-Wunused:_",                    // Enables every warning of unused members/definitions/etc
+  "-Wdead-code",                   // Warn when dead code is identified.
+  "-Wextra-implicit",              // Warn when more than one implicit parameter section is defined.
+  "-Wnumeric-widen",               // Warn when numerics are widened.
+  "-Woctal-literal",               // Warn on obsolete octal syntax.
+  "-Wself-implicit",               // Warn when an implicit resolves to an enclosing self-definition.
+  "-Wvalue-discard",               // Warn when non-Unit expression results are unused.
+  "-P:silencer:checkUnused",       // If a @silent annotation does not actually suppress any warnings, this option will report an error.
+)
 
 // These lines ensure that in sbt console or sbt test:console the -Ywarn* and the -Xfatal-warning are not bothersome.
 // https://stackoverflow.com/questions/26940253/in-sbt-how-do-you-override-scalacoptions-for-console-in-all-configurations
 scalacOptions in (Compile, console) ~= (_ filterNot { option =>
-  option.startsWith("-Ywarn") || option == "-Xfatal-warnings"
+  option.startsWith("-W") || option.startsWith("-Xlint")
 })
 scalacOptions in (Test, console) := (scalacOptions in (Compile, console)).value
+scalacOptions in Test ~= (_ filterNot(_ == "-Wself-implicit"))
+
+initialCommands := s"""
+  import ${organization.value}.expect._
+  import ${organization.value}.expect.core._
+  import ${organization.value}.expect.core.actions._
+  """
 
 //======================================================================================================================
 //==== Dependencies ====================================================================================================
 //======================================================================================================================
-val silencerVersion = "1.3.0"
 libraryDependencies ++= Seq(
-  "com.typesafe" % "config" % "1.3.3",
-  "com.zaxxer" % "nuprocess" % "1.2.4",
+  "com.typesafe" % "config" % "1.4.0",
+  "com.zaxxer" % "nuprocess" % "2.0.0",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
   "ch.qos.logback" % "logback-classic" % "1.2.3" % Test,
-  "org.scalatest" %% "scalatest" % "3.0.6-SNAP5" % Test,
-  compilerPlugin("com.github.ghik" %% "silencer-plugin" % silencerVersion),
-  "com.github.ghik" %% "silencer-lib" % silencerVersion % Compile
-) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
-  case Some((2, 13)) => Seq("com.typesafe.scala-logging" %% "scala-logging" % "3.9.1")
-  case Some((2, 12)) => Seq("com.typesafe.scala-logging" %% "scala-logging" % "3.9.0")
-  case _ => Nil
-})
+  "org.scalatest" %% "scalatest" % "3.1.1" % Test,
+  "com.github.ghik" % "silencer-lib" % "1.6.0" % Provided cross CrossVersion.full,
+)
+
+addCompilerPlugin("com.github.ghik" % "silencer-plugin" % "1.6.0" cross CrossVersion.full)
 
 // Needed for scoverage snapshot
-resolvers += Opts.resolver.sonatypeSnapshots
+//resolvers += Opts.resolver.sonatypeSnapshots
 
 //======================================================================================================================
 //==== Scaladoc ========================================================================================================
@@ -117,7 +111,6 @@ releaseCrossBuild := true
 releasePublishArtifactsAction := PgpKeys.publishSigned.value
 
 import ReleaseTransformations._
-import xerial.sbt.Sonatype.SonatypeCommand
 releaseProcess := Seq[ReleaseStep](
   releaseStepTask(dependencyUpdates),
   checkSnapshotDependencies,
@@ -129,7 +122,7 @@ releaseProcess := Seq[ReleaseStep](
   tagRelease,
   releaseStepTask(ghpagesPushSite),
   publishArtifacts,
-  releaseStepCommand(SonatypeCommand.sonatypeReleaseAll),
+  releaseStepTask(sonatypeBundleRelease),
   pushChanges,
   setNextVersion
 )

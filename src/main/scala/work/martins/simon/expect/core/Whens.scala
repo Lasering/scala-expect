@@ -1,15 +1,16 @@
 package work.martins.simon.expect.core
 
+import scala.annotation.tailrec
+import scala.util.matching.Regex
 import com.typesafe.scalalogging.LazyLogging
 import work.martins.simon.expect.StringUtils._
+import work.martins.simon.expect.core.RunContext.{ChangeToNewExpect, Continue, Terminate}
 import work.martins.simon.expect.core.actions.Action
 import work.martins.simon.expect.{EndOfFile, FromInputStream, StdOut, Timeout}
 
-import scala.language.higherKinds
-import scala.util.matching.Regex
-
 object When {
   /*
+  // This code is cleaner, but IDEs have trouble performing code completion.
   trait WhenBuilder[PT, R, W[+X] <: When[X]] {
     def build(s: PT, f: FromInputStream): Seq[Action[R, W]] => W[R]
   }
@@ -78,28 +79,19 @@ sealed trait When[+R] extends LazyLogging {
 
   /** Runs all the actions of this $type. */
   private[core] def run[RR >: R](runContext: RunContext[RR]): RunContext[RR] = {
-    import work.martins.simon.expect.core.RunContext.{ChangeToNewExpect, Continue, Terminate}
-
-    import scala.annotation.tailrec
-    
     @tailrec
-    def runInner(actions: Seq[Action[RR, This]], innerRunContext: RunContext[RR]): RunContext[RR] = {
+    def runInner(actions: Seq[Action[RR, This]], innerRunContext: RunContext[RR]): RunContext[RR] =
       actions.headOption match {
+        case None => innerRunContext
         case Some(action) =>
           val newRunContext = action.run(this.asInstanceOf[This[RR]], innerRunContext)
           newRunContext.executionAction match {
-            case Continue =>
-              runInner(actions.tail, newRunContext)
-            case Terminate | ChangeToNewExpect(_) =>
-              // We just return the new run context to do a preemptive exit, ie, ensure
-              // anything after this action does not get executed
-              newRunContext
+            case Continue => runInner(actions.tail, newRunContext)
+            // We just return the new run context to do a preemptive exit, ie, ensure
+            // anything after this action does not get executed
+            case Terminate | ChangeToNewExpect(_) => newRunContext
           }
-        case None =>
-          // No more actions. We just return the current RunContext
-          innerRunContext
       }
-    }
 
     runInner(actions, runContext).withOutput(trimToMatchedText)
   }

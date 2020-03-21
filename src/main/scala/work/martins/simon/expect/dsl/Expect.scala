@@ -1,10 +1,9 @@
 package work.martins.simon.expect.dsl
 
-import work.martins.simon.expect.StringUtils._
-import work.martins.simon.expect._
-
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
+import work.martins.simon.expect.StringUtils._
+import work.martins.simon.expect._
 
 case class Expect[R](command: Seq[String], defaultValue: R, settings: Settings = Settings.fromConfig()) {
   def this(command: String, defaultValue: R, settings: Settings) = {
@@ -30,8 +29,7 @@ case class Expect[R](command: Seq[String], defaultValue: R, settings: Settings =
   }
   def expect(f: => Unit): Unit = newExpect(_.expect)(f)
   def addExpectBlock(block: Expect[R] => Unit): Unit = block(this)
-  // TODO create scalafix rules to migrate the expect shortcuts to the new code
-  
+
   private def newWhen[W <: fluent.When[R]](block: fluent.ExpectBlock[R] => W)(f: => Unit): Unit = {
     require(expectBlock.isDefined && when.isEmpty, "When can only be added inside an Expect Block.")
     expectBlock.foreach { eb =>

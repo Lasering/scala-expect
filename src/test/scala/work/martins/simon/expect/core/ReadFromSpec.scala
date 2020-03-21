@@ -1,7 +1,8 @@
 package work.martins.simon.expect.core
 
-import org.scalatest.{AsyncFlatSpec, BeforeAndAfterEach}
+import org.scalatest.BeforeAndAfterEach
 import work.martins.simon.expect.TestUtils
+import org.scalatest.flatspec.AsyncFlatSpec
 
 /**
   * Created by simon on 19-01-2017.
