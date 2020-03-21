@@ -1,9 +1,10 @@
 package work.martins.simon.expect.fluent
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 import work.martins.simon.expect.{Settings, core}
 
-class EmptySpec extends FlatSpec with Matchers {
+class EmptySpec extends AnyFlatSpec with Matchers {
   "An Expect without a command" should "throw IllegalArgumentException" in {
     an [IllegalArgumentException] should be thrownBy new Expect("", defaultValue = ())
   }

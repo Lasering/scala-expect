@@ -20,13 +20,13 @@ class MapFlatmapTransformSpec extends AsyncWordSpec with BeforeAndAfterEach with
       }
     )),
     constructExpect(defaultValue, RegexWhen("LICENSE".r)(
-      Returning { _: Match =>
+      Returning { (_: Match) =>
         appendToBuilder(builders(1))
         returnedResults(1)
       }
     )),
     constructExpect(defaultValue, RegexWhen("build".r)(
-      ReturningExpect { _: Match =>
+      ReturningExpect { (_: Match) =>
         appendToBuilder(builders(2))
         new Expect("ls", returnedResults(2))()
       }

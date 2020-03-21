@@ -1,11 +1,13 @@
 package work.martins.simon.expect.fluent
 
-import work.martins.simon.expect.{EndOfFile, FromInputStream, StdOut, Timeout}
+import work.martins.simon.expect.{EndOfFile, FromInputStream, Timeout}
+import work.martins.simon.expect.FromInputStream.StdOut
 import scala.util.matching.Regex
 
-trait Whenable[R] extends Expectable[R] {
-  protected implicit val whenableParent: ExpectBlock[R] //The root of an Whenable must be an ExpectBlock
-  protected lazy val expectableParent: Expect[R] = whenableParent.parent
+trait Whenable[R] extends Expectable[R]
+  protected val whenableParent: ExpectBlock[R] //The root of an Whenable must be an ExpectBlock
+  given ExpectBlock[R] = whenableParent
+  protected val expectableParent: Expect[R] = whenableParent.parent
 
   /**
    * Adds a new `StringWhen` that matches whenever `pattern` is contained
@@ -133,4 +135,3 @@ trait Whenable[R] extends Expectable[R] {
     * @return this ExpectBlock.
     */
   def addWhens(f: ExpectBlock[R] => When[R]): ExpectBlock[R] = whenableParent.addWhens(f)
-}

@@ -11,10 +11,9 @@ import work.martins.simon.expect.core._
   *
   * Any action or expect block added after this will not be executed.
   */
-final case class Exit[+R]() extends Action[R, When] {
-  def run[RR >: R](when: When[RR], runContext: RunContext[RR]): RunContext[RR] = {
+final case class Exit[+R]() extends Action[R, When]
+  def run[RR >: R](when: When[RR], runContext: RunContext[RR]): RunContext[RR] =
     runContext.copy(executionAction = Terminate)
-  }
 
   //These methods just perform a cast because the type argument R is just used here,
   //so there isn't the need to allocate need objects.
@@ -24,4 +23,3 @@ final case class Exit[+R]() extends Action[R, When] {
   def transform[T](flatMapPF: R /=> Expect[T], mapPF: R /=> T): Action[T, When] = this.asInstanceOf[Exit[T]]
 
   def structurallyEquals[RR >: R, W[+X] <: When[X]](other: Action[RR, W]): Boolean = other.isInstanceOf[Exit[RR]]
-}

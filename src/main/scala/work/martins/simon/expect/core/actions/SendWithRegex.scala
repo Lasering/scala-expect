@@ -12,12 +12,11 @@ import scala.util.matching.Regex.Match
   *
   * @param text the text to send.
   */
-final case class SendWithRegex[+R](text: Match => String) extends Action[R, RegexWhen] {
-  def run[RR >: R](when: RegexWhen[RR], runContext: RunContext[RR]): RunContext[RR] = {
+final case class SendWithRegex[+R](text: Match => String) extends Action[R, RegexWhen]
+  def run[RR >: R](when: RegexWhen[RR], runContext: RunContext[RR]): RunContext[RR] =
     val regexMatch = when.regexMatch(runContext.output)
     runContext.process.write(text(regexMatch))
     runContext
-  }
 
   //These methods just perform a cast because the type argument R is just used here,
   //so there isn't the need to allocate need objects.
@@ -27,4 +26,3 @@ final case class SendWithRegex[+R](text: Match => String) extends Action[R, Rege
   def transform[T](flatMapPF: R /=> Expect[T], mapPF: R /=> T): Action[T, RegexWhen] = this.asInstanceOf[SendWithRegex[T]]
 
   def structurallyEquals[RR >: R, W[+X] <: RegexWhen[X]](other: Action[RR, W]): Boolean = other.isInstanceOf[SendWithRegex[RR]]
-}

@@ -1,10 +1,12 @@
 package work.martins.simon.expect
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import work.martins.simon.expect.core.actions._
 import work.martins.simon.expect.dsl.dslToCoreExpect
+import work.martins.simon.expect.fluent.{given _}
 
-class BuilderSpec extends WordSpec with Matchers {
+class BuilderSpec extends AnyWordSpecLike with Matchers {
   def dslSendAndExit(e: dsl.Expect[String]): Unit = {
     import e._
     send("string1")

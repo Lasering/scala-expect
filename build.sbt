@@ -5,42 +5,63 @@ name := "scala-expect"
 //==== Compile Options =================================================================================================
 //======================================================================================================================
 javacOptions ++= Seq("-Xlint", "-encoding", "UTF-8", "-Dfile.encoding=utf-8")
-scalaVersion := "2.13.0-M5"
-crossScalaVersions := Seq(scalaVersion.value, "2.12.8")
+scalaVersion := "0.22.0-RC1"
+crossScalaVersions := Seq(scalaVersion.value, "2.13.1")
 
 scalacOptions ++= Seq(
   "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
   "-encoding", "utf-8",                // Specify character encoding used by source files.
-  "-explaintypes",                     // Explain type errors in more detail.
+  "-explain-types",                    // Explain type errors in more detail.
   "-feature",                          // Emit warning and location for usages of features that should be imported explicitly.
-  "-language:implicitConversions",     // Explicitly enables the implicit conversions feature
   "-unchecked",                        // Enable additional warnings where generated code depends on assumptions.
-  "-Xcheckinit",                       // Wrap field accessors to throw an exception on uninitialized access.
   "-Xfatal-warnings",                  // Fail the compilation if there are any warnings.
-  "-Xfuture",                          // Turn on future language features.
-  "-Xsource:2.14",                     // Treat compiler input as Scala source for the specified version.
-  "-Xmigration:2.14.0",                // Warn about constructs whose behavior may have changed since version.
-  "-Xlint",                            // Enables every warning. scalac -Xlint:help for a list and explanation
-  "-Ywarn-dead-code",                  // Warn when dead code is identified.
-  "-Ywarn-numeric-widen",              // Warn when numerics are widened.
-  "-Ywarn-value-discard",              // Warn when non-Unit expression results are unused.
-  "-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined.
-  "-Ywarn-unused:imports",             // Warn if an import selector is not referenced.
-  "-Ywarn-unused:privates",            // Warn if a private member is unused.
-  "-Ywarn-unused:locals",              // Warn if a local definition is unused.
-  "-Ywarn-unused:params",              // Warn if a value parameter is unused. TODO this seams to not be working in 2.13
-  "-Ywarn-unused:patvars",             // Warn if a variable bound in a pattern is unused.
-  "-Ybackend-parallelism", "4",        // Maximum worker threads for backend
 ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
-  case Some((2, 12)) => Seq(
-    "-Xexperimental",                    // Enable experimental extensions.
-    "-Xsource:2.13",                     // Treat compiler input as Scala source for the specified version.
-    "-Xmigration:2.13.0",                // Warn about constructs whose behavior may have changed since version.
-    "-Ypartial-unification",             // Enable partial unification in type constructor inference
-    "-Yno-adapted-args",                 // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
+  case Some((0, 22)) => Seq(
+    "-explain",                          // Explain errors in more detail.
+    "-migration",                        // Emit warning and location for migration issues from Scala 2.
+    //"-rewrite",
+    "-new-syntax",                       // Require `then` and `do` in control expressions.
+    "-indent",                           // Allow significant indentation.
+    "-strict",                           // Use strict type rules, which means some formerly legal code does not typecheck anymore.
+    "-language:implicitConversions,strictEquality",     // Explicitly enables the implicit conversions feature
+    "-Ykind-projector",                  // Enables a subset of kind-projector syntax (see https://github.com/lampepfl/dotty/pull/7775)
+    "-Yerased-terms",                    // Allows the use of erased terms.
+  //"-Yshow-suppressed-errors",          // Also show follow-on errors and warnings that are normally suppressed.
+  //"-Ysemanticdb",                      // Store information in SemanticDB.
+  //"-Yexplicit-nulls",                  // Make reference types non-nullable. Nullable types can be expressed with unions: e.g. String|Null.
+  )
+  case Some((2, 13)) => Seq(
+    "-Ybackend-parallelism", "8",        // Maximum worker threads for backend
+    "-Xcheckinit",                       // Wrap field accessors to throw an exception on uninitialized access.
+    //"-Xlint",                            // Enables every warning. scalac -Xlint:help for a list and explanation 
+    "-Xlint:adapted-args",               // An argument list was modified to match the receiver.
+    "-Xlint:nullary-unit",               // `def f: Unit` looks like an accessor; add parens to look side-effecting.
+    "-Xlint:inaccessible",               // Warn about inaccessible types in method signatures.
+    "-Xlint:nullary-override",           // Non-nullary `def f()` overrides nullary `def f`.
+    "-Xlint:infer-any",                  // A type argument was inferred as Any.
+    "-Xlint:missing-interpolator",       // A string literal appears to be missing an interpolator id.
+    "-Xlint:doc-detached",               // When running scaladoc, warn if a doc comment is discarded.
+    "-Xlint:private-shadow",             // A private field (or class parameter) shadows a superclass field.
+    "-Xlint:type-parameter-shadow",      // A local type parameter shadows a type already in scope.
+    "-Xlint:poly-implicit-overload",     // Parameterized overloaded implicit methods are not visible as view bounds.
+    "-Xlint:option-implicit",            // Option.apply used an implicit view.
+    "-Xlint:delayedinit-select",         // Selecting member of DelayedInit.
+    "-Xlint:package-object-classes",     // Class or object defined in package object.
+    "-Xlint:stars-align",                // In a pattern, a sequence wildcard `_*` should match all of a repeated parameter.
+    "-Xlint:constant",                   // Evaluation of a constant arithmetic expression resulted in an error.
+    "-Xlint:unused",                     // Enable -Wunused:imports,privates,locals,implicits.
+    "-Xlint:nonlocal-return",            // A return statement used an exception for flow control.
+    "-Xlint:implicit-not-found",         // Check @implicitNotFound and @implicitAmbiguous messages.
+    "-Xlint:serial",                     // @SerialVersionUID on traits and non-serializable classes.
+    "-Xlint:valpattern",                 // Enable pattern checks in val definitions.
+    "-Xlint:eta-zero",                   // Usage `f` of parameterless `def f()` resulted in eta-expansion, not empty application `f()`.
+    "-Xlint:eta-sam",                    // The Java-defined target interface for eta-expansion was not annotated @FunctionalInterface.
+    "-Xlint:deprecation",                // Enable -deprecation and also check @deprecated annotations.
   )
   case _ => Nil
 })
+
+//"-strict",                           // Use strict type rules, which means some formerly legal code does not typecheck anymore.
 
 // These lines ensure that in sbt console or sbt test:console the -Ywarn* and the -Xfatal-warning are not bothersome.
 // https://stackoverflow.com/questions/26940253/in-sbt-how-do-you-override-scalacoptions-for-console-in-all-configurations
@@ -54,17 +75,14 @@ scalacOptions in (Test, console) := (scalacOptions in (Compile, console)).value
 //======================================================================================================================
 val silencerVersion = "1.3.0"
 libraryDependencies ++= Seq(
-  "com.typesafe" % "config" % "1.3.3",
+  "com.typesafe" % "config" % "1.3.4",
   "com.zaxxer" % "nuprocess" % "1.2.4",
   "ch.qos.logback" % "logback-classic" % "1.2.3" % Test,
-  "org.scalatest" %% "scalatest" % "3.0.6-SNAP5" % Test,
-  compilerPlugin("com.github.ghik" %% "silencer-plugin" % silencerVersion),
-  "com.github.ghik" %% "silencer-lib" % silencerVersion % Compile
-) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
-  case Some((2, 13)) => Seq("com.typesafe.scala-logging" %% "scala-logging" % "3.9.1")
-  case Some((2, 12)) => Seq("com.typesafe.scala-logging" %% "scala-logging" % "3.9.0")
-  case _ => Nil
-})
+  "org.scalatest" %% "scalatest" % "3.1.1" % Test,
+  //compilerPlugin("com.github.ghik" %% "silencer-plugin" % silencerVersion),
+  //"com.github.ghik" %% "silencer-lib" % silencerVersion % Compile,
+  //"com.typesafe.scala-logging" %% "scala-logging" % "3.9.2"
+)
 
 // Needed for scoverage snapshot
 resolvers += Opts.resolver.sonatypeSnapshots

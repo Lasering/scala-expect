@@ -8,4 +8,6 @@ addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "2.3")
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.6.0-M5")
 addSbtPlugin("com.codacy" % "sbt-codacy-coverage" % "2.112")
 
-addCompilerPlugin("io.tryp" % "splain" % "0.3.4" cross CrossVersion.patch)
+addSbtPlugin("ch.epfl.lamp" % "sbt-dotty" % "0.4.0")
+
+//addCompilerPlugin("io.tryp" % "splain" % "0.3.4" cross CrossVersion.patch)

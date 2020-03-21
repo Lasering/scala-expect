@@ -3,7 +3,6 @@ package work.martins.simon.expect.core
 import scala.concurrent._
 import scala.util.{Failure, Success}
 
-import com.typesafe.scalalogging.LazyLogging
 import work.martins.simon.expect.Settings
 import work.martins.simon.expect.StringUtils._
 import work.martins.simon.expect.core.RunContext.{ChangeToNewExpect, Continue, Terminate}
@@ -66,14 +65,12 @@ import work.martins.simon.expect.core.RunContext.{ChangeToNewExpect, Continue, T
   * @define type `Expect`
   */
 final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Settings = Settings.fromConfig())
-                           (val expectBlocks: ExpectBlock[R]*) extends LazyLogging {
-  def this(command: String, defaultValue: R, settings: Settings)(expectBlocks: ExpectBlock[R]*) = {
+                           (val expectBlocks: ExpectBlock[R]*) {
+  def this(command: String, defaultValue: R, settings: Settings)(expectBlocks: ExpectBlock[R]*) =
     this(splitBySpaces(command), defaultValue, settings)(expectBlocks:_*)
-  }
 
-  def this(command: String, defaultValue: R)(expectBlocks: ExpectBlock[R]*) = {
+  def this(command: String, defaultValue: R)(expectBlocks: ExpectBlock[R]*) =
     this(command, defaultValue, Settings.fromConfig())(expectBlocks:_*)
-  }
 
   require(command.nonEmpty, "Expect must have a command to run.")
 
@@ -88,27 +85,27 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     * @param ex
     * @return
     */
-  def run(settings: Settings = this.settings, propagateSettings: Boolean = false)(implicit ex: ExecutionContext): Future[R] = {
+  def run(settings: Settings = this.settings, propagateSettings: Boolean = false)(using ex: ExecutionContext): Future[R] =
     run(NuProcessRichProcess(command, settings), propagateSettings)
+
+  private def success(runContext: RunContext[R])(using ex: ExecutionContext): Future[R] = Future {
+    runContext.process.destroy()
+  }.map { _ =>
+    //logger.info(runContext.withId(s"Finished returning: ${runContext.value}"))
+    runContext.value
   }
-  def run(process: RichProcess, propagateSettings: Boolean)(implicit ex: ExecutionContext): Future[R] = {
+
+  def run(process: RichProcess, propagateSettings: Boolean)(using ex: ExecutionContext): Future[R] =
     val runContext = RunContext(process, value = defaultValue, executionAction = Continue)
-    
-    logger.info(runContext.withId("Running command: " + command.mkString("\"", " ", "\"")))
-    logger.debug(runContext.withId(runContext.settings.toString))
 
-    def success(runContext: RunContext[R]): Future[R] = Future {
-      runContext.process.destroy()
-    } map { _ =>
-      logger.info(runContext.withId(s"Finished returning: ${runContext.value}"))
-      runContext.value
-    }
+    //logger.info(runContext.withId("Running command: " + command.mkString("\"", " ", "\"")))
+    //logger.debug(runContext.withId(runContext.settings.toString))
 
-    def innerRun(expectBlocks: Seq[ExpectBlock[R]], runContext: RunContext[R]): Future[R] = {
+    def innerRun(expectBlocks: Seq[ExpectBlock[R]], runContext: RunContext[R]): Future[R] =
       expectBlocks.headOption.map { headExpectBlock =>
         //We still have expect blocks to run
         val result = headExpectBlock.run(runContext).flatMap { innerRunContext =>
-          innerRunContext.executionAction match {
+          innerRunContext.executionAction match
             case Continue =>
               //Continue with the remaining expect blocks
               innerRun(expectBlocks.tail, innerRunContext)
@@ -116,12 +113,10 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
               success(innerRunContext)
             case ChangeToNewExpect(newExpect) =>
               innerRunContext.process.destroy()
-              if (propagateSettings) {
+              if propagateSettings then
                 newExpect.asInstanceOf[Expect[R]].run(runContext.settings)
-              } else {
+              else
                 newExpect.asInstanceOf[Expect[R]].run()
-              }
-          }
         }
         //If we get an exception while running the head expect block we want to make sure the rich process is destroyed.
         result.transformWith {
@@ -132,10 +127,8 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
         //No more expect blocks. Just return the success value.
         success(runContext)
       }
-    }
 
     innerRun(expectBlocks, runContext)
-  }
 
   /** Creates a new $type by applying a function to this $type result.
     * 
@@ -144,28 +137,30 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     * @return an $type which will return the result of the application of the function `f`
     * @group Transformations
     */
-  def map[T](f: R => T): Expect[T] = {
+  def map[T](f: R => T): Expect[T] =
     Expect(command, f(defaultValue), settings)(expectBlocks.map(_.map(f)):_*)
-  }
-  /** Creates a new $type by applying a function to this $type result, and returns the result of the function as the new $type.
+  
+    /** Creates a new $type by applying a function to this $type result, and returns the result of the function as the new $type.
     *
     * @tparam T the type of the returned $type
     * @param f the function which will be applied to this $type result
     * @return the $type returned as the result of the application of the function `f`
     * @group Transformations
     */
-  def flatMap[T](f: R => Expect[T]): Expect[T] = {
+  def flatMap[T](f: R => Expect[T]): Expect[T] =
     Expect(command, f(defaultValue).defaultValue, settings)(expectBlocks.map(_.flatMap(f)):_*)
-  }
-  /** Creates a new $type with one level of nesting flattened, this method is equivalent to `flatMap(identity)`.
+  
+    /** Creates a new $type with one level of nesting flattened, this method is equivalent to `flatMap(identity)`.
     * @tparam T the type of the returned $type
     * @return an $type with one level of nesting flattened
     * @group Transformations
     */
-  def flatten[T](implicit ev: R <:< Expect[T]): Expect[T] = flatMap(ev)
+  def flatten[T](using ev: R <:< Expect[T]): Expect[T] = flatMap(ev)
+  
   private def notDefined[RR >: R](function: String, text: String)(result: RR) =
     throw new NoSuchElementException(s"""Expect.$function: $text "$result"""")
-  /** Creates a new $type by filtering its result with a predicate.
+  
+    /** Creates a new $type by filtering its result with a predicate.
     *
     * If the current $type result satisfies the predicate, the new $type will also hold that result.
     * Otherwise, the resulting $type will fail with a `NoSuchElementException`.
@@ -174,12 +169,14 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     * @group Transformations
     */
   def filter(p: R => Boolean): Expect[R] = map { r =>
-    if (p(r)) r else notDefined("filter", "predicate is not satisfied for")(r)
+    if p(r) then r else notDefined("filter", "predicate is not satisfied for")(r)
   }
+
   /** Used by for-comprehensions.
     * @group Transformations
     */
   def withFilter(p: R => Boolean): Expect[R] = filter(p) // Expect is already lazy, so we can simply call filter.
+  
   /** Creates a new $type by mapping the result of the current $type, if the given partial function is defined at that value.
     *
     * If the current $type contains a value for which the partial function is defined, the new $type will also hold that value.
@@ -193,6 +190,7 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
   def collect[T](pf: PartialFunction[R, T]): Expect[T] = map { r =>
     pf.applyOrElse(r, notDefined("collect", "partial function is not defined at"))
   }
+
   /** Creates a new $type by flatMapping the result of the current $type, if the given partial function is defined at that value.
     *
     * If the current $type contains a value for which the partial function is defined, the new $type will also hold that value.
@@ -206,6 +204,7 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
   def flatCollect[T](pf: PartialFunction[R, Expect[T]]): Expect[T] = flatMap { r =>
     pf.applyOrElse(r, notDefined("flatCollect", "partial function is not defined at"))
   }
+
   // TODO improve the example
   /** Transform this $type result using the following strategy:
     *  - if `flatMapPF` is defined for this expect result then flatMap the result using flatMapPF.
@@ -260,12 +259,12 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     *         mapPF is defined for the given result
     * @group Transformations
     */
-  def transform[T](flatMapPF: PartialFunction[R, Expect[T]], mapPF: PartialFunction[R, T]): Expect[T] = {
+  def transform[T](flatMapPF: PartialFunction[R, Expect[T]], mapPF: PartialFunction[R, T]): Expect[T] =
     val newDefaultValue = flatMapPF.andThen(_.defaultValue).orElse(mapPF)
       .applyOrElse(defaultValue, notDefined("transform", "neither flatMapPF nor mapPF are defined at the Expect default value"))
 
     new Expect[T](command, newDefaultValue, settings)(expectBlocks.map(_.transform(flatMapPF, mapPF)):_*)
-  }
+  
   /** Zips the results of `this` and `that` $type, and creates a new $type holding the tuple of their results.
     *
     * @tparam T the type of the returned $type
@@ -274,6 +273,7 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     * @group Transformations
     */
   def zip[T](that: Expect[T]): Expect[(R, T)] = zipWith(that)((r1, r2) => (r1, r2))
+
   /** Zips the results of `this` and `that` $type using a function `f`,
     *  and creates a new $type holding the result.
     *
@@ -305,14 +305,14 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     *
     * @param other the other $type to compare this $type to.
     */
-  override def equals(other: Any): Boolean = other match {
+  /*override def equals(other: Any): Boolean = other match {
     case that: Expect[R] =>
       command == that.command &&
       defaultValue == that.defaultValue &&
       settings == that.settings &&
       expectBlocks == that.expectBlocks
     case _ => false
-  }
+  }*/
 
   /**
     * @define subtypes expect blocks
@@ -324,17 +324,15 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     *
     * @param other the other $type to compare this $type to.
     */
-  def structurallyEquals[RR >: R](other: Expect[RR]): Boolean = {
+  def structurallyEquals[RR >: R](other: Expect[RR]): Boolean =
     command == other.command &&
-      defaultValue == other.defaultValue &&
-      settings == other.settings &&
+      defaultValue.equals(other.defaultValue) &&
+      settings.equals(other.settings) &&
       expectBlocks.size == other.expectBlocks.size &&
       expectBlocks.zip(other.expectBlocks).forall{ case (a, b) => a.structurallyEquals(b) }
-  }
 
-  override def hashCode(): Int = {
+  override def hashCode(): Int =
     Seq(command, defaultValue, settings, expectBlocks)
       .map(_.hashCode())
       .foldLeft(0)((a, b) => 31 * a + b)
-  }
 }

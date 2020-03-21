@@ -1,6 +1,6 @@
 package work.martins.simon.expect.fluent
 
-trait Expectable[R] {
+trait Expectable[R]
   protected val expectableParent: Expect[R] //The root of an Expectable must be an Expect
 
   /**
@@ -51,6 +51,3 @@ trait Expectable[R] {
     * @return this `Expect`.
     */
   def addExpectBlock(f: Expect[R] => ExpectBlock[R]): Expect[R] = expectableParent.addExpectBlock(f)
-  
-  // TODO create scalafix rules to migrate the expect shortcuts to the new code
-}

@@ -2,7 +2,7 @@ package work.martins.simon.expect.core.actions
 
 import work.martins.simon.expect.core.{RunContext, Expect, When}
 
-import scala.language.higherKinds
+import scala.annotation.{alpha, infix}
 
 /**
   * @define type Action
@@ -13,17 +13,19 @@ import scala.language.higherKinds
   *                     Note however that every returning action will still be executed.
   * @tparam W the concrete When type constructor to which this action can be applied.
   */
-trait Action[+R, -W[+X] <: When[X]] {
+trait Action[+R, -W[+X] <: When[X]]
   def run[RR >: R](when: W[RR], runContext: RunContext[RR]): RunContext[RR]
 
   def map[T](f: R => T): Action[T, W]
   def flatMap[T](f: R => Expect[T]): Action[T, W]
+  
+  @alpha("PartialFunction")
+  @infix
   type /=>[-A, +B] = PartialFunction[A, B]
   def transform[T](flatMapPF: R /=> Expect[T], mapPF: R /=> T): Action[T, W]
 
-  protected def pfNotDefined[RR >: R, T](r: RR): T = {
+  protected def pfNotDefined[RR >: R, T](r: RR): T =
     throw new NoSuchElementException(s"Expect.transform neither flatMapPF nor mapPF are defined at $r (from ${this.getClass.getSimpleName})")
-  }
 
   /**
     * Returns whether the other $type is structurally equal to this $type.
@@ -43,4 +45,3 @@ trait Action[+R, -W[+X] <: When[X]] {
     * @param other the other $type to campare this $type to.
     */
   def structurallyEquals[RR >: R, WW[+X] <: W[X]](other: Action[RR, WW]): Boolean
-}

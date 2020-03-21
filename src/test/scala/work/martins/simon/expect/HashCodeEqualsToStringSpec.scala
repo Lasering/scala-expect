@@ -1,6 +1,7 @@
 package work.martins.simon.expect
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpecLike
 import work.martins.simon.expect.StringUtils._
 import work.martins.simon.expect.core._
 import work.martins.simon.expect.core.actions.Send
@@ -9,7 +10,7 @@ import work.martins.simon.expect.fluent.{Expect, ExpectBlock, When}
 import scala.collection.immutable.HashSet
 import scala.util.Random
 
-class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
+class HashCodeEqualsToStringSpec extends AnyFlatSpecLike with Matchers {
   def addSendAndExit[R](when: When[R]): When[R] = {
     when
       .send("text")
@@ -112,8 +113,8 @@ class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
     }
 
     val objectsWithCoreExpects = objects map {
-      case e: Expect[_] => e.toCore
-      case e: dsl.Expect[_] => e.toCore
+      case e: Expect[?] => e.toCore
+      case e: dsl.Expect[?] => e.toCore
       case e => e
     }
     val setCore = HashSet(objectsWithCoreExpects:_*) //Tests hashCode
@@ -123,7 +124,7 @@ class HashCodeEqualsToStringSpec extends FlatSpec with Matchers {
   }
 
   "toString" should "contain useful information" in {
-    val expects = objects.collect{ case e: Expect[_] => e }
+    val expects = objects.collect{ case e: Expect[?] => e }
     for (expect <- expects) {
       val expectToString = expect.toString
       expectToString should include ("Expect")
