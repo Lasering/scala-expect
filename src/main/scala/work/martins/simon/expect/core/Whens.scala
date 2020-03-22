@@ -37,12 +37,6 @@ object When {
     RegexWhen(pattern, readFrom)(actions:_*)
   }
   
-  // We need to include EndOfFile and Timeout because otherwise this would be ambiguous (although the scala compiler doesn't think so):
-  //  def apply[R](readFrom: FromInputStream = StdOut)(actions: Action[R, EndOfFileWhen]*): EndOfFileWhen[R] = {
-  //    EndOfFileWhen(readFrom)(actions:_*)
-  //  }
-  //  def apply[R]()(actions: Action[R, TimeoutWhen]*): TimeoutWhen[R] = TimeoutWhen()(actions:_*)
-
   import com.github.ghik.silencer.silent
   // the pattern is not used but we need it to disambiguate between creating a EndOfFileWhen vs a TimeoutWhen. One could say its an erased term.
   def apply[R](@silent pattern: EndOfFile.type, readFrom: FromInputStream = StdOut)(actions: Action[R, EndOfFileWhen]*): EndOfFileWhen[R] = {

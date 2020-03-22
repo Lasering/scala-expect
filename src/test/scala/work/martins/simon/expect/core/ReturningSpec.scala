@@ -17,7 +17,6 @@ class ReturningSpec extends AsyncFlatSpec with TestUtils with BeforeAndAfterEach
   "An Expect" should "only return the last returning action before an exit but still execute the previous actions" in {
     //should "not execute any action after an exit action"
     val expect = constructExpect(When("LICENSE".r)(
-      //Returning { _: Match => // Why isn't Scala able to infer the correct apply for Returning { _ => ...}
       Returning { m: Match =>
         appendToBuilder(builder)
         m.group(0)

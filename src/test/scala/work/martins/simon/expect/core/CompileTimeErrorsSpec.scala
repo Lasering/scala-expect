@@ -6,15 +6,12 @@ import org.scalatest.matchers.should.Matchers
 
 class CompileTimeErrorsSpec extends AnyFlatSpec with Matchers {
   "A StringWhen" should "not type check if it contains a SendWithRegex" in {
-    //StringWhen("text")(SendWithRegex(m => m.group(1)))
     """StringWhen("text")(SendWithRegex(m => m.group(1)))""" shouldNot typeCheck
   }
   it should "not type check if it contains a ReturningWithRegex" in {
-    //StringWhen("text")(ReturningWithRegex(m => m.group(1)))
     """StringWhen("text")(ReturningWithRegex(m => m.group(1)))""" shouldNot typeCheck
   }
   it should "not type check if it contains a ReturningExpectWithRegex" in {
-    //StringWhen("text")(ReturningExpectWithRegex(m => new Expect(m.group(1), "")()))
     """StringWhen("text")(ReturningExpectWithRegex(m => new Expect(m.group(1), "")()))""" shouldNot typeCheck
   }
 
