@@ -210,7 +210,7 @@ final case class RegexWhen[+R](pattern: Regex, readFrom: FromInputStream = StdOu
 final case class EndOfFileWhen[+R](readFrom: FromInputStream = StdOut)(val actions: Action[R, EndOfFileWhen]*) extends When[R] {
   type This[+X] = EndOfFileWhen[X]
 
-  override def matches(output: String) = false
+  override def matches(output: String): Boolean = false
 
   def withActions[T](actions: Seq[Action[T, This]]): EndOfFileWhen[T] = EndOfFileWhen(readFrom)(actions:_*)
   
@@ -232,7 +232,7 @@ final case class EndOfFileWhen[+R](readFrom: FromInputStream = StdOut)(val actio
 final case class TimeoutWhen[+R]()(val actions: Action[R, TimeoutWhen]*) extends When[R] {
   type This[+X] = TimeoutWhen[X]
 
-  override def matches(output: String) = false
+  override def matches(output: String): Boolean = false
   
   /** The readFrom of a TimeoutWhen is not used but to keep the implementation simple we set its value to StdOut. */
   val readFrom: FromInputStream = StdOut

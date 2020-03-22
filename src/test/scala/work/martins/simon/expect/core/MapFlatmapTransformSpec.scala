@@ -71,7 +71,7 @@ class MapFlatmapTransformSpec extends AsyncWordSpec with BeforeAndAfterEach with
 
   builders.zip(returnedResults).zip(expects).foreach { case ((builder, result), expect) =>
     s"The expect ${expect.hashCode()}" when {
-      def toTuple2(x: Int) = (x, x)
+      def toTuple2(x: Int): (Int, Int) = (x, x)
       "mapped" should {
         "return the mapped result" in {
           testActionsAndResult(expect.map(toTuple2), builder, toTuple2(result))

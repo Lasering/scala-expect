@@ -149,7 +149,8 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     * @group Transformations
     */
   def filter(p: R => Boolean): Expect[R] = map { r =>
-    if (p(r)) r else throw new NoSuchElementException(s"""Expect.filter: predicate is not satisfied for "$r"""")
+    if (p(r)) r
+    else throw new NoSuchElementException(s"""Expect.filter: predicate is not satisfied for "$r"""")
   }
 
   /** Used by for-comprehensions.
