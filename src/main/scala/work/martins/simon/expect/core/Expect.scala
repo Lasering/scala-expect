@@ -140,10 +140,6 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     */
   def flatten[T](implicit ev: R <:< Expect[T]): Expect[T] = flatMap(ev)
 
-  private def notDefined[RR >: R](function: String, text: String)(result: RR) = {
-    throw new NoSuchElementException(s"""Expect.$function: $text "$result"""")
-  }
-
   /** Creates a new $type by filtering its result with a predicate.
     *
     * If the current $type result satisfies the predicate, the new $type will also hold that result.
@@ -153,7 +149,7 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     * @group Transformations
     */
   def filter(p: R => Boolean): Expect[R] = map { r =>
-    if (p(r)) r else notDefined("filter", "predicate is not satisfied for")(r)
+    if (p(r)) r else throw new NoSuchElementException(s"""Expect.filter: predicate is not satisfied for "$r"""")
   }
 
   /** Used by for-comprehensions.
@@ -172,7 +168,7 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     * @group Transformations
     */
   def collect[T](pf: PartialFunction[R, T]): Expect[T] = map { r =>
-    pf.applyOrElse(r, notDefined("collect", "partial function is not defined at"))
+    pf.applyOrElse(r, throw new NoSuchElementException(s"""Expect.collect: partial function is not defined at "$r""""))
   }
 
   /** Creates a new $type by flatMapping the result of the current $type, if the given partial function is defined at that value.
@@ -186,7 +182,7 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     * @group Transformations
     */
   def flatCollect[T](pf: PartialFunction[R, Expect[T]]): Expect[T] = flatMap { r =>
-    pf.applyOrElse(r, notDefined("flatCollect", "partial function is not defined at"))
+    pf.applyOrElse(r, throw new NoSuchElementException(s"""Expect.flatCollect: partial function is not defined at "$r""""))
   }
 
   // TODO improve the example
@@ -206,10 +202,10 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     * def countFilesInFolder(folder: String): Expect[Either[String, Int]] = {
     *   val e = new Expect(s"ls -1 $$folder", Left("unknownError"): Either[String, Int])(
     *     ExpectBlock(
-    *       StringWhen("access denied")(
+    *       When("access denied")(
     *         Returning(Left("Access denied"))
     *       ),
-    *       RegexWhen("(?s)(.*)".r)(
+    *       When("(?s)(.*)".r)(
     *         ReturningWithRegex(_.group(1).split("\n").length)
     *       )
     *     )
@@ -245,7 +241,7 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     */
   def transform[T](flatMapPF: PartialFunction[R, Expect[T]], mapPF: PartialFunction[R, T]): Expect[T] = {
     val newDefaultValue = flatMapPF.andThen(_.defaultValue).orElse(mapPF)
-      .applyOrElse(defaultValue, notDefined("transform", "neither flatMapPF nor mapPF are defined at the Expect default value"))
+      .applyOrElse(defaultValue, r => throw new NoSuchElementException(s"""Expect.transform: neither flatMapPF nor mapPF are defined at the Expect default value "$r""""))
 
     new Expect[T](command, newDefaultValue, settings)(expectBlocks.map(_.transform(flatMapPF, mapPF)):_*)
   }
