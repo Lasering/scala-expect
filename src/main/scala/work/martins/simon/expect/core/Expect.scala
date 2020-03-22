@@ -150,7 +150,7 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     */
   def filter(p: R => Boolean): Expect[R] = map { r =>
     if (p(r)) r
-    else throw new NoSuchElementException(s"""Expect.filter: predicate is not satisfied for "$r"""")
+    else throw new NoSuchElementException(s"Expect.filter: predicate is not satisfied for \"$r\"")
   }
 
   /** Used by for-comprehensions.
@@ -169,7 +169,7 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     * @group Transformations
     */
   def collect[T](pf: PartialFunction[R, T]): Expect[T] = map { r =>
-    pf.applyOrElse(r, throw new NoSuchElementException(s"""Expect.collect: partial function is not defined at "$r""""))
+    pf.applyOrElse(r, throw new NoSuchElementException(s"Expect.collect: partial function is not defined at \"$r\""))
   }
 
   /** Creates a new $type by flatMapping the result of the current $type, if the given partial function is defined at that value.
@@ -183,7 +183,7 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     * @group Transformations
     */
   def flatCollect[T](pf: PartialFunction[R, Expect[T]]): Expect[T] = flatMap { r =>
-    pf.applyOrElse(r, throw new NoSuchElementException(s"""Expect.flatCollect: partial function is not defined at "$r""""))
+    pf.applyOrElse(r, throw new NoSuchElementException(s"Expect.flatCollect: partial function is not defined at \"$r\""))
   }
 
   // TODO improve the example
@@ -242,7 +242,7 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     */
   def transform[T](flatMapPF: PartialFunction[R, Expect[T]], mapPF: PartialFunction[R, T]): Expect[T] = {
     val newDefaultValue = flatMapPF.andThen(_.defaultValue).orElse(mapPF)
-      .applyOrElse(defaultValue, r => throw new NoSuchElementException(s"""Expect.transform: neither flatMapPF nor mapPF are defined at the Expect default value "$r""""))
+      .applyOrElse(defaultValue, r => throw new NoSuchElementException(s"Expect.transform: neither flatMapPF nor mapPF are defined at the Expect default value \"$r\""))
 
     new Expect[T](command, newDefaultValue, settings)(expectBlocks.map(_.transform(flatMapPF, mapPF)):_*)
   }

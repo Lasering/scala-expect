@@ -77,7 +77,7 @@ case class NuProcessRichProcess(command: Seq[String], settings: Settings) extend
 
     private var unwrittenBytes = Array.emptyByteArray
     override def onStdinReady(buffer: ByteBuffer): Boolean = {
-      if (unwrittenBytes.length > 0) {
+      if (unwrittenBytes.nonEmpty) {
         // We have unwritten bytes which take precedence over "normal" ones
         write(buffer, unwrittenBytes)
       } else {
