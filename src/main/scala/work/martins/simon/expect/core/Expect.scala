@@ -96,11 +96,9 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
         case Terminate => Future.successful(innerRunContext.value)
         case ChangeToNewExpect(newExpect) =>
           innerRunContext.process.destroy()
-          if (propagateSettings) {
-            newExpect.asInstanceOf[Expect[R]].run(innerRunContext.settings)
-          } else {
-            newExpect.asInstanceOf[Expect[R]].run()
-          }
+          val expect = newExpect.asInstanceOf[Expect[R]]
+          val runSettings = if (propagateSettings) innerRunContext.settings else expect.settings
+          expect.run(runSettings)
       }
     }
   }
@@ -142,8 +140,9 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
     */
   def flatten[T](implicit ev: R <:< Expect[T]): Expect[T] = flatMap(ev)
 
-  private def notDefined[RR >: R](function: String, text: String)(result: RR) =
+  private def notDefined[RR >: R](function: String, text: String)(result: RR) = {
     throw new NoSuchElementException(s"""Expect.$function: $text "$result"""")
+  }
 
   /** Creates a new $type by filtering its result with a predicate.
     *
@@ -277,8 +276,7 @@ final case class Expect[+R](command: Seq[String], defaultValue: R, settings: Set
        |\tCommand: $command
        |\tDefaultValue: $defaultValue
        |\tSettings: $settings
-       |${expectBlocks.mkString("\n").indent()}
-     """.stripMargin
+       |${expectBlocks.mkString("\n").indent()}""".stripMargin
 
   /**
     * Returns whether `other` is an $type with the same `command`, the same `defaultValue`, the same `settings` and

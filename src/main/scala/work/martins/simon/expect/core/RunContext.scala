@@ -12,8 +12,8 @@ object RunContext {
   case class ChangeToNewExpect[R](expect: Expect[R]) extends ExecutionAction
 }
 final case class RunContext[+R](process: RichProcess, value: R, executionAction: ExecutionAction,
-                               readFrom: FromInputStream = StdOut, stdOutOutput: String = "", stdErrOutput: String = "",
-                               id: String = Random.nextInt().toString) extends LazyLogging {
+                                readFrom: FromInputStream = StdOut, stdOutOutput: String = "", stdErrOutput: String = "",
+                                id: String = Random.nextInt().toString) extends LazyLogging {
 
   //Shortcut, because it makes sense
   val settings = process.settings
@@ -27,8 +27,7 @@ final case class RunContext[+R](process: RichProcess, value: R, executionAction:
     */
   def withId(message: String): String = s"[ID:$id] $message"
 
-  def output: String = outputOf(readFrom)
-  def outputOf(from: FromInputStream): String = from match {
+  def output: String = readFrom match {
     case StdErr => stdErrOutput
     case StdOut => stdOutOutput
   }
@@ -36,6 +35,16 @@ final case class RunContext[+R](process: RichProcess, value: R, executionAction:
   def withOutput(f: String => String): RunContext[R] = readFrom match {
     case StdErr => this.copy(stdErrOutput = f(stdErrOutput))
     case StdOut => this.copy(stdOutOutput = f(stdOutOutput))
+  }
+
+  def withNewOutput(from: FromInputStream, newOutput: String): RunContext[R] = {
+    logger.info(withId(s"Newly read text from $from:\n$newOutput"))
+    val newContext = from match {
+      case StdErr => this.copy(readFrom = from, stdErrOutput = stdErrOutput + newOutput)
+      case StdOut => this.copy(readFrom = from, stdOutOutput = stdOutOutput + newOutput)
+    }
+    logger.debug(withId(s"New $from output:\n${newContext.output}"))
+    newContext
   }
 
   def readingFrom(readFrom: FromInputStream): RunContext[R] = this.copy(readFrom = readFrom)
