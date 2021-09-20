@@ -5,7 +5,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ubuntu-latest
+        os: [ubuntu-latest]
         java: [11, 16]
     runs-on: ${{ matrix.os }}
     steps:
