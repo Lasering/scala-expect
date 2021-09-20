@@ -25,5 +25,8 @@ jobs:
         find $HOME/.sbt                              -name "*.lock"               -delete || true
   upload_coverage:
     needs: test
+    runs-on: ubuntu-latest
     steps:
-    - run: coverageReport codacyCoverage
+    - uses: actions/checkout@v1
+    - uses: olafurpg/setup-scala@v11
+    - run: sbt coverageReport codacyCoverage
