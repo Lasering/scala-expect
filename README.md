@@ -2,7 +2,7 @@
 [![Scaladoc](https://javadoc.io/badge2/work.martins.simon/scala-expect_3.1/javadoc.svg)](https://lasering.github.io/scala-expect/latest/api/work/martins/simon/expect/index.html)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/work.martins.simon/scala-expect_3.1/badge.svg?maxAge=604800)](https://maven-badges.herokuapp.com/maven-central/work.martins.simon/scala-expect_3.1)
 
-[![Build Status](https://travis-ci.org/Lasering/scala-expect.svg?branch=master&style=plastic&maxAge=604800)](https://travis-ci.org/Lasering/scala-expect)
+[![example workflow](https://github.com/Lasering/scala-expect/actions/workflows/ci.yml/badge.svg)](https://github.com/Lasering/scala-expect/actions)
 [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/156e74a155e64789a241ebb25c227598)](https://www.codacy.com/app/IST-DSI/scala-expect)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/156e74a155e64789a241ebb25c227598)](https://www.codacy.com/gh/Lasering/scala-expect/dashboard)
 [![BCH compliance](https://bettercodehub.com/edge/badge/Lasering/scala-expect)](https://bettercodehub.com/results/Lasering/scala-expect)
