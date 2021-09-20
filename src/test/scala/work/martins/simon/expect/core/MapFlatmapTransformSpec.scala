@@ -1,37 +1,37 @@
 package work.martins.simon.expect.core
 
-import org.scalatest.{AsyncWordSpec, BeforeAndAfterEach}
-import work.martins.simon.expect.{TestUtils, Timeout}
-import work.martins.simon.expect.core.actions._
-
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.wordspec.AsyncWordSpec
+import work.martins.simon.expect.{EndOfFile, TestUtils, Timeout}
+import work.martins.simon.expect.core.actions.*
 import scala.util.Random
 import scala.util.matching.Regex.Match
 
-class MapFlatmapTransformSpec extends AsyncWordSpec with BeforeAndAfterEach with TestUtils {
+class MapFlatmapTransformSpec extends AsyncWordSpec with BeforeAndAfterEach with TestUtils:
   val builders = Seq.fill(5)(new StringBuilder(""))
   val returnedResults = 1 to 5
   val defaultValue = returnedResults.sum
   
   val expects = Seq(
-    constructExpect(defaultValue, StringWhen("README")(
+    constructExpect(defaultValue, When("README")(
       Returning {
         appendToBuilder(builders(0))
         returnedResults(0)
       }
     )),
-    constructExpect(defaultValue, RegexWhen("LICENSE".r)(
+    constructExpect(defaultValue, When("LICENSE".r)(
       Returning { (_: Match) =>
         appendToBuilder(builders(1))
         returnedResults(1)
       }
     )),
-    constructExpect(defaultValue, RegexWhen("build".r)(
+    constructExpect(defaultValue, When("build".r)(
       ReturningExpect { (_: Match) =>
         appendToBuilder(builders(2))
         new Expect("ls", returnedResults(2))()
       }
     )),
-    constructExpect(defaultValue, EndOfFileWhen()(
+    constructExpect(defaultValue, When(EndOfFile)(
       ReturningExpect {
         appendToBuilder(builders(3))
         new Expect("ls", returnedResults(3))()
@@ -62,102 +62,86 @@ class MapFlatmapTransformSpec extends AsyncWordSpec with BeforeAndAfterEach with
       )
     )
   )
-
-  def baseExpect[T](defaultValue: T): Expect[T] = new Expect("ls", defaultValue)()
-  def baseExpectWithFunction[I, O](f: I => O)(t: I): Expect[O] = new Expect("ls", f(t))()
-
+  
   override protected def beforeEach(): Unit = builders.foreach(_.clear())
-
+  
   builders.zip(returnedResults).zip(expects).foreach { case ((builder, result), expect) =>
     s"The expect ${expect.hashCode()}" when {
-      def toTuple2(x: Int) = (x, x)
+      def f(x: Int): String = "NaN" * x + " Batman"
+      def g(s: String): Double = s.length * Math.PI
+      
       "mapped" should {
         "return the mapped result" in {
-          testActionsAndResult(expect.map(toTuple2), builder, toTuple2(result))
+          testActionsAndResult(expect.map(f), builder, expectedResult = f(result))
         }
       }
       "flatMapped" should {
         "return the flatMapped result" in {
-          testActionsAndResult(expect.flatMap(baseExpectWithFunction(toTuple2)), builder, toTuple2(result))
+          val newExpect = expect.flatMap(r => constructExpect(defaultValue = f(r)))
+          testActionsAndResult(newExpect, builder, expectedResult = f(result))
         }
       }
       "transformed" should {
         "throw a NoSuchElementException if the transform function if not defined for some result (in map)" in {
           val transformedExpect = expect.transform(
-            // flapMapPF will fail (except for the defaultValue) so transform will have to try mapPF
-            { case t if t == expect.defaultValue =>  baseExpect(t)},
-            // mapPF will fail too (what we are testing)
+            // flapMapPF will work just for the defaultValue so transform will have to try mapPF
+            { case t if t == expect.defaultValue => constructExpect(defaultValue = "a flatMapped value") },
             PartialFunction.empty
           )
           testActionsAndFailedResult(transformedExpect, builder)
         }
         "throw a NoSuchElementException if the transform function if not defined for some result (in flatMap)" in {
           val transformedExpect = expect.transform(
-            // flapMapPF will fail
             PartialFunction.empty,
             // Since mapPF is only defined for the defaultValue it will fail for the other values
-            { case t if t == expect.defaultValue => t }
+            { case t if t == expect.defaultValue => "a mapped value" }
           )
           testActionsAndFailedResult(transformedExpect, builder)
         }
-
-        // TODO: remove/change these functions
-        def mapFunction(x: Int): Seq[Int] = Seq.fill(x)(x)
-        def flatMapFunction(x: Int): String = "NaN" * x + " Batman"
-        def flatMap(x: Int): Expect[String] = {
-          //To make it simple, it just returns the flatMapped defaultValue
-          new Expect("ls", flatMapFunction(x))()
-        }
-
-        def mapFunction2(s: String): Int = s.toCharArray.count(_ > 70)
-        def flatMapFunction2(s: String): Array[Byte] = s.getBytes.filter(_ % 2 == 0)
-        def flatMap2(s: String): Expect[Array[Byte]] = {
-          //To make it simple, it just returns the flatMapped defaultValue
-          new Expect("ls", flatMapFunction2(s))()
-        }
-
+        
         val mappedExpect = expect.transform(
           PartialFunction.empty,
-          { case t => mapFunction(t).mkString }
+          { case value => f(value) }
         )
         "return the correct result for: transform (map)" in {
-          testActionsAndResult(mappedExpect, builder, mapFunction(result).mkString)
+          testActionsAndResult(mappedExpect, builder, expectedResult = f(result))
         }
         "return the correct result for: transform (map) followed by a map" in {
-          testActionsAndResult(mappedExpect.map(mapFunction2), builder, mapFunction2(mapFunction(result).mkString))
+          testActionsAndResult(mappedExpect.map(g), builder, expectedResult = g(f(result)))
         }
         "return the correct result for: transform (map) followed by a flatMap" in {
-          testActionsAndResult(mappedExpect.flatMap(flatMap2), builder, flatMapFunction2(mapFunction(result).mkString))
+          val newExpect = mappedExpect.flatMap(r => constructExpect(defaultValue = g(r)))
+          testActionsAndResult(newExpect, builder, expectedResult = g(f(result)))
         }
         "return the correct result for: transform (map) followed by a transform" in {
           val transformedExpect = mappedExpect.transform(
-            { case mappedExpect.defaultValue => flatMap2(mappedExpect.defaultValue) },
-            { case _ => Array.ofDim[Byte](5) }
+            { case mappedExpect.defaultValue => constructExpect(defaultValue = 0) },
+            { case _ => 25 }
           )
-          testActionsAndResult(transformedExpect, builder, Array.ofDim[Byte](5))
+          testActionsAndResult(transformedExpect, builder, expectedResult = 25)
         }
-
-        val flatMappedExpect: Expect[String] = expect.transform(
-          { case t => flatMap(t) },
+        
+        val flatMappedExpect = expect.transform(
+          { case value => constructExpect(defaultValue = f(value)) },
           PartialFunction.empty
         )
         "return the correct result for: transform (flatMap)" in {
-          testActionsAndResult(flatMappedExpect, builder, flatMapFunction(result))
+          testActionsAndResult(flatMappedExpect, builder, expectedResult = f(result))
         }
         "return the correct result for: transform (flatMap) followed by a map" in {
-          testActionsAndResult(flatMappedExpect.map(mapFunction2), builder, mapFunction2(flatMapFunction(result)))
+          testActionsAndResult(flatMappedExpect.map(g), builder, expectedResult = g(f(result)))
         }
         "return the correct result for: transform (flatMap) followed by a flatMap" in {
-          testActionsAndResult(flatMappedExpect.flatMap(flatMap2), builder, flatMapFunction2(flatMapFunction(result)))
+          val newExpect = flatMappedExpect.flatMap(r => constructExpect(defaultValue = g(r)))
+          testActionsAndResult(newExpect, builder, expectedResult = g(f(result)))
         }
         "return the correct result for: transform (flatMap) followed by a transform" in {
           val transformedExpect = flatMappedExpect.transform(
-            { case _ => new Expect("ls",  Array.ofDim[Byte](5))() },
+            { case _ => constructExpect(defaultValue = 25) },
             PartialFunction.empty
           )
-          testActionsAndResult(transformedExpect, builder, Array.ofDim[Byte](5))
+          testActionsAndResult(transformedExpect, builder, expectedResult = 25)
         }
       }
     }
   }
-}

@@ -1,16 +1,16 @@
 package work.martins.simon.expect
 
-import org.scalatest.Matchers
-import org.scalatest.flatspec.AnyFlatSpecLike
-import work.martins.simon.expect.StringUtils._
-import work.martins.simon.expect.core._
-import work.martins.simon.expect.core.actions.Send
-import work.martins.simon.expect.fluent.{Expect, ExpectBlock, When}
-
 import scala.collection.immutable.HashSet
 import scala.util.Random
+import org.scalatest.flatspec.AnyFlatSpecLike
+import org.scalatest.matchers.should.*
+import work.martins.simon.expect.StringUtils.*
+import work.martins.simon.expect.core.*
+import work.martins.simon.expect.core.actions.Send
+import work.martins.simon.expect.dsl.*
+import work.martins.simon.expect.fluent.{Expect, ExpectBlock, When}
 
-class HashCodeEqualsToStringSpec extends AnyFlatSpecLike with Matchers {
+class HashCodeEqualsToStringSpec extends AnyFlatSpecLike with Matchers:
   def addSendAndExit[R](when: When[R]): When[R] = {
     when
       .send("text")
@@ -18,7 +18,7 @@ class HashCodeEqualsToStringSpec extends AnyFlatSpecLike with Matchers {
       .exit()
   }
   def addBlock(e: fluent.Expect[String]): ExpectBlock[String] = {
-    e.expect
+    e.expectBlock
       .addWhens(addWhensEOFAndTimeout)
   }
   def addWhensEOFAndTimeout(eb: fluent.ExpectBlock[String]): fluent.TimeoutWhen[String] = {
@@ -27,79 +27,79 @@ class HashCodeEqualsToStringSpec extends AnyFlatSpecLike with Matchers {
       .when(Timeout)
         .exit()
   }
-
+  
   val objects: Seq[Any] = Seq(
     Timeout, //The curve ball to test that equals returns false
-
+    
     //To test equals returns false on expectBlock
-    core.ExpectBlock(StringWhen("1")()),
+    core.ExpectBlock(StringWhen("1")),
     ExpectBlock(new Expect("ls", "")),
-
+    
     new Expect("ls", ""),
-    new Expect("ls", "") {
-      expect
+    new Expect("tree", "") {
+      expectBlock
         .when("1")
     },
     new Expect("ls", "") {
-      expect
+      expectBlock
         .when("2".r)
     },
     new dsl.Expect("ls", "") {
-      expect{
-        when(EndOfFile){}
+      expectBlock {
+        when(EndOfFile) {}
       }
     },
     new Expect("ls", "") {
-      expect
+      expectBlock
         .when(EndOfFile)
         .when(EndOfFile)
         .when("")
     },
     new Expect("ls", "") {
-      expect
+      expectBlock
         .when(Timeout)
     },
     new Expect("ls", "") {
-      expect
+      expectBlock
         .when("1")
           .addActions(addSendAndExit)
     },
     new Expect("ls", "") {
-      expect
+      expectBlock
         .when("2".r)
           .send("")
           .exit()
     },
     new Expect("ls", "") {
-      expect
+      expectBlock
         .when(EndOfFile)
           .addActions(addSendAndExit)
     },
     new Expect("ls", "") {
-      expect
+      expectBlock
         .when(Timeout)
           .addActions(addSendAndExit)
     },
     new dsl.Expect("ls", "") {
-      expect {
+      expectBlock {
         when("") {
           send("")
         }
       }
     },
     new Expect("ls", "") {
-      expect
+      expectBlock
         .when("a".r)
           .addActions(addSendAndExit)
         .addWhens(addWhensEOFAndTimeout)
     },
     new Expect("ls", "") {
-      expect
+      expectBlock
         .when("c".r)
       .addExpectBlock(addBlock)
     }
   )
-
+  
   "hashCode and equals" should "work" in {
     val rnd = new Random()
     var set = HashSet.empty[Any] //Tests hashCode
@@ -107,59 +107,58 @@ class HashCodeEqualsToStringSpec extends AnyFlatSpecLike with Matchers {
       val n = rnd.nextInt(5) + 3 //Insert at least 3
       set ++= Seq.fill(n)(o)
     }
-
+    
     for(o <- objects) {
       set.count(_ == o) shouldBe 1 //Tests equals
     }
-
-    val objectsWithCoreExpects = objects map {
+    
+    val objectsWithCoreExpects = objects.map(_.asInstanceOf[Matchable] match {
       case e: Expect[?] => e.toCore
-      case e: dsl.Expect[?] => e.toCore
       case e => e
-    }
-    val setCore = HashSet(objectsWithCoreExpects:_*) //Tests hashCode
+    })
+    val setCore = HashSet(objectsWithCoreExpects*) //Tests hashCode
     for(o <- objectsWithCoreExpects) {
       setCore should contain (o) //Tests equals
     }
   }
-
+  
   "toString" should "contain useful information" in {
-    val expects = objects.collect{ case e: Expect[?] => e }
+    val expects = objects.collect(_.asInstanceOf[Matchable] match { case e: Expect[?] => e })
     for (expect <- expects) {
       val expectToString = expect.toString
       expectToString should include ("Expect")
       expectToString should include (expect.command.toString)
       expectToString should include (expect.defaultValue.toString)
-
+      
       val expectCoreToString = expect.toCore.toString
       expectCoreToString should include ("Expect")
       expectCoreToString should include (expect.command.toString)
       expectCoreToString should include (expect.defaultValue.toString)
-
+      
       val settings = expect.settings
       val settingsToString = settings.toString
       settingsToString should include ("Settings")
       settingsToString should include (settings.timeout.toString)
       settingsToString should include (settings.charset.toString)
-
+      
       for (block <- expect.toCore.expectBlocks) {
         expectToString should include (block.toString.indent())
-
+        
         val blockToString = block.toString
         blockToString should include ("expect")
         for (when <- block.whens) {
           blockToString should include (when.toString.indent())
-
+          
           val whenToString = when.toString
           whenToString should include ("when")
-
+          
           when match {
-            case StringWhen(pattern, _) => whenToString should include (pattern)
-            case RegexWhen(pattern, _) => whenToString should include (escape(pattern.regex)) //This one is a little cheat
-            case EndOfFileWhen(_) => whenToString should include ("EndOfFile")
-            case TimeoutWhen() => whenToString should include ("Timeout")
+            case StringWhen(pattern, _, _*) => whenToString should include (pattern)
+            case RegexWhen(pattern, _, _*) => whenToString should include (escape(pattern.regex)) //This one is a little cheat
+            case EndOfFileWhen(_, _*) => whenToString should include ("EndOfFile")
+            case TimeoutWhen(_*) => whenToString should include ("Timeout")
           }
-
+          
           for (action <- when.actions) {
             whenToString should include (action.toString)
             action.toString should include (action.getClass.getSimpleName)
@@ -172,20 +171,19 @@ class HashCodeEqualsToStringSpec extends AnyFlatSpecLike with Matchers {
         }
       }
     }
-
+    
     val dslExpect = new dsl.Expect("ls", "") {
-      expect {
+      expectBlock {
         when("") {
           send("")
         }
       }
     }
     val fluentExpect = new fluent.Expect("ls", "") {
-      expect
+      expectBlock
         .when("")
           .send("")
     }
-
+    
     dslExpect.toString shouldEqual fluentExpect.toString
   }
-}

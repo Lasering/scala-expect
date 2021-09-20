@@ -4,11 +4,10 @@ import work.martins.simon.expect.{EndOfFile, FromInputStream, Timeout}
 import work.martins.simon.expect.FromInputStream.StdOut
 import scala.util.matching.Regex
 
-trait Whenable[R] extends Expectable[R]
-  protected val whenableParent: ExpectBlock[R] //The root of an Whenable must be an ExpectBlock
-  given ExpectBlock[R] = whenableParent
-  protected val expectableParent: Expect[R] = whenableParent.parent
-
+trait Whenable[R] extends Expectable[R]:
+  protected def whenableParent: ExpectBlock[R] //The root of an Whenable must be an ExpectBlock
+  protected def expectableParent: Expect[R] = whenableParent.parent
+  
   /**
    * Adds a new `StringWhen` that matches whenever `pattern` is contained
    * in the text read from the `FromInputStream` specified in the parent ExpectBlock.
@@ -24,7 +23,7 @@ trait Whenable[R] extends Expectable[R]
     * @return the new `StringWhen`.
     */
   def when(pattern: String, readFrom: FromInputStream): StringWhen[R] = whenableParent.when(pattern, readFrom)
-
+  
   /**
    * Adds a new `RegexWhen` that matches whenever the regex `pattern` successfully matches
    * against the text read from `FromInputStream` specified in the parent ExpectBlock.
@@ -40,7 +39,7 @@ trait Whenable[R] extends Expectable[R]
     * @return the new `RegexWhen`.
     */
   def when(pattern: Regex, readFrom: FromInputStream): RegexWhen[R] = whenableParent.when(pattern, readFrom)
-
+  
   /**
     * Adds a new `EndOfFileWhen` that matches whenever the EndOfFile in read from `FromInputStream`
     * specified in the parent ExpectBlock.
@@ -55,27 +54,26 @@ trait Whenable[R] extends Expectable[R]
     * @return the new `EndOfFileWhen`.
     */
   def when(pattern: EndOfFile.type, readFrom: FromInputStream): EndOfFileWhen[R] = whenableParent.when(pattern, readFrom)
-
+  
   /**
    * Adds a new `TimeoutWhen` that matches whenever the read from any of the `FromStreamInput`s times out.
    * @param pattern the pattern to match against.
    * @return the new `TimeoutWhen`.
    */
   def when(pattern: Timeout.type): TimeoutWhen[R] = whenableParent.when(pattern)
-
+  
   /**
     * Add an arbitrary `When` to this `ExpectBlock`.
     *
     * This is helpful to refactor code. For example: imagine you have an error case you want to add to
     * multiple `ExpectBlock`s. You could leverage this method to do so in the following way:
     * {{{
-    *   def errorCaseWhen(expectBlock: ExpectBlock[String]): When[String] = {
+    *   def errorCaseWhen(expectBlock: ExpectBlock[String]): When[String] =
     *     expectBlock
     *       .when("Some error")
     *         .returning("Got some error")
-    *   }
     *
-    *   def parseOutputA: Expect[String] = {
+    *   def parseOutputA: Expect[String] =
     *     val e = new Expect("some command", "")
     *     e.expect
     *       .when(...)
@@ -83,16 +81,14 @@ trait Whenable[R] extends Expectable[R]
     *     e.expect
     *       .addWhen(errorCaseWhen)
     *         .exit()
-    *   }
     *
-    *   def parseOutputB: Expect[String] = {
+    *   def parseOutputB: Expect[String] =
     *     val e = new Expect("some command", "")
     *     e.expect
     *       .when(...)
     *         .sendln(..)
     *         .returning(...)
     *       .addWhen(errorCaseWhen)
-    *   }
     * }}}
     *
     * This function returns the added When which allows you to add further actions, see the exit action of the

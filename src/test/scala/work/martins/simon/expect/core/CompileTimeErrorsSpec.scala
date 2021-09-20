@@ -1,39 +1,40 @@
 package work.martins.simon.expect.core
 
-import org.scalatest.Matchers
 import org.scalatest.flatspec.AnyFlatSpecLike
-import work.martins.simon.expect.core.actions._
+import org.scalatest.matchers.should.*
+import work.martins.simon.expect.core.actions.*
+import work.martins.simon.expect.{EndOfFile, Timeout}
 
-class CompileTimeErrorsSpec extends AnyFlatSpecLike with Matchers {
+class CompileTimeErrorsSpec extends AnyFlatSpecLike with Matchers:
   "A StringWhen" should "not type check if it contains a SendWithRegex" in {
-    //StringWhen("text")(SendWithRegex(m => m.group(1)))
-    """StringWhen("text")(SendWithRegex(m => m.group(1)))""" shouldNot typeCheck
+    //When("text")(Send(m => m.group(1)))
+    """When("text")(Send(m => m.group(1)))""" shouldNot typeCheck
   }
   it should "not type check if it contains a ReturningWithRegex" in {
-    //StringWhen("text")(ReturningWithRegex(m => m.group(1)))
-    """StringWhen("text")(ReturningWithRegex(m => m.group(1)))""" shouldNot typeCheck
+    //When("text")(Returning(m => m.group(1)))
+    """When("text")(Returning(m => m.group(1)))""" shouldNot typeCheck
   }
   it should "not type check if it contains a ReturningExpectWithRegex" in {
-    //StringWhen("text")(ReturningExpectWithRegex(m => new Expect(m.group(1), "")()))
-    """StringWhen("text")(ReturningExpectWithRegex(m => new Expect(m.group(1), "")()))""" shouldNot typeCheck
+    //When("text")(ReturningExpect(m => new Expect(m.group(1), "")()))
+    """When("text")(ReturningExpect(m => new Expect(m.group(1), "")()))""" shouldNot typeCheck
   }
-
+  
   "A RegexWhen" should "compile if it contains a SendWithRegex" in {
     //This line is a fail fast mechanism
-    RegexWhen("text".r)(SendWithRegex(m => m.group(1)))
-    """RegexWhen("text".r)(SendWithRegex(m => m.group(1)))""" should compile
+    When("text".r)(Send(m => m.group(1)))
+    """When("text".r)(Send(m => m.group(1)))""" should compile
   }
   it should "compile if it contains a ReturningWithRegex" in {
     //This line is a fail fast mechanism
-    RegexWhen("text".r)(ReturningWithRegex(m => m.group(1)))
-    """RegexWhen("text".r)(ReturningWithRegex(m => m.group(1)))""" should compile
+    When("text".r)(Returning(m => m.group(1)))
+    """When("text".r)(Returning(m => m.group(1)))""" should compile
   }
   it should "compile if it contains a ReturningExpectWithRegex" in {
     //This line is a fail fast mechanism
-    RegexWhen("text".r)(ReturningExpectWithRegex(m => new Expect(m.group(1), "")()))
-    """RegexWhen("text".r)(ReturningExpectWithRegex(m => new Expect(m.group(1), "")()))""" should compile
+    When("text".r)(ReturningExpect(m => new Expect(m.group(1), "")()))
+    """When("text".r)(ReturningExpect(m => new Expect(m.group(1), "")()))""" should compile
   }
-
+  
   "Actions without regex" should "compile in every When" in {
     //These lines are a fail fast mechanism
     val actions: Seq[Action[String, When]] = Seq(
@@ -42,10 +43,10 @@ class CompileTimeErrorsSpec extends AnyFlatSpecLike with Matchers {
       ReturningExpect(new Expect("ls", "")()),
       Exit()
     )
-    StringWhen("")(actions:_*)
-    RegexWhen(".*".r)(actions:_*)
-    EndOfFileWhen()(actions:_*)
-    TimeoutWhen()(actions:_*)
+    When("")(actions*)
+    When(".*".r)(actions*)
+    When(EndOfFile)(actions*)
+    When(Timeout)(actions*)
     
     """val actions: Seq[Action[String, When]] = Seq(
          Send(""),
@@ -53,9 +54,8 @@ class CompileTimeErrorsSpec extends AnyFlatSpecLike with Matchers {
          ReturningExpect(new Expect("ls", "")()),
          Exit()
        )
-       StringWhen("")(actions:_*)
-       RegexWhen(".*".r)(actions:_*)
-       EndOfFileWhen()(actions:_*)
-       TimeoutWhen()(actions:_*)""" should compile
+       When("")(actions*)
+       When(".*".r)(actions*)
+       When(EndOfFile)(actions*)
+       When(Timeout)(actions*)""" should compile
   }
-}

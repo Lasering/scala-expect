@@ -1,11 +1,12 @@
 package work.martins.simon.expect
 
-import org.scalatest.{Matchers, AsyncWordSpec}
-import work.martins.simon.expect.core._
-import work.martins.simon.expect.core.actions._
+import org.scalatest.wordspec.AsyncWordSpec
+import org.scalatest.matchers.should.*
+import work.martins.simon.expect.core.*
+import work.martins.simon.expect.core.actions.*
 
 
-class SettingsSpec extends AsyncWordSpec with Matchers {
+class SettingsSpec extends AsyncWordSpec with Matchers:
   "Settings" when {
     "wrong options are specified" should {
       "throw IllegalArgumentException if timeFactor is < 1" in {
@@ -37,10 +38,10 @@ class SettingsSpec extends AsyncWordSpec with Matchers {
         Settings.fromConfig() shouldBe Settings()
       }
     }
-
+    
     import scala.concurrent.duration.DurationInt
     val settings = Settings(timeout = 1.minute, timeoutFactor = 1.5)
-
+    
     "passed to the Expect constructor" should {
       "be used" in {
         new Expect(Seq("ls"), (), settings)().settings shouldBe settings
@@ -63,7 +64,7 @@ class SettingsSpec extends AsyncWordSpec with Matchers {
         expect.run().map {
           _ shouldBe "Found something"
         }
-
+        
         // We cannot directly observe whether the settings are in fact being overridden.
         // So we hide behind causing a timeout to test that they are.
         expect.run(Settings(timeout = 1.nano)).map {
@@ -72,4 +73,3 @@ class SettingsSpec extends AsyncWordSpec with Matchers {
       }
     }
   }
-}

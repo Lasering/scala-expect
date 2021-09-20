@@ -3,19 +3,18 @@ package work.martins.simon.expect.core
 import java.io.{EOFException, IOException}
 import java.nio.ByteBuffer
 import java.util.concurrent.{BlockingDeque, LinkedBlockingDeque, TimeUnit}
-
-import com.zaxxer.nuprocess.{NuAbstractProcessHandler, NuProcess, NuProcessBuilder}
-import work.martins.simon.expect.{FromInputStream, Settings}
-import work.martins.simon.expect.FromInputStream._
-
 import scala.concurrent.duration.Deadline
 import scala.concurrent.{TimeoutException, blocking}
-import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.*
+import com.typesafe.scalalogging.LazyLogging
+import com.zaxxer.nuprocess.{NuAbstractProcessHandler, NuProcess, NuProcessBuilder}
+import work.martins.simon.expect.{FromInputStream, Settings}
+import work.martins.simon.expect.FromInputStream.*
 
-trait RichProcess
+trait RichProcess:
   val command: Seq[String]
   val settings: Settings
-
+  
   /**
     * Tries to read from the selected InputStream of the process.
     * If no bytes are read within `deadline` a `TimeoutException` should be thrown.
@@ -45,36 +44,36 @@ trait RichProcess
     * @return from which `InputStream` the output read from, and a String created from the read bytes encoded with `charset`.
     */
   def readOnFirstInputStream()(using deadline: Deadline): (FromInputStream, String)
-
+  
   /**
     * Writes to the `StdIn` of the process the bytes obtained from decoding `text` using `settings.charset`.
     * @param text the text to write to the `OutputStream`.
     */
   def write(text: String): Unit
-
+  
   /** Destroys the process if it's still alive. */
   def destroy(): Unit
 
-case class NuProcessRichProcess(command: Seq[String], settings: Settings) extends RichProcess
+case class NuProcessRichProcess(command: Seq[String], settings: Settings) extends RichProcess with LazyLogging:
   protected val stdInQueue = new LinkedBlockingDeque[String]()
   protected val stdOutQueue = new LinkedBlockingDeque[Either[EOFException, String]]()
   protected val stdErrQueue = new LinkedBlockingDeque[Either[EOFException, String]]()
   protected val readAvailableOnQueue = new LinkedBlockingDeque[FromInputStream]()
-
+  
   protected val handler = new ProcessHandler()
-  val process: NuProcess = new NuProcessBuilder(handler, command:_*).start()
-
+  val process: NuProcess = new NuProcessBuilder(handler, command*).start()
+  
   // See https://github.com/brettwooldridge/NuProcess/issues/67 as to why this code exists
   if !handler.startedNormally then throw new IOException()
-
-  class ProcessHandler extends NuAbstractProcessHandler
-    var nuProcess: NuProcess = _
+  
+  class ProcessHandler extends NuAbstractProcessHandler:
+    var nuProcess: NuProcess = scala.compiletime.uninitialized
     var startedNormally = false
-
+    
     override def onStart(nuProcess: NuProcess): Unit =
       this.nuProcess = nuProcess
       startedNormally = true
-
+    
     private var unwrittenBytes = Array.emptyByteArray
     override def onStdinReady(buffer: ByteBuffer): Boolean =
       if unwrittenBytes.length > 0 then
@@ -98,24 +97,24 @@ case class NuProcessRichProcess(command: Seq[String], settings: Settings) extend
         buffer.flip()
         unwrittenBytes = bytesToBeWritten
         true
-
+    
     override def onStdout(buffer: ByteBuffer, closed: Boolean): Unit =
       read(buffer, closed, StdOut)
     override def onStderr(buffer: ByteBuffer, closed: Boolean): Unit =
       read(buffer, closed, StdErr)
     private def read(buffer: ByteBuffer, closed: Boolean, readFrom: FromInputStream): Unit =
       val toQueue = queueOf(readFrom)
-
+      
       readAvailableOnQueue.putLast(readFrom)
-      //logger.trace(s"Read available on $readFrom. DequeReadAvailableOn: ${readAvailableOnQueue.asScala.mkString(", ")}")
-
+      logger.trace(s"Read available on $readFrom. DequeReadAvailableOn: ${readAvailableOnQueue.asScala.mkString(", ")}")
+      
       if closed then
         toQueue.put(Left(new EOFException()))
       else if buffer.hasRemaining then
         val bytes = Array.ofDim[Byte](buffer.remaining())
         buffer.get(bytes)
         toQueue.put(Right(new String(bytes, settings.charset)))
-
+  
   /**
     * The corresponding queue for `from`.
     * @param from which InputStream to get the queue of.
@@ -123,7 +122,7 @@ case class NuProcessRichProcess(command: Seq[String], settings: Settings) extend
   def queueOf(from: FromInputStream = StdOut): BlockingDeque[Either[EOFException, String]] = from match
     case StdErr => stdErrQueue
     case _ => stdOutQueue
-
+  
   def read(from: FromInputStream = StdOut)(using deadline: Deadline): String =
     Option {
       blocking {
@@ -134,8 +133,8 @@ case class NuProcessRichProcess(command: Seq[String], settings: Settings) extend
       // `readAvailableOnQueue` will have a `from`. We need to remove to ensure that if a
       // later `readOnFirstInputStream` is performed it will get the correct value.
       readAvailableOnQueue.removeFirstOccurrence(from)
-      //logger.trace(s"Read: took ReadAvailableOn $from. ReadAvailableOnQueue: ${readAvailableOnQueue.asScala.mkString(", ")}")
-
+      logger.trace(s"Read: took ReadAvailableOn $from. ReadAvailableOnQueue: ${readAvailableOnQueue.asScala.mkString(", ")}")
+      
       result.fold(throw _, identity)
     }.getOrElse(throw new TimeoutException())
   def readOnFirstInputStream()(using deadline: Deadline): (FromInputStream, String) =
@@ -144,18 +143,18 @@ case class NuProcessRichProcess(command: Seq[String], settings: Settings) extend
         readAvailableOnQueue.pollFirst(deadline.timeLeft.toMillis, TimeUnit.MILLISECONDS)
       }
     }.flatMap { from =>
-      //logger.trace(s"ReadOnFirstInputStream: took ReadAvailableOn $from. ReadAvailableOnQueue: ${readAvailableOnQueue.asScala.mkString(", ")}")
+      logger.trace(s"ReadOnFirstInputStream: took ReadAvailableOn $from. ReadAvailableOnQueue: ${readAvailableOnQueue.asScala.mkString(", ")}")
       Option {
         blocking {
           queueOf(from).pollFirst(deadline.timeLeft.toMillis, TimeUnit.MILLISECONDS)
         }
       }.map(_.fold(throw _, (from, _)))
     }.getOrElse(throw new TimeoutException())
-
+  
   def write(text: String): Unit = if process.isRunning then
     stdInQueue.put(text)
     process.wantWrite()
-
+  
   def destroy(): Unit = if process.isRunning then
     try
       // First allow the process to terminate gracefully

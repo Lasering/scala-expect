@@ -2,12 +2,12 @@ package work.martins.simon.expect.core
 
 import java.io.EOFException
 import java.util.concurrent.TimeoutException
-
-import org.scalatest._
+import org.scalatest.wordspec.AsyncWordSpec
+import org.scalatest.matchers.should.*
 import work.martins.simon.expect.{EndOfFile, TestUtils, Timeout}
-import work.martins.simon.expect.core.actions._
+import work.martins.simon.expect.core.actions.*
 
-class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
+class WhenSpec extends AsyncWordSpec with Matchers with TestUtils:
   "An Expect" when {
     "the stdOut does not match with any When" should {
       "run the actions in the TimeoutWhen" in {
@@ -59,7 +59,7 @@ class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
         }
       }
     }
-
+    
     "eof is read from stdOut" should {
       "run the actions in the EndOfFileWhen" in {
         val e = new Expect("ls", defaultValue = "")(
@@ -110,7 +110,7 @@ class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
         }
       }
     }
-
+    
     "more than one When matches" should {
       "run the actions in the first matching when" in {
         val e = new Expect("bc -i", defaultValue = "")(
@@ -123,11 +123,10 @@ class WhenSpec extends AsyncWordSpec with Matchers with TestUtils {
             )
           )
         )
-  
+        
         e.run() map {
           _ should not be "Ohh no"
         }
       }
     }
   }
-}

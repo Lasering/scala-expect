@@ -1,25 +1,17 @@
 package work.martins.simon.expect.core.actions
 
-import scala.language.higherKinds
-
-import work.martins.simon.expect.core.RunContext.Terminate
-import work.martins.simon.expect.core._
+import work.martins.simon.expect./=>
+import work.martins.simon.expect.core.*
+import work.martins.simon.expect.core.ExecutionAction.Terminate
 
 /**
   * When this action is executed the current run of Expect is terminated causing it to return the
-  * last value, if there is a ReturningAction, or the default value otherwise.
+  * last value if there is a ReturningAction, or the default value otherwise.
   *
   * Any action or expect block added after this will not be executed.
   */
-final case class Exit[+R]() extends Action[R, When]
-  def run[RR >: R](when: When[RR], runContext: RunContext[RR]): RunContext[RR] =
+final case class Exit() extends NonProducingAction[When]:
+  def run[RR >: Nothing](when: When[RR], runContext: RunContext[RR]): RunContext[RR] =
     runContext.copy(executionAction = Terminate)
-
-  //These methods just perform a cast because the type argument R is just used here,
-  //so there isn't the need to allocate need objects.
-
-  def map[T](f: R => T): Action[T, When] = this.asInstanceOf[Exit[T]]
-  def flatMap[T](f: R => Expect[T]): Action[T, When] = this.asInstanceOf[Exit[T]]
-  def transform[T](flatMapPF: R /=> Expect[T], mapPF: R /=> T): Action[T, When] = this.asInstanceOf[Exit[T]]
-
-  def structurallyEquals[RR >: R, W[+X] <: When[X]](other: Action[RR, W]): Boolean = other.isInstanceOf[Exit[RR]]
+  
+  def structurallyEquals[RR >: Nothing](other: Action[RR, ?]): Boolean = other.isInstanceOf[Exit]

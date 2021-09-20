@@ -1,10 +1,10 @@
 # Scala Expect [![license](http://img.shields.io/:license-MIT-blue.svg)](LICENSE)
-[![Scaladoc](http://javadoc-badge.appspot.com/work.martins.simon/scala-expect_2.12.svg?label=scaladoc&style=plastic&maxAge=604800)](https://lasering.github.io/scala-expect/latest/api/work/martins/simon/expect/index.html)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/work.martins.simon/scala-expect_2.12/badge.svg?maxAge=604800)](https://maven-badges.herokuapp.com/maven-central/work.martins.simon/scala-expect_2.12)
+[![Scaladoc](https://javadoc.io/badge2/work.martins.simon/scala-expect_3.1/javadoc.svg)](https://lasering.github.io/scala-expect/latest/api/work/martins/simon/expect/index.html)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/work.martins.simon/scala-expect_3.1/badge.svg?maxAge=604800)](https://maven-badges.herokuapp.com/maven-central/work.martins.simon/scala-expect_3.1)
 
 [![Build Status](https://travis-ci.org/Lasering/scala-expect.svg?branch=master&style=plastic&maxAge=604800)](https://travis-ci.org/Lasering/scala-expect)
-[![Codacy Badge](https://api.codacy.com/project/badge/coverage/74ba0150f4034c8294e66f6b97a2f69f)](https://www.codacy.com/app/IST-DSI/scala-expect)
-[![Codacy Badge](https://api.codacy.com/project/badge/grade/74ba0150f4034c8294e66f6b97a2f69f)](https://www.codacy.com/app/IST-DSI/scala-expect)
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/156e74a155e64789a241ebb25c227598)](https://www.codacy.com/app/IST-DSI/scala-expect)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/156e74a155e64789a241ebb25c227598)](https://www.codacy.com/gh/Lasering/scala-expect/dashboard)
 [![BCH compliance](https://bettercodehub.com/edge/badge/Lasering/scala-expect)](https://bettercodehub.com/results/Lasering/scala-expect)
 
 A Scala implementation of a very small subset of the widely known TCL expect.
@@ -17,14 +17,13 @@ libraryDependencies += "work.martins.simon" %% "scala-expect" % "6.0.0"
 ```
 
 ## Core
-#### [Documentation](../../wiki/Core)
 #### Advantages
 * Closer to metal / basis for the other flavors.
 * Immutable and therefore thread-safe.
-* Most errors will be caught at compile time (eg. you won't be able to use a `SendWithRegex` inside a `StringWhen`).
+* Most errors will be caught at compile time (eg. you won't be able to use a `Send` with regex inside a `When` matching strings).
 
 #### Disadvantages
-* Verbose syntax.
+* Pesky commas and parenthesis everywhere.
 * Can't cleanly add expect blocks/whens/actions based on a condition.
 
 #### Example
@@ -34,35 +33,31 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 val e = new Expect("bc -i", defaultValue = 5)(
   ExpectBlock(
-    StringWhen("For details type `warranty'.")(
-      Sendln("1 + 2")
-    )
+    When("For details type `warranty'.")(
+      Sendln("1 + 2"),
+    ),
   ),
   ExpectBlock(
-    RegexWhen("""\n(\d+)\n""".r)(
-      SendlnWithRegex { m =>
+    When("""\n(\d+)\n""".r)(
+      Sendln { m =>
         val previousAnswer = m.group(1)
         println(s"Got $previousAnswer")
         s"$previousAnswer + 3"
-      }
-    )
+      },
+    ),
   ),
   ExpectBlock(
-    RegexWhen("""\n(\d+)\n""".r)(
-      ReturningWithRegex(_.group(1).toInt)
-    )
-  )
+    When("""\n(\d+)\n""".r)(
+      Returning(_.group(1).toInt),
+    ),
+  ),
 )
 e.run() //Returns 6 inside a Future[Int]
 ```
 
 ## Fluent
-#### [Documentation](../../wiki/Fluent)
 #### Advantages
-* Less verbose syntax:
-  * StringWhen, RegexWhen, etc is just `when`.
-  * Returning, ReturningWithRegex, etc is just `returning`.
-  * Less commas and parenthesis.
+* Fewer commas and parenthesis.
 * Most errors will be caught at compile time.
 * Easy to add expect blocks/whens/actions based on a condition.
 * Easy to refactor the creation of expects.
@@ -71,7 +66,7 @@ e.run() //Returns 6 inside a Future[Int]
 #### Disadvantages
 * Some overhead since the fluent expect is just a builder for a core expect.
 * Mutable - the fluent expect has to maintain a state of the objects that have been built.
-* IDE's will easily mess the custom indentation.
+* Reformatting code in IDE's will mess the custom indentation.
 
 #### Example
 ```scala
@@ -89,15 +84,14 @@ val e = new Expect("bc -i", defaultValue = 5) {
         println(s"Got $previousAnswer")
         s"$previousAnswer + 3"
       }
-  //This is a shortcut. It works just like the previous expect block.
-  expect("""\n(\d+)\n""".r)
-    .returning(_.group(1).toInt)
+  expect
+    .when("""\n(\d+)\n""".r)
+      .returning(_.group(1).toInt)
 }
 e.run() //Returns 6 inside a Future[Int]
 ```
 
 ## DSL
-#### [Documentation](../../wiki/DSL)
 #### Advantages
 * Code will be indented in blocks so IDE's won't mess the indentation.
 * Syntax more close to the TCL expect.
@@ -105,8 +99,7 @@ e.run() //Returns 6 inside a Future[Int]
 * Easy to refactor the creation of expects.
 
 #### Disadvantages
-* Most errors will only be caught at runtime as opposed to compile time.
-* More overhead than the fluent expect since it's just a wrapper arround fluent expect.
+* More overhead than the fluent expect since it's just a wrapper around fluent expect.
 * Mutable - it uses a fluent expect as the backing expect and a mutable stack to keep track of the current context.
 
 #### Example
@@ -129,9 +122,10 @@ val e = new Expect("bc -i", defaultValue = 5) {
       }
     }
   }
-  //This is a shortcut. It works just like the previous expect block.
-  expect("""\n(\d+)\n""".r) {
-    returning(_.group(1).toInt)
+  expect {
+    when("""\n(\d+)\n""".r) {
+      returning(_.group(1).toInt)
+    }
   }
 }
 e.run() //Returns 6 inside a Future[Int]
