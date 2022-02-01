@@ -35,7 +35,7 @@ final case class ExpectBlock[R](parent: Expect[R]) extends Whenable[R]:
     s"""expect {
         |${whens.mkString("\n").indent()}
         |}""".stripMargin
-  override def equals(other: Any): Boolean = other match
+  override def equals(other: Any): Boolean = other.asInstanceOf[Matchable] match
     case that: ExpectBlock[?] => whens == that.whens
     case _ => false
   

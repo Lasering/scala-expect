@@ -8,16 +8,16 @@ import work.martins.simon.expect.dsl.given
 
 class ToCoreSpec extends AnyWordSpecLike with Matchers:
   def dslSendAndExit(e: dsl.Expect[String])(using When[String]): Unit =
-    import e._
+    import e.*
     send("string1")
     exit()
   def dslAddRegexWhen(e: dsl.Expect[String])(using ExpectBlock[String]): Unit =
-    import e._
+    import e.*
     when("""(\d+) \w+""".r) {
       sendln("string2")
     }
   def dslAddWhensEOFAndTimeout(e: dsl.Expect[String])(using ExpectBlock[String]): Unit =
-    import e._
+    import e.*
     when(EndOfFile) {
       exit()
     }

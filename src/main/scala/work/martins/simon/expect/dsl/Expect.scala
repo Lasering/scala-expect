@@ -56,8 +56,7 @@ open case class Expect[R](command: Seq[String] | String, defaultValue: R, settin
   
   override def toString: String = fluentExpect.toString
   
-  override def equals(other: Any): Boolean = other match {
+  override def equals(other: Any): Boolean = other.asInstanceOf[Matchable] match
     case that: Expect[?] => fluentExpect.equals(that.fluentExpect)
     case _ => false
-  }
   override def hashCode(): Int = fluentExpect.hashCode()

@@ -109,7 +109,7 @@ case class StringWhen[R](parent: ExpectBlock[R], pattern: String, readFrom: From
   def toCore: core.StringWhen[R] = core.StringWhen[R](pattern, readFrom, actions*)
   
   override def toString: String = toString(escape(pattern))
-  override def equals(other: Any): Boolean = other match
+  override def equals(other: Any): Boolean = other.asInstanceOf[Matchable] match
     case that: StringWhen[?] => pattern == that.pattern && readFrom == that.readFrom && actions == that.actions
     case _ => false
   override def hashCode(): Int =
@@ -150,7 +150,7 @@ case class RegexWhen[R](parent: ExpectBlock[R], pattern: Regex, readFrom: FromIn
   def toCore: core.RegexWhen[R] = core.RegexWhen[R](pattern, readFrom, actions*)
   
   override def toString: String = toString(escape(pattern.regex) + ".r")
-  override def equals(other: Any): Boolean = other match
+  override def equals(other: Any): Boolean = other.asInstanceOf[Matchable] match
     case that: RegexWhen[?] => pattern.regex == that.pattern.regex && readFrom == that.readFrom && actions == that.actions
     case _ => false
   override def hashCode(): Int =
@@ -165,7 +165,7 @@ case class EndOfFileWhen[R](parent: ExpectBlock[R], readFrom: FromInputStream = 
   def toCore: core.EndOfFileWhen[R] = core.EndOfFileWhen[R](readFrom, actions*)
   
   override def toString: String = toString("EndOfFile")
-  override def equals(other: Any): Boolean = other match
+  override def equals(other: Any): Boolean = other.asInstanceOf[Matchable] match
     case that: EndOfFileWhen[?] => readFrom == that.readFrom && actions == that.actions
     case _ => false
   override def hashCode(): Int =
@@ -186,7 +186,7 @@ case class TimeoutWhen[R](parent: ExpectBlock[R]) extends When[R]:
     s"""when(Timeout) {
        |${actions.mkString("\n").indent()}
        |}""".stripMargin
-  override def equals(other: Any): Boolean = other match
+  override def equals(other: Any): Boolean = other.asInstanceOf[Matchable] match
     case that: TimeoutWhen[?] => actions == that.actions
     case _ => false
   override def hashCode(): Int = actions.hashCode()

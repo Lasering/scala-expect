@@ -4,7 +4,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.*
 import work.martins.simon.expect.*
 import work.martins.simon.expect.FromInputStream.*
-import work.martins.simon.expect.fluent.{Expect => _, *}
+import work.martins.simon.expect.fluent.{Expect as _, *}
 
 class SyntaxSpec extends AnyFlatSpec with Matchers:
   "An Expect being constructed illegally" should "throw IllegalArgumentException" in {

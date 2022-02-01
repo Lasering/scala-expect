@@ -5,34 +5,31 @@ name := "scala-expect"
 //==== Compile Options =================================================================================================
 //======================================================================================================================
 javacOptions ++= Seq("-Xlint", "-encoding", "UTF-8", "-Dfile.encoding=utf-8")
-scalaVersion := "3.1.0-RC1"
-
+scalaVersion := "3.1.1"
 scalacOptions ++= Seq(
-  //"-explain",                          // Explain errors in more detail.
-  //"-explain-types",                    // Explain type errors in more detail.
-  //"-source", "future",
-  "-indent",                           // Allow significant indentation.
-  "-new-syntax",                       // Require `then` and `do` in control expressions.
-  "-feature",                          // Emit warning and location for usages of features that should be imported explicitly.
-  "-language:future",                  // better-monadic-for
-  "-language:implicitConversions",     // Allow implicit conversions
-  "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
-  "-Xfatal-warnings",                  // Fail the compilation if there are any warnings.
-  "-Xmigration:3.1",                   // Warn about constructs whose behavior may have changed since version.
-  "-Xsemanticdb",                      // Store information in SemanticDB.
-  "-Ycook-comments",                   // Cook the comments (type check `@usecase`, etc.)
-  //"-Ysafe-init",                       // Ensure safe initialization of objects
-  //"-Yexplicit-nulls",                  // Make reference types non-nullable. Nullable types can be expressed with unions: e.g. String|Null.
-  "-Yshow-suppressed-errors",          // Also show follow-on errors and warnings that are normally suppressed.
+  //"-explain",                      // Explain errors in more detail.
+  //"-explain-types",                // Explain type errors in more detail.
+  "-indent",                       // Allow significant indentation.
+  "-new-syntax",                   // Require `then` and `do` in control expressions.
+  "-feature",                      // Emit warning and location for usages of features that should be imported explicitly.
+  "-language:future",              // better-monadic-for
+  "-language:implicitConversions", // Allow implicit conversions
+  "-deprecation",                  // Emit warning and location for usages of deprecated APIs.
+  "-Werror",                       // Fail the compilation if there are any warnings.
+  "-source:future",
+  "-Xsemanticdb",                  // Store information in SemanticDB.
+  "-Ycook-comments",               // Cook the comments (type check `@usecase`, etc.)
+  //"-Ysafe-init",                   // Ensure safe initialization of objects
+  "-Yshow-suppressed-errors",      // Also show follow-on errors and warnings that are normally suppressed.
   // Compile code with classes specific to the given version of the Java platform available on the classpath and emit bytecode for this version.
-  //"-release", "15",
+  //"-release", "16",
+  //"-project-url", git.remoteRepo.value,
 )
 
-// These lines ensure that in sbt console or sbt test:console the -Ywarn* and the -Xfatal-warning are not bothersome.
-// https://stackoverflow.com/questions/26940253/in-sbt-how-do-you-override-scalacoptions-for-console-in-all-configurations
-Compile / console / scalacOptions ~= (_ filterNot { option =>
-  option.startsWith("-Ywarn") || option == "-Xfatal-warnings"
-})
+Test / scalacOptions += "-Wconf:msg=is not declared `infix`:s,msg=is declared 'open':s"
+
+// These lines ensure that in sbt console or sbt test:console the -Werror is not bothersome.
+Compile / console / scalacOptions ~= (_.filterNot(_.startsWith("-Werror")))
 Test / console / scalacOptions := (Compile / console / scalacOptions).value
 
 //======================================================================================================================
@@ -42,8 +39,8 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.4.1",
   "com.zaxxer" % "nuprocess" % "2.0.2",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.4",
-  "ch.qos.logback" % "logback-classic" % "1.2.6" % Test,
-  "org.scalatest" %% "scalatest" % "3.2.10" % Test,
+  "ch.qos.logback" % "logback-classic" % "1.2.10" % Test,
+  "org.scalatest" %% "scalatest" % "3.2.11" % Test,
 )
 
 // Needed for scoverage snapshot

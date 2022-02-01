@@ -105,4 +105,4 @@ final case class ExpectBlock[+R](whens: When[R]*) extends LazyLogging:
     * @param other the other ExpectBlock to campare this ExpectBlock to.
     */
   def structurallyEquals[RR >: R](other: ExpectBlock[RR]): Boolean =
-    whens.size == other.whens.size && whens.zip(other.whens).forall(_ structurallyEquals _)
+    whens.size == other.whens.size && whens.zip(other.whens).forall(_.structurallyEquals(_))

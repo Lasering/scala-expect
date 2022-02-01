@@ -86,14 +86,14 @@ sealed trait When[+R]:
     */
   def structurallyEquals[RR >: R](other: When[RR]): Boolean =
     readFrom == other.readFrom && actions.size == other.actions.size &&
-      actions.zip(other.actions).forall(_ structurallyEquals _)
+      actions.zip(other.actions).forall(_.structurallyEquals(_))
   
   protected def toString(pattern: String): String =
     s"""when($pattern, readFrom = $readFrom) {
        |${actions.mkString("\n").indent()}
        |}""".stripMargin
 
-final case class StringWhen[+R](pattern: String, readFrom: FromInputStream = StdOut, actions: Action[R, StringWhen]*) extends When[R] derives CanEqual :
+final case class StringWhen[+R](pattern: String, readFrom: FromInputStream = StdOut, actions: Action[R, StringWhen]*) extends When[R] derives CanEqual:
   type This[+X] = StringWhen[X]
   
   override def matches(output: String): Boolean = output.contains(pattern)
@@ -107,7 +107,7 @@ final case class StringWhen[+R](pattern: String, readFrom: FromInputStream = Std
     case that: StringWhen[RR] => pattern == that.pattern && super.structurallyEquals(other)
     case _ => false
 
-final case class RegexWhen[+R](pattern: Regex, readFrom: FromInputStream = StdOut, actions: Action[R, RegexWhen]*) extends When[R] derives CanEqual :
+final case class RegexWhen[+R](pattern: Regex, readFrom: FromInputStream = StdOut, actions: Action[R, RegexWhen]*) extends When[R] derives CanEqual:
   type This[+X] = RegexWhen[X]
   
   override def matches(output: String): Boolean = pattern.findFirstIn(output).isDefined
@@ -122,7 +122,7 @@ final case class RegexWhen[+R](pattern: Regex, readFrom: FromInputStream = StdOu
   def withActions[T](actions: Seq[Action[T, This]]): RegexWhen[T] = RegexWhen(pattern, readFrom, actions *)
   
   override def toString: String = toString(escape(pattern.regex) + ".r")
-  override def equals(other: Any): Boolean = other match
+  override def equals(other: Any): Boolean = other.asInstanceOf[Matchable] match
     // equals on the Regex class is not defined.
     case that: RegexWhen[?] => pattern.regex == that.pattern.regex && readFrom == that.readFrom && actions == that.actions
     case _ => false
@@ -130,7 +130,7 @@ final case class RegexWhen[+R](pattern: Regex, readFrom: FromInputStream = StdOu
     case that: RegexWhen[RR] => pattern.regex == that.pattern.regex && super.structurallyEquals(other)
     case _ => false
 
-final case class EndOfFileWhen[+R](readFrom: FromInputStream = StdOut, actions: Action[R, EndOfFileWhen]*) extends When[R] derives CanEqual :
+final case class EndOfFileWhen[+R](readFrom: FromInputStream = StdOut, actions: Action[R, EndOfFileWhen]*) extends When[R] derives CanEqual:
   type This[+X] = EndOfFileWhen[X]
   
   def withActions[T](actions: Seq[Action[T, This]]): EndOfFileWhen[T] = EndOfFileWhen(readFrom, actions *)
@@ -140,7 +140,7 @@ final case class EndOfFileWhen[+R](readFrom: FromInputStream = StdOut, actions: 
     case _: EndOfFileWhen[RR] => super.structurallyEquals(other)
     case _ => false
 
-final case class TimeoutWhen[+R](actions: Action[R, TimeoutWhen]*) extends When[R] derives CanEqual :
+final case class TimeoutWhen[+R](actions: Action[R, TimeoutWhen]*) extends When[R] derives CanEqual:
   type This[+X] = TimeoutWhen[X]
   
   /** The readFrom of a TimeoutWhen is not used but to keep the implementation simple we set its value to StdOut. */

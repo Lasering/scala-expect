@@ -309,7 +309,7 @@ final case class Expect[+R](command: Seq[String] | String, defaultValue: R, sett
     *
     * @param other the other Expect to compare this Expect to.
     */
-  override def equals(obj: Any): Boolean = obj match
+  override def equals(obj: Any): Boolean = obj.asInstanceOf[Matchable] match
     case e @ Expect(`command`, `defaultValue`, `settings`) if e.expectBlocks == expectBlocks => true
     case _ => false
   

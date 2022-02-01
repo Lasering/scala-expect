@@ -30,7 +30,7 @@ open case class Expect[R](command: Seq[String] | String, defaultValue: R, settin
         |\tDefaultValue: $defaultValue
         |\tSettings: $settings
         |${expectBlocks.mkString("\n").indent()}""".stripMargin
-  override def equals(other: Any): Boolean = other match
+  override def equals(other: Any): Boolean = other.asInstanceOf[Matchable] match
     case e @ Expect(`command`, `defaultValue`, `settings`) if e.expectBlocks == expectBlocks => true
     case _ => false
   override def hashCode(): Int = Seq(command, defaultValue, settings, expectBlocks).map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
